@@ -1,0 +1,71 @@
+﻿Analiza i projektiranje računalom
+Ak. godina 2022/2023.
+v1, 30.09.2022.
+
+
+Slijed gradiva na predavanjima:
+1) Pogreske u postupcima analize
+	1.1 Prikaz brojeva s pomičnom točkom
+	1.2 Pogreške zaokruživanja i računanja
+	1.3 Rasprostiranje pogrešaka
+2) Rjesavanje linearnih sustava
+	2.1 LU dekompozicija
+	2.2 Pivotiranje i LUP dekompozicija
+3) Postupci nelinearne optimizacije
+	3.1	Pronalaženje optimuma funkcije jedne varijable
+	3.2	Pronalaženje optimuma funkcije više varijabli bez uporabe derivacija
+	3.3	Pronalaženje optimuma uz uporabu derivacija
+	3.4	Rješavanje sustava nelinearnih jednadžbi
+	3.5	Pronalaženje optimuma funkcije više varijabli s ograničenjima (+ SQP)
+	3.6	Pronalaženje optimuma višemodalnih funkcija
+4) Evolucijski algoritmi
+	4.1 Evolucijske strategije i CMA-ES
+	4.2 Genetski algoritam
+5) Analiza prijelaznih pojava
+6) Slozenost algoritama 
+
+
+Materijali u skripti po poglavljima:
+1) PPA: skripta poglavlje 2
+2) RLS: skripta 3-1:3-31 (poglavlja 3, 4)
+3) PNO: skripta 4-1:4-88 (poglavlje 4)
+4) EA: predavanja, web
+5) APP: skripta 7-1:7-55 (poglavlje 7)
+6) SA: predavanja, web
+
+
+Gradivo koje ulazi u MI:
+
+1. Pogreške u postupcima analize
+- skripta poglavlje 2 (osim dokaza)
+- struktura zapisa s pomičnom točkom (kodiranje i računanje, pogreške)
+
+2. Matrice, rješavanje sustava linearnih jednadžbi
+- skripta 3-1:3-31 (osim izvoda)
+- predavanja: pivotiranje (stožerni razvoj)
+- 1. domaća zadaća
+
+3. Postupci nelinearne optimizacije (1)
+- skripta: 4-1:4-68 (osim dokaza)
+- predavanja:
+	- Gauss-Newtonova metoda za sustav nelinearnih jednadžbi
+	(http://www.fer.unizg.hr/_download/repository/Algoritam_Gauss_Newton.pdf)
+	- postupak Levenberg-Marquardt za sustav nelin. jdbi
+	(http://www.fer.unizg.hr/_download/repository/Algoritam_Levenberg_Marquardt.pdf)
+- 2. i 3. domaća zadaća
+
+
+Gradivo koje ulazi u ZI: MI + 
+
+3. Postupci nelinearne optimizacije (2)
+- skripta: 4-69:4-88
+- predavanja: kvadratno programiranje (na webu)
+
+4. Evolucijski algoritmi (CMA-ES)
+- predavanje (na webu)
+
+5. Analiza prijelaznih pojava
+- skripta 7-1:7-55 (osim izvoda)
+- uključeno ispitivanje stabilnosti uz pomoć ispitne jdbe!
+- izrazi za 4 osnovna postupka (Euler, ob. Euler, trapezni, Heun)
+- lin. višekoračni postupci, prediktorsko-korektorski postupci

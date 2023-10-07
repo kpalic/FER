@@ -1,0 +1,85 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Integracija C/C++-a sa MATLABom</title>
+</head>
+
+<body>
+
+<h2><font face="Arial">Integracija C/C++/C# - a sa MATLABom</font></h2>
+<div style="border-style: solid; border-width: 1; padding-left: 4; padding-right: 4; padding-top: 1; padding-bottom: 1; background-color: #C0C0C0">
+  <font face="Arial" size="2">Op<span lang="hr">&#263;enite upute za opisane postupke 
+  mogu se na&#263;i u sljede&#263;im poglavljima MATLAB Helpa:</span></font><ul>
+    <li><font face="Arial" size="2"><b><span lang="hr">MATLAB: External 
+    Interfaces/API: Calling MATLAB from C and Fortran Programs</span></b></font></li>
+    <li><font face="Arial" size="2"><b><span lang="hr">MATLAB: External 
+    Interfaces/API: Calling C and Fortran Programs from MATLAB</span></b></font></li>
+    <li><font face="Arial" size="2"><b><span lang="hr">MATLAB: External 
+    Interfaces/API: Creating C Language MEX-Files</span></b></font></li>
+  </ul>
+  <p><font face="Arial" size="2"><span lang="hr">Za  </span>opis potrebnih 
+  funkcija<span lang="hr">, poslužite 
+   
+  </span>se <span lang="hr">popisima  u poglavljima</span>:</font></p>
+  <ul>
+    <li><font face="Arial" size="2"><span lang="hr"><b>MATLAB: External 
+    Interfaces/API Reference: C Engine Functions </b>(rukovanje MATLAB engine-om 
+    i komunikacija preko varijabli)</span></font></li>
+    <li><font face="Arial" size="2"><b><span lang="hr">MATLAB: External 
+    Interfaces/API Reference: C MX-Functions</span></b> (rad sa MATLAB 
+    varijablama u C okolini)</font></li>
+  </ul>
+</div>
+<h3><font face="Arial">Podešavanje Microsoft Visual C++ 6.0 okoline</font></h3>
+<p><font face="Arial">U popis <i>include</i> direktorija 
+(<b>Tools-Options-Directories</b>) potrebno je dodati direktorij 
+&lt;Matlab13&gt;\extern\include, gdje &lt;Matlab13&gt; <span lang="hr">ozna&#269;ava direktorij u 
+kojemu je MATLAB instaliran.</span></font></p>
+<p><span lang="hr"><font face="Arial">U opcijama projekta 
+(<b>Project-Settings-Link-Category:Input</b>) potrebno je kao <i>Additional library 
+path </i>dodati direktorij </font></span><font face="Arial">
+&lt;Matlab13&gt;\extern\lib\win32\microsoft\msvc60, a u popis <i>Object/Library 
+Modules </i>treba dodati biblioteke &quot;libmx.lib libmat.lib libeng.lib&quot;.</font></p>
+<h3><font face="Arial">Podešavanje Microsoft Visual .NET okoline</font></h3>
+<p><font face="Arial">U popis <i>include</i> direktorija 
+(<b>Tools-Options-Projects-VC++ Directories, </b>pa u list kontroli <i>Show 
+directories for</i> odaberite <i>Include files</i>) potrebno je dodati direktorij 
+&lt;Matlab13&gt;\extern\include, gdje &lt;Matlab13&gt; <span lang="hr">ozna&#269;ava direktorij u 
+kojemu je MATLAB instaliran.</span></font></p>
+<p><span lang="hr"><font face="Arial">U opcijama projekta 
+(<b>Project-</b></span><b>Properties-Linker-General</b><span lang="hr">) potrebno je kao <i>
+Additional library </span>directories<span lang="hr"> </span> </i><span lang="hr"><span lang="hr">dodati direktorij </span></span> </font><font face="Arial">
+&lt;Matlab13&gt;\extern\lib\win32\microsoft\msvc70, a zatim u <b>
+Linker-Input </b>u popis <i>Additional Dependencies </i>treba dodati biblioteke &quot;libmx.lib libmat.lib libeng.lib&quot;.</font></p>
+<h3><font face="Arial">Integracija C# sa MATLAB-om</font></h3>
+<p><font face="Arial">Za opis navedene problematike pogledajte &#269;lanak
+<a href="http://www.codeproject.com/dotnet/matlabeng.asp">
+http://www.codeproject.com/dotnet/matlabeng.asp</a>. </font></p>
+<h3><font face="Arial">Integracija Jave sa MATLAB-om</font></h3>
+<p><font face="Arial">Ima i za to <span lang="hr">na&#269;ina: </span>
+<a href="http://www.held-mueller.de/JMatLink/">
+http://www.held-mueller.de/JMatLink/</a>.</font></p>
+<h3><font face="Arial">Primjeri korištenja MATLAB <i>engine</i>-a iz C-a</font></h3>
+<ul>
+  <li><font face="Arial"><a href="demo1.c">demo1.c</a></font><br>
+  <font face="Arial">Jednostavno pokretanje MATLAB engine-a, izracunavanje 2+2 i 
+  ispis rezultata.</font></li>
+  <li><font face="Arial"><a href="demo2.c">demo2.c</a></font><br>
+  <font face="Arial">Definiranje MATLAB varijable kao skalara i proslje&#273;ivanje 
+  iste MATLABu; dohva&#263;anje i ispis rezultata.</font></li>
+  <li><font face="Arial"><a href="demo3.c">demo3.c</a></font><br>
+  <font face="Arial">Definiranje matrice kao MATLAB varijable. U&#269;itavanje 
+  matrice pomo&#263;u MATLAB naredbe 'load' i ra&#269;unanje inverzije matrice. Datoteka 
+  sa matricom (<a href="matrica.txt">matrica.txt</a>) bi se trebala nalaziti u 
+  defaultnom MATLAB radnom direktoriju. MATLAB sprema matrice u memoriji <i>po 
+  stupcima</i>, pa je za pretvorbu u C oblik potrebno napraviti i 
+  transponiranje.</font></li>
+</ul>
+
+</body>
+
+</html>

@@ -1,0 +1,434 @@
+
+ Commands:
+  q[uit]       e[xit]       r[un]        fr[un]       lo[ad]       sa[ve]
+  loadpop      savepop      pa[rams]     i[nit]       sh[ow]       b[est]
+  li[st]       fl[ist]      sc[ratch]    h[elp]
+
+ Parameters:
+  pr[ecision]  str[len]     en[coding]   N            se[lection]  c-poss[]
+  m-poss[]     Pc           Pm           me[thod]     el[itism]    stop-g[en]
+  stop-n[ew]   stop-v[alue] stop-e[val]  fun          dim          tr[ials]      
+  de[tails]    step         ou[t-file]   ts[ize]
+
+ You can use abbreviations (not denoted with []). Case is ignored.
+ Type 'help <topic>' or '? <topic>' for details.
+ 
+ -- Type 'demo' for a QUICK INSTRUCTIONS of how to get it to work...
+#
+demo
+ Quick make-it-work instructions:
+ 
+ 1a. Load a predefined set of parameters from enclosed "example.txt" file 
+     with 'load example.txt' command (see 'save' and 'load' commands), 
+ -- OR --
+ 1b. define minimum set of parameters, which are:
+  'fun' - which function to optimize (defined in "FITNESS.CPP"),
+  'dim' - function dimension (if variable),
+  'N' - population size,
+  'selection' - selection type, and 
+  at least one stopping criteria:
+    'stop-gen' - the number of generations, or
+    'stop-eval' - the number of evaluations, or
+    'stop-new' - the number of generations without improvement, or
+    'stop-value' - the desired fitness value.
+
+  (The rest of the parameters have default values, check with 'params')
+  You can get a more detailed help on each of these (e.g. like '? Pc').
+
+ 2. Initialize the population with 'init'.
+ 
+ 3. Start the GA with 'run'.
+#
+help
+
+ Format: help [<topic>]
+ 
+ Provides elementary information about commands and parameters.
+#
+quit
+
+ Exits the program.
+#
+exit
+
+ Exits the program.
+#
+run
+
+ Format: run [<generation_number>]
+
+ Examples: run 
+           run 10
+ 
+ Runs the currently set GA. If no parameter is specified, GA will run until
+ one of the termination conditions is reached (see 'stop-gen', 'stop-value',
+ 'stop-new' and 'stop-eval'). Otherwise, it will run exactly 
+ <generation_number> generations.
+ You can stop the executing at any time by pressing 'Ctrl-C' (it will terminate
+ after generational cycle is concluded). Calling 'run' again will continue
+ execution at current population state, unless the population is initialized
+ with 'init'.
+#
+frun
+
+ Format: frun [<generation_number>]
+
+ Examples: frun
+           frun 50
+ 
+ This command has the same properties as rhe 'run' command, but it also
+ outputs the results to a file defined with 'out-file' parameter. The
+ 'details' parameter determines what data will be written to file. 'frun'
+ always appends its output to the end of the file. Use 'scratch' command to
+ delete output file.
+ User can also write its own output routine.
+#
+load
+
+ Format: load <filename>
+
+ Example: load gaparams
+ 
+ Loads GA parameters saved to the file <filename>. The parameter file 
+ can also be created manually in any editor. The parameters in the file
+ are written as they are typed in the program.
+ See also: 'save'
+#
+save
+
+ Format: save <filename>
+
+ Example: save gaparams
+ 
+ Saves current set of parameters to the file <filename>. The parameter file 
+ can also be created manually in any editor. The parameters in the file
+ are written as they are typed in the program.
+ See also: 'load'
+#
+loadpop
+
+ Format: loadpop <filename>
+
+ Example: loadpop ga01
+
+ Loads population saved to <filename> with 'savepop <filename>' command. 
+ Restores all the parameters (saved with the population) and current 
+ generation number.
+#
+savepop
+
+ Format: savepop <filename>
+
+ Example: savepop ga01
+ 
+ Saves current population and all the parameters. You can restore the exact
+ state the population was in using 'loadpop <filename>'.
+#
+params
+
+ Format: params
+
+ Displays the current set of parameters.
+#
+init
+
+ Format: init
+
+ Initializes the population regarding the current parameter values. Command
+ 'init' is used in two occasions:
+     a) to reset the population and start another trial, or
+     b) to reset the population when esential parameters have been changed.
+ You have to use 'init' prior to 'run' if you have changed any of the 
+ esential parameters, which are: 'N', 'precision', 'dim', 'strlen' or 
+ 'method'. All the other parameters can be changed during the execution of GA.
+#
+show
+
+ Format: show <member_index>
+
+ Example: show 0
+
+ This command displays the population member with specified index. An index 
+ of the member denotes only the current position of the member in the 
+ population. The valid range for <member_index> is 0 to N-1.
+ 'show' outputs member value in problem domain and its fitness.
+#
+best
+
+ Format: best
+
+ Displays the best member in population.
+#
+list
+
+ Format: list
+
+ Displays all the population members. The best member is marked with 
+ additional text.
+#
+flist
+
+ Format: flist
+
+ Outputs all the population members to the file defined with 'out-file'
+ parameter. The list is always appended to file's end. Use 'scratch' command
+ to delete the output file.
+#
+scratch
+
+ Format: scratch
+
+ Deletes the contents of output file defined with 'out-file' parameter.
+#
+precision
+
+ Format: precison <real_precision>
+
+ Example: precision 0.0001
+
+ Sets the miminum precision in problem domain. Has effect only in BINARY 
+ encoding. You have to reinitialize the population after this parameter has
+ been changed.
+ Default value is 0.001.
+#
+strlen
+
+ Format: strlen <string_length>
+
+ Example: strlen 15
+
+ Sets the length of the binary string in BINSTR encoding. The specified 
+ length reffers to one dimension (n-dimensional chromosome will have n
+ strings with 'strlen' length). You have to reinitialize the population after
+ this parameter has been changed.
+#
+encoding
+
+ Format: encoding BINARY | FL-POINT | BINSTR
+
+ Example: encoding BINSTR
+
+ Sets the desired chromosome encoding. The meanings are:
+      BINARY:   encodes real numbers as binary strings and operates on them 
+                as binaries. Real value is decoded and used for evaluation 
+                only.
+      FL-POINT: uses in-built floating point numbers as chromosomes.
+
+      BINSTR:   treats chromosomes only as binary strings. The fitness
+                function must have its own decoding scheme for evaluation.
+ You have to reinitialize the population after this parameter has been
+ changed.
+ Default value is BINARY.
+#
+n
+
+ Format: N <pop_size>
+
+ Example: N 50
+
+ Sets the number of population members. You have to reinitialize the 
+ population after this parameter has been changed.
+ Valid values for N are 1 to 1000.
+#
+selection
+
+ Format: selection TOURNAMENT | R-WHEEL | ST-REMAINDER | ELIMINATION
+
+ Example: selection TOURNAMENT
+
+ Defines the selection method to be used in GA. R-WHEEL and ST-REMAINDER
+ selections employ generational policy, whereas ELIMINATION and 
+ TOURNAMENT implement a steady-state GA.
+ See also: 'tsize', 'Pc'
+#
+tsize
+
+ Format: tsize <number>
+
+ Example: tsize 3
+
+ Defines the tournament size in tournament selection (i.e. how many
+ individuals will compete with each other). Valid values are from 2 to 
+ half of the population size (N/2).
+ See also: 'selection'
+#
+c-poss[]
+
+ Format: c-poss[<crssover_type>] <value>
+
+ Example: c-poss[UNIFORM] 2
+
+ In EGA you can use several types of crossover and mutation operators at 
+ once. Integer <value> determines relative frequency of <crssover_type>
+ operator with concern to all the other crossover operator types having their
+ <value> greater than zero. Valid crossover types are
+   for BINARY encoding: ONE-POINT, UNIFORM
+   for BINSTR encoding: ONE-POINT, UNIFORM
+   for FL-POINT encoding: SIMPLE, ARITHM, HEURISTIC.
+ For example, if you set:
+	c-poss[SIMPLE] 1
+	c-poss[ARITHM] 1
+	c-poss[HURISTIC] 2
+ the GA will use all three of them, first two with 25% and the third one with
+ 50% probability.
+#
+m-poss[]
+
+ Format: m-poss[<mutation_type>] <value>
+
+ Example: m-poss[BOUNDARY] 2
+
+ In EGA you can use several types of mutation and crossover operators at
+ once. Integer <value> determines relative frequency of <mutation_type>
+ operator with concern to all other mutation operators having their <value>
+ greater than zero. Valid mutation types for all encodings are:
+     UNIFORM, NON-UNIFORM, BOUNDARY.
+ See the example with '? c-poss'.
+#
+pc
+
+ Format: Pc <crss_rate>
+
+ Example: Pc 0.4
+
+ Sets the crossover rate (probability of crossover) for generational GA (with
+ ST-REMAINDER or R-WHEEL selection) or generation gap for steady-state GA
+ (with ELIMINATION selection). Valid values are 0.0 to 1.0.
+#
+pm
+
+ Format: Pm <mut_rate>
+
+ Example: Pm 0.02
+
+ Sets the mutation rate (mutation probability) in GA. The probability is 
+ defined in regard with a single gene (single bit in a chromosome). Valid 
+ values are 0.0 to 1.0. This parameter has no effect in AGA or EAGA 
+ adaptive methods.
+#
+method
+
+ Format: method FIXED | AGA | EAGA
+
+ Example: method EAGA
+
+ Determines the adaptive method (for parameter values) to be used in GA. AGA 
+ method is defined only for R-WHEEL and ST-REMAINDER selection and EAGA for 
+ ELIMINATION and TOURNAMENT selection only. FIXED uses constant Pc and Pm 
+ and is defined for every selection. You have to reinitialize the population 
+ after this parameter has been changed. Default value is FIXED.
+#
+elitism
+
+ Format: elitism YES | NO
+
+ Example: elitism YES
+
+ Switches the elitism property on/off (the best member in a population always
+ survives). 'elitism YES' is always recommended. Default value is YES.
+#
+stop-gen
+
+ Format: stop-gen <generation>
+
+ Example: stop-gen 200
+
+ One of the stopping criteria. The GA trial will stop if current generation
+ number is greater or equal to <generation>.
+ NB: One generation in TOURNAMENT selection is defined as a creation of N new 
+ individuals.
+#
+stop-new
+
+ Format: stop-new <generation>
+
+ Example: stop-new 50
+
+ One of the stopping criteria. The GA trial will stop if no progress is made
+ in the last <generation> generations (i.e., the best member's fitness value 
+ has not increased).
+ NB: One generation in TOURNAMENT selection is defined as a creation of N new 
+ individuals.
+#
+stop-value
+
+ Format: stop-value <value>
+
+ Example: stop-value 0.999
+
+ One of the stopping criteria. The GA trial will stop if best member's 
+ fitness value exceeds <value> (GA is searching for maximum value).
+#
+stop-eval
+
+ Format: stop-eval <number>
+
+ Example: stop-eval 20000
+
+ One of the stopping criteria. The GA trial will stop if the number of
+ fitness function evaluations (i.e. the number of created chromosomes)
+ exceeds <number>.
+#
+fun
+
+ Format: fun <int_value>
+
+ Example: fun 5
+
+ This parameter is used for choice of the fitness function. The functions are
+ encoded in "FITNESS.CPP" module.
+#
+dim
+
+ Format: dim <dimension>
+
+ Example: dim 10
+
+ This parameter sets the dimension of fitness function and hence the encoded 
+ chromosomes (if the function is defined as a  multidimensional one. If not, 
+ the parameter has no effect).
+ You have to reinitialize the population after this parameter has been changed.
+#
+trials
+
+ Format: trials <int_value>
+
+ Example: trials 10
+
+ Sets the number of consecutive trials to be executed by the GA. Every trial
+ has the same parameters and stopping criteria. After multiple trials are
+ concluded, statistics are printed out.
+ Multiple trial run CANNOT be continued after it has been interrupted by the
+ user (pressing 'Ctrl-C'). Every time you issue a 'run' command while 'trials'
+ is set to more then 1, the GA will start at first trial.
+ Default value is 1.
+#
+details
+
+ Format: details YES | NO
+
+ Example: details YES
+
+ This parameter refers to 'frun' command when GA output is written to a file.
+ With 'details NO' the data is written only at the end of a run. With 
+ 'details YES' additional information is written in every generation.
+ Deafult value is NO.
+#
+step
+
+ Format: step YES | NO
+
+ Example: step NO
+
+ If 'step' is YES, program will wait for key at every generation.
+ Default value is NO.
+#
+out-file
+
+ Format: out-file <filename>
+
+ Example: out-file ga01.out
+
+ Sets the output file for 'frun' and 'flist' commands. Use 'scratch' to erase
+ current output file.
+#

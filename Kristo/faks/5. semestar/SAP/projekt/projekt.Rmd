@@ -1,0 +1,188 @@
+---
+title: "SAP - PROJEKT"
+author: "Kristo Palić"
+date: "2022-12-18"
+output: html_document
+---
+
+```{r}
+r = getOption("repos")
+r["CRAN"] = "http://cran.us.r-project.org"
+options(repos = r)
+install.packages("aov", repos = "http://cran.us.r-project.org")
+install.packages("car", repos = "http://cran.us.r-project.org")
+library(dplyr)
+#library(aov)
+#library(car)
+```
+
+```{r}
+
+data <- read.table("preprocessed_data.csv", header = T, sep = ',')
+
+mat1 <- matrix(, nrow = 2, ncol = 4)
+colnames(mat1) <- c("Reg", "IR1", "IR2", "IR3")
+rownames(mat1) <- c(1, 2)
+mat1
+lotShapes <- unique(data$LotShape)
+lotShapes
+for (i in (1:length(lotShapes))) {
+  print(i)
+  print((unique(data$LotShape)))
+  mat1[1, i] = nrow(data[which(data$LotShape == unique(data$LotShape)[i] & data$X2ndFlrSF == 0),])
+  mat1[2, i] = nrow(data[which(data$LotShape == unique(data$LotShape)[i] & data$X2ndFlrSF != 0),])
+  print(lotShapes[i])
+}
+mat1
+
+
+chisq.test(mat1)
+```
+
+
+```{r}
+### 2. zadatak
+#Ovisi li veliˇcina podruma o kvartu u gradu?
+data <- read.table("preprocessed_data.csv", header = T, sep = ',')
+
+library(dplyr)
+n_distinct(unique(data$Neighborhood))
+#Koristit cemo ANOVU
+unique(data$Neighborhood)
+dataFor2 <- data.frame(data$Neighborhood, data$TotalBsmtSF)
+head(dataFor2)
+
+#install.packages("aov")
+#install.packages("car")
+
+
+head(data)
+
+
+
+```
+
+```{r}
+##########
+pom <- data %>%
+  filter(data$TotalBsmtSF > 1) %>%
+  group_by(Neighborhood) %>%
+  tally()
+
+chosenNeighborhoods <- pom[pom$n > 30, "Neighborhood"]
+
+dataFor2nd <- data[data$TotalBsmtSF != 0 & data$Neighborhood %in% chosenNeighborhoods$Neighborhood, c("Neighborhood", "TotalBsmtSF")]
+dataFor2nd[dataFor2nd$TotalBsmtSF == 0] <- NULL
+head(dataFor2nd)
+head(data[data$TotalBsmtSF == 0,])
+
+for (i in (1:length(chosenNeighborhoods$Neighborhood))) {
+  a <- dataFor2nd[dataFor2nd$Neighborhood == chosenNeighborhoods$Neighborhood[i],]
+  
+  hist(as.double(a$TotalBsmtSF),
+       breaks = 30,
+       main = 'Histogram of TotalBsmtSq',
+       xlab = 'Square feet')
+}
+
+boxplot(TotalBsmtSF ~ Neighborhood, data = dataFor2nd)
+head(dataFor2nd[dataFor2nd$TotalBsmtSF == 0])
+
+bartlett.test(data = dataFor2nd, TotalBsmtSF ~ Neighborhood)
+
+anova_resultat <- aov(TotalBsmtSF ~ Neighborhood, data = dataFor2nd)
+summary(anova_resultat)
+
+```
+
+
+```{r}
+################
+#anova_resultat <- aov(mean_column2 ~ Neighborhood, data = summarized_data)
+#summary(anova_resultat)
+
+
+#
+#dataFor2 <- data[data$TotalBsmtSF != 0,c("Neighborhood", "TotalBsmtSF")]
+#dataFor2 
+#bartlett.test(data = dataFor2, TotalBsmtSF ~ Neighborhood)
+#
+#for (j in (1:length(unique(dataFor2$Neighborhood)))) {
+#  for (i in (1:length(dataFor2$Neighborhood))) {
+#    print(unique(dataFor2$Neighborhood)[i])
+#    print(var((dataFor2$TotalBsmtSF[dataFor2$Neighborhood == unique(dataFor2$Neighborhood)[j]])))
+#    
+#    hist(as.double(dataFor2$TotalBsmtSF[dataFor2$Neighborhood == (unique(dataFor2$Neighborhood)[j])]),
+#         breaks = 150,
+#         main = 'Histogram of TotalBsmtSq',
+#         xlab = 'Square feet')
+#  }
+#}
+#boxplot(as.double(TotalBsmtSF) ~ Neighborhood, data = dataFor2)
+```
+
+
+
+
+
+
+```{r}
+
+# 4. ZADATAK - LINEARNA REGRESIJA
+
+
+buildings_unfiltered <- read.csv("preprocessed_data.csv", header=TRUE, numerals="no.loss")
+head(buildings_unfiltered)
+
+
+ind = which(buildings_unfiltered$SalePrice >= 0)
+data_outliers = buildings_unfiltered[ind,]
+
+remove_outliers <- function(x, na.rm = TRUE, ...) {
+  qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
+  H <- 1.5 * IQR(x, na.rm = na.rm)
+  y <- x
+  y[x < (qnt[1] - H)] <- NA
+  y[x > (qnt[2] + H)] <- NA
+  y
+}
+
+
+#MSSubClass
+data_outliers$MSSubClass <-  remove_outliers(data_outliers$MSSubClass)
+#MSZoning
+msZoning_map <- c("A" = 1,"C" = 2, "FV"	= 3, "I" = 4, "RH" = 5, "RL" = 6, "RP" = 7, "RM" = 8)
+data_outliers$MSZoning <-  as.numeric(msZoning_map[data_outliers$MSZoning])
+data_outliers$MSZoning
+data_outliers$MSZoning <-  remove_outliers(as.numeric(data_outliers$MSZoning))
+#OverallQual
+data_outliers$OverallQual <-  remove_outliers(data_outliers$OverallQual)
+#OverallCond
+data_outliers$OverallCond <- remove_outliers(data_outliers$OverallCond)
+#YearBuilt
+data_outliers$YearBuilt <- remove_outliers(data_outliers$YearBuilt)
+#YearRemodAdd
+data_outliers$YearRemodAdd <- remove_outliers(data_outliers$YearRemodAdd)
+#ExterQual
+extQual_map <- c("Ex" = 5, "Gd" = 4, "TA" = 3, "Fa" = 2, "Po" = 1)
+data_outliers$ExterQual <- as.numeric(extQual_map[data_outliers$ExterQual])
+#ExterCond
+extCond_map <- c("Ex" = 5, "Gd" = 4, "TA" = 3, "Fa" = 2, "Po" = 1)
+data_outliers$ExterCond <- as.numeric(extCond_map[data_outliers$ExterCond])
+
+#TotalBsmtSF
+data_outliers$TotalBsmtSF <- remove_outliers(data_outliers$TotalBsmtSF)
+#SQFT
+sqft <- remove_outliers(data_outliers$X1stFlrSF + data_outliers$X2ndFlrSF)
+
+#SaleType
+saleType_map <- c("Oth" = 0, "ConLD" = 1, "ConLI" = 2, "ConLw" = 3, "Con" = 4, "COD" = 5, "New" = 6, "VMD" = 7, "CWD" = 8, "WD" = 9)
+data_outliers$SaleType <- as.numeric(saleType_map[data_outliers$SaleType])
+#saleprice
+
+model <- lm(data_outliers$SalePrice ~ data_outliers$MSSubClass + data_outliers$MSZoning + data_outliers$OverallQual + data_outliers$OverallCond + data_outliers$YearBuilt + data_outliers$YearRemodAdd + data_outliers$ExterQual + sqft + data_outliers$TotalBsmtSF + data_outliers$SaleType)
+summary(model)
+
+```
+
+

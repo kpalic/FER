@@ -1,0 +1,35 @@
+0246074767
+================
+
+=== UNARCHIVE AND STRUCTURE ===
+OK!
+
+=== COMPILE ===
+OK!
+
+=== EVALUATION ===
+
+=== TOTAL RESULTS ===
+5 / 5 tests passed. (100.00%)
+
+== GENETIC ALGORITHM NEURAL NET ==
+./solution --train sine_train.txt --test sine_test.txt --nn 5s --popsize 10 --elitism 1 --p 0.1 --K 0.1 --iter 2000
+--> Complete obtained output:
+[Train error @2000]: 0.11009
+[Test error]: 0.0983871
+./solution --train sine_train.txt --test sine_test.txt --nn 20s --popsize 10 --elitism 1 --p 0.7 --K 0.1 --iter 2000
+--> Complete obtained output:
+[Train error @2000]: 0.00821687
+[Test error]: 0.00565299
+./solution --train sine_train.txt --test sine_test.txt --nn 5s5s --popsize 10 --elitism 1 --p 0.7 --K 0.1 --iter 2000
+--> Complete obtained output:
+[Train error @2000]: 0.00463895
+[Test error]: 0.00402534
+./solution --train rastrigin_train.txt --test rastrigin_test.txt --nn 5s --popsize 10 --elitism 1 --p 0.3 --K 0.5 --iter 2000
+--> Complete obtained output:
+[Train error @2000]: 92.3332
+[Test error]: 77.563
+./solution --train rosenbrock_train.txt --test rosenbrock_test.txt --nn 5s --popsize 10 --elitism 1 --p 0.5 --K 4. --iter 2000
+--> Complete obtained output:
+[Train error @2000]: 391018
+[Test error]: 345500

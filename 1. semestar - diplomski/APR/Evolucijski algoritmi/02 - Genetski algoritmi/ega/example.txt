@@ -1,0 +1,26 @@
+#
+# -- Parameter save file for EGA --
+#
+c-poss[UNIFORM] 1
+m-poss[UNIFORM] 1
+m-poss[NON-UNIFORM] 1
+stop-gen 10000
+stop-new 2000
+stop-value 1
+stop-eval 5000000
+tsize 3
+precision 1e-005
+encoding BINARY
+N 200
+selection_type TOURNAMENT
+Pc 0.4
+Pm 0.01
+method FIXED
+elitism YES
+fun 7
+dim 5
+strlen 15
+trials 1
+details YES
+step NO
+out-file gaout.txt

@@ -1,0 +1,73 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="hr">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1250">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Algoritam simplks postupka po Nelderu i Meadu</title>
+</head>
+
+<body>
+
+<h3><font face="Courier New">Algoritam <span lang="en-us">simpleks </span>postupka<span lang="en-us"> 
+po Nelderu i Meadu</span></font></h3>
+<div style="border:solid windowtext .5pt;padding:1.0pt 4.0pt 1.0pt 12.0pt">
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  // Ulazne velicine: X<sub>0</sub>, alfa, beta, gama, epsilon</p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  izracunaj tocke simpleksa X[i], i = 0..n;</p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  ponavljaj</p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">{ odredi indekse h,l : F(X[h]) = max, F(X[l]) = min;</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp; odredi centroid Xc;</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp; Xr = Refleksija();</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp; ako F(Xr)&lt;F(X[l])</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp; {&nbsp;&nbsp; Xe = Ekspanzija();</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ako F(Xe)&lt;F(X[l])</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X[h] = Xe;</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; inace</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X[h] = Xr;</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp; }</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp; inace</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp; {&nbsp;&nbsp; ako F(Xr)&gt;F(X[j]) za svaki j=0..n, j!=h</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp;&nbsp;&nbsp;&nbsp; ako F(Xr)&lt;F(X[h])</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X[h] = Xr;</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Xk = Kontrakcija();</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ako F(Xk)&lt;F(X[h])</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X[h] = Xk;</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; inace</span></p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  <span lang="DE">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>pomakni sve tocke prema X[l];</p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; inace</p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X[h] = Xr;</p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  &nbsp; }</p>
+  <p class="kod" style="text-indent: -14.2pt; font-size: 11.0pt; font-family: Courier New; letter-spacing: -1.0pt; margin-left: 14.2pt; margin-right: 0cm; margin-top: 0cm; margin-bottom: .0001pt">
+  }dok nije zadovoljen uvjet zaustavljanja<span lang="en-us">;</span></div>
+
+</body>
+
+</html>

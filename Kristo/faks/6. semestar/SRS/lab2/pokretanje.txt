@@ -1,0 +1,4 @@
+Skripte pokrećemo na sljedeći način:
+
+usermgmt - usermgmt.py <add | del | forcepass> <username>
+login    - login.py <username> 

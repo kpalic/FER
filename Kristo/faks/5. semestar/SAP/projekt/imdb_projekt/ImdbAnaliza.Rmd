@@ -1,0 +1,863 @@
+---
+title: "ImdbAnalizaFilmova"
+author: "JuricaKuleš"
+date: '10 01 2022 '
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# 1.Imaju li neki zanrovi znacajno razlicite ocjene na IMDB-u?
+
+U ovom dijelu istražujemo imaju li neki žanrovi statistički značajno različite ocjene na IMDB-u.
+
+``` {r}
+#tinytex::install_tinytex()
+library(tinytex)
+IMDB <- read.csv("IMDB_1.csv", header=FALSE)
+
+# it will remove first column (unique index - X)
+IMDB = IMDB[-1,]
+head(IMDB)
+```
+Gledamo koji različiti žanrovi postoje te koliko filmova u tom žanru.
+
+``` {r}
+genresSplit = unlist(strsplit(IMDB$V10, "\\|"))
+table(genresSplit)
+```
+
+Imamo  26 različitih žanrova različitih veličina uzorka.
+Promatrat ćemo sljedeće žanrove: Action, Comedy, Drama, Romance, Thriller, Horror, Western, Animation, History i Documentary.
+
+Dijelimo žanrove pojedinih filmova svaki u svoj redak radi lakšeg baratanja podatcima.
+
+``` {r}
+library(tidyverse)
+
+IMDB %>% 
+    mutate(V10=strsplit(V10, "\\|")) %>% 
+    unnest(V10)
+```
+S obzirom da se ovdje bavimo statističkim zaključivanjem na više od dva uzorka, koristit cemo ANOVA test.
+
+ANOVA (ANalysis Of VAriance) je metoda kojom testiramo sredine više populacija. U analizi varijance pretpostavlja se da je ukupna varijabilnost u podatcima posljedica varijabilnosti podataka unutar svakog pojedine grupe (populacije) i varijabilnosti između različitih grupa. Varijabilnost unutar pojedinog uzorka je rezultat slučajnosti, a ukoliko postoje razlike u srednimana populacija, one će biti odražene u varijabilnosti među grupama. Jedan od glavnih ciljeva analize varijance je ustanoviti jesu li upravo te razlike između grupa samo posljedica slučajnosti ili je statistički značajna.
+
+Pretpostavke ANOVA-e su:
+- nezavisnost pojedinih podataka u uzorcima,
+- normalna razdioba podataka,
+- homogenost varijanci među populacijama.
+
+Provjeru normalnosti podataka radit cemo preko histograma, a testiranje homogenosti varijance uzoraka Bartletovim testom. U nastavku je primjer analize za ocjenu na indbu za pojedine žanrove:
+
+##Ocjena na IMDBu po zanrovima
+
+Provjera normalnosti:
+
+```{r}
+library(tidyverse)
+
+IMDB = IMDB %>% 
+    mutate(V10=strsplit(V10, "\\|")) %>% 
+    unnest(V10)
+
+action <- subset(IMDB, V10 == "Action")
+
+comedy <- subset(IMDB, V10 == "Comedy")
+
+drama <- subset(IMDB, V10 == "Drama")
+
+romance <- subset(IMDB, V10 == "Romance")
+
+thriller <- subset(IMDB, V10 == "Thriller")
+
+horror <- subset(IMDB, V10 == "Horror")
+
+western <- subset(IMDB, V10 == "Western")
+
+animation <- subset(IMDB, V10 == "Animation")
+
+history <- subset(IMDB, V10 == "History")
+
+documentary <- subset(IMDB, V10 == "Documentary")
+
+hist(as.double(action$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Action movies',
+     xlab='Scores')
+
+hist(as.double(comedy$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Comedy movies',
+     xlab='Scores')
+
+hist(as.double(drama$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Drama movies',
+     xlab='Scores')
+
+hist(as.double(romance$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Romance movies',
+     xlab='Scores')
+
+hist(as.double(thriller$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Thriller movies',
+     xlab='Scores')
+
+hist(as.double(horror$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Horror movies',
+     xlab='Scores')
+
+hist(as.double(western$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Western movies',
+     xlab='Scores')
+
+hist(as.double(animation$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Animation movies',
+     xlab='Scores')
+
+hist(as.double(history$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of History movies',
+     xlab='Scores')
+
+hist(as.double(documentary$V26), 
+     breaks=50,
+     main='Histogram of imdb scores of Documentary movies',
+     xlab='Scores')
+```
+
+Razdiobe izgledaju normalno.
+
+Nadalje radimo provjeru homogenosti varijance:
+
+testiramo tezu H0: sve varijance su jednake
+dok alternativa hipoteza H1 opovrgava H0.
+
+```{r}
+bIMDB <- subset(IMDB, V10 == 'Action' | V10 == 'Comedy' | V10 == 'Drama' | V10 == 'Romance' | V10 == 'Thriller' | V10 == 'Horror' | V10 == 'Western' | V10 == 'Animation' | V10 == 'History' | V10 == 'Documentary')
+
+bartlett.test(V26 ~ V10, data = bIMDB)
+
+var((IMDB$V26[IMDB$V10=='Action']))
+var((IMDB$V26[IMDB$V10=='Comedy']))
+var((IMDB$V26[IMDB$V10=='Drama']))
+var((IMDB$V26[IMDB$V10=='Romance']))
+var((IMDB$V26[IMDB$V10=='Thriller']))
+var((IMDB$V26[IMDB$V10=='Horror']))
+var((IMDB$V26[IMDB$V10=='Western']))
+var((IMDB$V26[IMDB$V10=='Animation']))
+var((IMDB$V26[IMDB$V10=='History']))
+var((IMDB$V26[IMDB$V10=='Documentary']))
+
+```
+
+Rezultat testa nam daje p-vrijednost manju od 7.331e-14 što nam govori da je vjerojatnost da smo uočili takvu testnu statistiku da su varijance jednake uz istinitost H0, jako mala -- dakle **odbacujemo hipotezu** $H0$ o tome da su varijance jednake.
+
+Provjerimo postoje li razlike u ocjenama za različite žanrove.
+
+```{r}
+
+# Graficki prikaz podataka
+boxplot(as.double(V26) ~ V10, data = bIMDB)
+
+# Test
+a = aov(V26 ~ V10, data = bIMDB)
+summary(a)
+
+```
+Grafički prikaz sugerira da postoji razlika u ocjenama među zanrovima, što potvrđuje i ANOVA.
+
+
+
+# 2.Dobivaju li američki filmovi veća financiranja od filmova drugih zemalja?
+
+## Usporedjujemo varijablu (budget) na 2 uzorka (country): SAD i ostatak svijeta.
+## country = V21, budget = V23 
+
+```{r}
+IMDB <- read.csv("IMDB_1.csv", header=FALSE)
+dim(IMDB)
+View(IMDB)
+```
+
+Gledamo koliko ima filmova iz SAD-a, a koliko iz ostatka svijeta:
+
+```{r}
+IMDB_clear = IMDB[!(is.na(IMDB$V21) | IMDB$V21=="" | IMDB$V21=="country"), ]
+
+usa <- subset(IMDB_clear, V21 == 'USA')
+cat('Veličina prvog uzorka: ', nrow(usa), '\n')
+
+rest <- subset(IMDB_clear, V21 != 'USA')
+cat('Veličina drugog uzorka: ', nrow(rest), '\n')
+```
+
+Za inicijalnu usporedbu gledamo prosječnu vrijednost budgeta SAD-a i ostalih filmova.
+Prvo mičemo null i prazne vrijednosti.
+
+##PITANJE ukljucujem li one s budgetom 0?
+##PITANJE jel valuta USD i za strane?
+
+```{r}
+usa_clear = usa[!(is.na(usa$V23) | usa$V23=="" | usa$V23=="0"), ]
+rest_clear = rest[!(is.na(rest$V23) | rest$V23=="" | rest$V23=="0"), ]
+
+cat(nrow(usa_clear), '\n')
+cat(nrow(rest_clear), '\n')
+
+budgetUSA <- as.numeric(usa_clear$V23)
+meanUSA = mean(budgetUSA)
+cat('Prosjecni budget americkih filmova:', meanUSA, 'USD', '\n')
+
+budgetRest <- as.numeric(rest_clear$V23)
+meanRest = mean(budgetRest)
+cat('Prosjecni budget americkih filmova:', meanRest, 'USD', '\n')
+```
+
+```{r}
+boxplot(budgetUSA,budgetRest,
+        names = c('USA budget','Other countries budget'),
+        main='Boxplot budget',
+        outline=FALSE)
+```
+
+Provodim ispitivanje t-testom, ali prvo ćemo provjeravam početne značajke podataka (normalnost i nezavisnost podataka).
+
+Nezavisnot podataka pretpostavljamo na temelju dviju različitih populacija nad kojima se provodi ispitivanje, prvu populaciju predstavljaju SAD filmovi, a drugu ostali.
+
+Zatim ispitujem normalnost podataka koju provjeravam pomoću QQ - plota i histograma.
+
+```{r}
+qqnorm(budgetUSA, frame = FALSE,main='USA')
+qqline(budgetUSA, col = "red", lwd = 2)
+qqnorm(budgetRest, frame = FALSE,main='Rest')
+qqline(budgetRest, col = "red", lwd = 2)
+```
+Graf USA budgeta ne izgleda normalno distribuirano. QQ - plot nam **ne potvrđuje normalnost podataka**. 
+
+Histogram:
+
+```{r}
+hist(budgetUSA,main='budget USA',xlab='Value',ylab='Frequency', breaks=100)
+hist(budgetRest,main='budget Rest',xlab='Wage',ylab='Frequency', breaks=100)
+```
+
+Pokušat cu log transformacijom približiti podatke normalnoj distribuciji.
+
+``` {r}
+hist(log(budgetUSA),main='budget USA',xlab='Value',ylab='Frequency', breaks=100)
+hist(log(budgetRest),main='budget Rest',xlab='Wage',ylab='Frequency', breaks=100)
+```
+
+Radi bolje preciznosti koristit ćemo se dvama testovima za dokazivanje normalnosti.
+*Shapiro–Wilk*-ov test o normalnosti koji se smatra vrlo jakim, ako ne i najačim testom za dobivenu važnost.
+Dodatno provest ćemo i *Lilleforse* test koji je inačica *Kolomogorov-Smirnov* testa za normalnost (jer testiramo samo uzorke populacije,a ne cijelu populaciju pa nam očekivana vrijednost i varijanca nisu poznate).
+
+```{r}
+#install.packages("nortest")
+library(nortest)
+
+lillie.test(log(budgetUSA))
+shapiro.test(log(budgetUSA))
+
+
+lillie.test(log(budgetRest))
+shapiro.test(log(budgetRest))
+
+```
+
+**Zaključak:** Rezultati testova nam daju p-vrijednosti manju od 2.2e-16, odnosno 2.698e-16 što nam govori da je vjerojatnost da smo uočili takvu testnu statistiku da naši podatci dolaze iz normalne distribucije uz istinitost H0, jako mala -- dakle **odbacujemo hipotezu** $H0$ o tome da podatci dolaze iz normalne distribucije.
+
+Zato prelazimo na neparametarsku inačicu t-testa: **Mann-Whitney-Wilcoxonov test**.
+
+``` {r}
+wilcox.test(budgetUSA, budgetRest) 
+
+```
+
+Wilcoxonov test, dakle, ne zahtjeva pretpostavku normalnosti distribucija, te se dobro nosi sa stršećim vrijednostima.
+
+Nulta hipoteza bila je da su distribucije budgeta jednake. Da bismo testirali tu hipotezu, koristili smo funkciju wilcox.test te usporedili dva nezavisna uzorka. p-value ispala je znatno manje od levela signifikantnosti, te odbacujemo nultu hoipotezu.
+
+Zaključujemo da postoji znatna razlika izmedju budgeta USA vs stranih filmova.
+
+
+# 3.Možemo li temeljem danih varijabli predvidjeti zaradu filmova? Moˇzete li predvidjeti zaradu nekog?
+novog filma koji tek izlazi u kinima?
+
+## Učitavanje skupa podataka
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, results='hide', include=FALSE}
+
+ require(nortest)
+ require(fastDummies)
+ require(MASS)
+
+ options(warn=-1)
+
+```
+
+Podatci za analizu dani su u datoteci `IMDB.csv` te sadrže informacije o filmovima. 
+
+```{r}
+IMDB_unfiltered <- read.csv("IMDB_1.csv", header=TRUE, numerals="no.loss")
+head(IMDB_unfiltered)
+```
+
+## Predviđanje zarade
+
+Kako bi znali predvidjeti zaradu(gross), možemo ispitati različite varijable koje bi mogle utjecati na
+iznos zarade filma:
+• budžet filma (budget)
+• trajanje filma (duration)
+• IMDB ocjena (imdb_score)
+• broj korisnika koji su glasali (num_voted_users)
+
+Kako bismo grafički dobili dojam o odnosu pojedine varijable i zarade, poslužit ćemo se dijagramom raspršenja(scatterplot) i modelom jednostavne regresije - po jedan za svaku nezavisnu varijablu (uz cnt - broj iznajmljenih bicikala - kao zavisnu varijablu). Također iz skupa podataka izostavit ćemo stršeće vrijednosti.
+
+```{r cleaning data}
+
+ind = which(IMDB_unfiltered$gross >= 0 & IMDB_unfiltered$budget >= 0 & IMDB_unfiltered$duration >= 0 & IMDB_unfiltered$imdb_score >= 0 & IMDB_unfiltered$num_voted_users >= 0 &
+              IMDB_unfiltered$num_critic_for_reviews >= 0)
+IMDB_outliers = IMDB_unfiltered[ind,]
+
+remove_outliers <- function(x, na.rm = TRUE, ...) {
+  qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
+  H <- 1.5 * IQR(x, na.rm = na.rm)
+  y <- x
+  y[x < (qnt[1] - H)] <- NA
+  y[x > (qnt[2] + H)] <- NA
+  y
+}
+
+```
+
+```{r scatter plots}
+
+IMDB_outliers$gross = remove_outliers(IMDB_outliers$gross)
+IMDB_outliers$imdb_score = remove_outliers(IMDB_outliers$imdb_score)
+IMDB_outliers$num_critic_for_reviews = remove_outliers(IMDB_outliers$num_critic_for_reviews)
+IMDB_outliers$num_voted_users = remove_outliers(IMDB_outliers$num_voted_users)
+IMDB_outliers$duration = remove_outliers(IMDB_outliers$duration)
+IMDB_outliers$budget = remove_outliers(IMDB_outliers$budget)
+
+ind = which(IMDB_outliers$gross >= 0 & IMDB_outliers$budget >= 0 & IMDB_outliers$duration >= 0 & IMDB_outliers$imdb_score >= 0 & IMDB_outliers$num_voted_users >= 0 &
+              IMDB_outliers$num_critic_for_reviews >= 0)
+IMDB = IMDB_outliers[ind,]
+
+b.fit = lm(gross~budget,data=IMDB)
+s.fit = lm(gross~imdb_score,data=IMDB)
+d.fit = lm(gross~duration,data=IMDB)
+v.fit = lm(gross~num_voted_users,data=IMDB)
+c.fit = lm(gross~num_critic_for_reviews,data=IMDB)
+
+plot(IMDB$budget,IMDB$gross)
+lines(IMDB$budget, b.fit$fitted.values, col='red')
+
+plot(IMDB$imdb_score,IMDB$gross)
+lines(IMDB$imdb_score, s.fit$fitted.values, col='red')
+
+plot(IMDB$num_voted_users,IMDB$gross)
+lines(IMDB$num_voted_users, v.fit$fitted.values, col='red')
+
+plot(IMDB$num_critic_for_reviews,IMDB$gross)
+lines(IMDB$num_critic_for_reviews, c.fit$fitted.values, col='red')
+
+plot(IMDB$duration,IMDB$gross)
+lines(IMDB$duration, d.fit$fitted.values, col='red')
+
+```
+
+Rezultati upućuju na to da bi budžet, broj korisnika koji su glasali, broj osvrta kritičara i trajanje filma mogle koristiti za predviđanje zarade.
+Čini se da IMDB ocjena nema veliki utjecaj na zaradu.
+
+## Korelacijski koeficijent i veza s linearnim modelom
+
+Korelacijski koeficijent opisuje smjer i prirodu veze dviju varijabli.
+
+Odabrane su samo neke od prije isprobanih nezavisnih varijabla - budžet, broj korisnika koji su glasali, broj osvrta kritičara i trajanje filma.
+
+```{r korelacijski koeficijent}
+
+cor.test(IMDB$budget,IMDB$gross)
+
+cor.test(IMDB$num_voted_users,IMDB$gross)
+
+cor.test(IMDB$num_critic_for_reviews,IMDB$gross)
+
+cor.test(IMDB$duration,IMDB$gross)
+
+```
+Najveću korelaciju sa zaradom pokazuju varijabla num_voted_users i budget.Varijable imdb_score i num_ciritic_for_reviews pokazuju manju korelaciju.
+P-vrijednosti svih varijabli ukazuju da veza između pojedine varijable i zarade postoji.
+
+Nagibi pravaca linearne regresije i vrijednosti koeficijenata korelacije potvrđuju utjacaj pojedinih varijabli na zaradu. Kako bi se dobiveni modeli analizirali i usporedili, prvo je potrebno provjeriti da pretpostavke modela nisu (jako) narušene. Pritom su najbitnije pretpostavke o regresorima (u višestrukoj regresiji regresori ne smiju biti međusobno jako korelirani) i o rezidualima (normalnost reziduala i homogenost varijance).
+
+## Normalnost reziduala i homogenost varijance
+Normalnost reziduala moguće je provjeriti grafički, pomoću kvantil-kvantil plota (usporedbom s linijom normalne razdiobe), te statistički pomoću Kolmogorov-Smirnovljevog testa.
+Pri tome ćemo koristiti sljedeću funkciju.
+
+Dobivene modele treba analizirati i usporediti, a za svaki model prvo se treba provjeriti je su li narušene pretpostavke modela jednostavne linearne regresije.
+Ako su pretpostavke narušene, model se odbacuje.
+Za model jednostavne linearne regresije potrebno je provjeriti **normalnost reziduala** i **homogenost varijance**. 
+
+Normalnost reziduala može se provjeriti grafički uz pomoć **kvantil-kvantil plota** (usporedbom s linijom normalne razdiobe).
+
+Normalnost reziduala dobro je provjeriti statistički - pomoću **Kolmogorov-Smirnovljevog testa** (ili Lilifeforsovom inačicom).
+Kolmogorov-Smirnovljev test je neparametarski test koji služi za provjeru dolaze li podatci iz neke točno odredene distribucije - u ovom slučaju uspoređujemo distribuciju reziduala naših modela s normalnom distribucijom.
+**Lillieforseva inačica** Kolmogorov-Smirnovljevog testa koristi se kad su očekivanje i varijanca populacije nepoznate.
+
+Ako pretpostavke modela nisu (neprihvatljivo) prekršene, moguće je primijeniti različite statističke testove o procijenjenim koeficijentima i kvaliteti modela. 
+
+Za sve testove pretpostavlja se razina signifikantnosti od 5%.
+
+```{r}
+
+normality_homogenity <- function(selected.model){
+  
+  par(mfrow=c(3,2), mai=c(1,1,1,1))
+  
+  #1 prikaz reziduala po indeksu danom u podacima
+  p1 = plot(selected.model$residuals,
+       main="Residuals plot (1.)", xlab = "Index", ylab = "Residuals",
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #2 prikaz reziduala u ovisnosti o procjenama modela
+  p2 = plot(selected.model$fitted.values,selected.model$residuals,
+       main="Standardized residuals plot (2.)", xlab = "Fitted values", ylab = "Residuals", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2) 
+  
+  #3 histogram reziduala
+  hist((selected.model$residuals), 
+       xlab = "Residuals", main = "Histogram of residuals (3.)", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #4 histogram standardiziranih reziduala
+  hist(rstandard(selected.model),
+       xlab = "Standardized residuals", main = "Histogram of standardized residuals (4.)", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #5 q-q plot standardiziranih reziduala s linijom normalne distribucije
+  qqnorm(rstandard(selected.model),
+         main="Standardized residuals q-q plot (5.)", cex.main = 3, cex.lab = 3, cex.axis = 2)
+  qqline(rstandard(selected.model))
+  #6 Kolmogorov-Smirnovljev test - usporedba standardiziranih reziduala s normalnom razdiobom
+  print(ks.test(rstandard(selected.model),'pnorm'))
+ 
+  #7 Lilliefors inaciča KS-testa
+  print(lillie.test(rstandard(selected.model)))
+
+}
+```
+
+### Predviđanje na temelju trajanja filma
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+normality_homogenity(d.fit)
+
+```
+
+1. Reziduali se čine donekle raspršeni, ali vidi se koncentriranje vrijednosti s povećanjem y.
+2. Također teško procjeniti, ovdje vrijednosti čak i izgledaju relativno raspršeno.
+3. Ne liči dovoljno na normalnu distribuciju(nagnuto).
+4. Ne liči dovoljno na normalnu distribuciju(nagnuto).
+5. Oblik q-q plota na više mjesta značajno odudara od pravca.
+
+KS TEST:  Budući da je  p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+LILLIE TEST:  Budući da je p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+
+**Zaključak:**
+Budući da je definitivno narušena pretpostavka normalnosti reziduala, ovo nije dobar model jednostavne linearne regresije.
+
+### Predviđanje na temelju broja osvrta kritičara na film
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+normality_homogenity(c.fit)
+
+```
+
+1. Reziduali se čine donekle raspršeni, ali vidi se koncentriranje, odnosno sužavanje vrijednosti s povećanjem y.
+2. Također teško procjeniti, ovdje vrijednosti čak i izgledaju donekle raspršeno.
+3. Ne liči dovoljno na normalnu distribuciju(nagnuto).
+4. Ne liči dovoljno na normalnu distribuciju(nagnuto).
+5. Oblik q-q plota na više mjesta značajno odudara od pravca.
+
+KS TEST:  Budući da je  p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+LILLIE TEST:  Budući da je p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+
+**Zaključak:**
+Budući da su pretpostavke modela o homogenosti varijance i normalnosti reziduala, ni ovo nije dobar model jednostavne linearne regresije.
+
+### Predviđanje na temelju broja korisnika koji su glasali
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+normality_homogenity(v.fit)
+
+```
+
+1. Reziduali se čine jednoliko raspršeni, ali teško je na ovom grafu suditi o normalnosti reziduala.
+2. Također teško procjeniti, vidljiva je veća koncentracija pri nižim y vrijednostima.
+3. Ne liči dovoljno na normalnu distribuciju.
+4. Ne liči dovoljno na normalnu distribuciju.
+5. Oblik q-q plota na više mjesta značajno odudara od pravca.
+
+KS TEST:  Budući da je  p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+LILLIE TEST:  Budući da je p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+
+**Zaključak:**
+Također, pošto je narušena normalnost reziduala, ovo nije dobar model jednostavne linearne regresije.
+
+\pagebreak
+
+### Predviđanje na temelju budžeta
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+normality_homogenity(b.fit)
+
+```
+
+1. Reziduali se čine jednoliko raspršeni, ali teško je na ovom grafu suditi o normalnosti reziduala.
+2. Graf prikazuje graničnu heterogenost varijance, ali teško je reći.
+3. Čini se da su reziduali raspodijeljeni normalnom distribucijom ukošenom ulijevo.
+4. Čini se da su standardizirani reziduali raspodijeljeni normalnom distribucijom ukošenom ulijevo.
+5. Oblik q-q plota ukazuje na normalnu distribuciju ukošenu ulijevo (pozitivna ukošenost).
+
+KS TEST:  Budući da je p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+LILLIE TEST:  Budući da je p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+
+S obzirom na izgled grafa raspršenosti reziduala i na to da nam je budžet jedan od prediktora s boljim koeficijentom korelacije, možemo probati transformirati zavisnu varijablu(zaradu) kako bi dobili poboljšani model.
+
+Za transformaciju ćemo koristiti Box-Cox transformaciju koja je prigodna za varijablu zarada jer zarada ima pozitivne vrijednosti i ne-normalnu razdiobu.
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+hist(IMDB$gross)
+
+bc = boxcox(IMDB$gross ~ IMDB$budget)
+lambda = bc$x[which.max(bc$y)]
+new_model <- lm(((IMDB$gross^lambda-1)/lambda) ~ IMDB$budget)
+
+normality_homogenity(new_model)
+
+```
+
+1. Reziduali se čine jednoliko raspršeni.
+2. Reziduali se čine jednoliko raspršeni. Reziduali su nešto "gušći" pri manjim y(fitted values) vrijednostima, ali zadržavaju određenu širinu s porastom y vrijednosti.
+3. Distribucija poprilično liči na normalnu.
+4. Distribucija poprilično liči na normalnu.
+5. Oblik q-q plota ukazuje na simetričnu normalnu distribuciju (krivulja relativno dobro prati pravac).
+KS TEST:  Budući da je  p-value = 0.0618 (>0.05), distribucija reziduala modela odgovara normalnoj distribuciji.
+LILLIE TEST:  Prema ovom testu, budući da je p-value = 0.0004133, distribucija reziduala modela **NE** odgovara normalnoj distribuciji.
+
+**Ocjena kvalitete modela i statističko zaključivanje na modelu:**
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+summary(new_model)
+
+```
+
+Koeficijenti:
+1. Intercept -> Pr(>|t|) je <2e-16 
+2. Slope -----> Pr(>|t|) je <2e-16 
+--> mala p-vrijednost ukazuje da je mala vjerojatnost da budžet i zarada nisu "povezane" varijable -> 3 zvjezdice ukazuju da je p vrijednost statistički značajna.
+
+Multiple R-squared: 0.2942 (poprima vrijednosti između 0 i 1) - mjera koliko je dobro model prilagođen našim podatcima.
+--> mjera linearne povezanosti budžeta i zarade.
+29.42% varijance u modelu moguće je objasniti pomoću budžeta i to je dovoljno s obzirom da se bavimo tematikom vezanom uz ljudsko ponašanje i preference.
+
+F-statistic: p-value < 2.2e-16 -> to znači da odbacujemo H0 (svi koeficijenti regresije su nula - model nema prediktivnu vrijednost) u korist H1: model ima prediktivnu vrijednost.
+
+**Zaključak:**
+Budući da nije narušena pretpostavka o homogenosti varijance, a Liliforceov test i KS - test daju različite zakljucke, uzimamo rezultat KS-testa koji upućuje da su reziduali raspodijeljeni normalnom distribucijom (ostali testovi provedeni na modelu ukazali su na normalnu distribuciju reziduala). Ovaj model smatramo ispravnim i kvalitetnim modelom linearne regresije. Budžet s može koristiti za predviđanje zarade.
+
+\pagebreak
+
+## Jednostavna linearna regresija - zaključak
+
+Od 4 isprobana modela linearne regresije, samo je jedan uz dodatnu transformaciju zadovoljio kriterije jednostavne liearne regresije.
+Model predviđanja zarade na temelju budžeta filma zadovoljio je uvjete homogenosti varijance i normalnosti reziduala i pokazao se kao kvalitetan model koji objašnjava ~29.42% varijance prisutne u modelu, što je približno dovoljno za predviđanje nečega vezanog za ljudsko ponašanje.
+
+## Višestruka regresija
+
+Kod modela visestruke regresije trebamo provjeriti tri pretpostavke: 
+1. homogenost varijance
+2. normalnost reziduala
+3. nezavisnost varijabli (regresora)
+
+Regresija s jako koreliranim ulaznim varijablama će uglavnom dati neke rezultate, ali na temelju njih ne možemo donositi nikakve zaključke. Potrebno je odabrati podskup varijabli za koje smatramo da objašnjavaju različite efekte u podatcima i nisu međusobno (previše) korelirane.
+
+## Traženje nezavisnih varijabla za model višestruke regresije
+
+cor < 0.3 -> varijable malo korelirane.
+0.3 <= cor <= 0.7 -> varijable srednje korelirane.
+cor > 0.7 -> varijable jako korelirane - takve ne koristimo u višestrukoj linearnoj regresiji.
+
+```{r cor}
+
+# korelacijski koeficijenti parova regresora
+table = cbind(IMDB$budget, IMDB$num_voted_users, 
+              IMDB$num_critic_for_reviews, IMDB$duration)
+
+colnames(table) = c("Budget", "Number of users which voted", "Number of critic reviews", "Duration")
+cor(table)
+
+```
+Iz tablice je vidljivo da nijedan par varijabli nije jako koreliran.
+
+### Predviđanje kilaže na temelju budžeta, broja glasova korisnika, broja osvrta kritičara i duljine filma
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+  fit.multi = lm(gross ~ duration  + num_critic_for_reviews + num_voted_users + budget, IMDB)
+  normality_homogenity(fit.multi)
+  summary(fit.multi)
+  
+```
+
+1. Čini se da reziduali nisu dovoljno raspršeni.
+2. Graf ne upućuje na heterogenost varijance.
+3. Čini se da su reziduali raspodijeljeni nesimetričnom distribucijom.
+4. Također.
+5. Oblik q-q plota ne prati pravac.
+
+KS-TEST: Budući da je  p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji.
+LILLIE TEST: Prema ovom testu, budući da je p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji.
+
+## Višestruka linearna regresija (zaključak)
+
+S obzirom na to da je jedan jednostavni linearni model već pronađen, vjerojatno je moguće dodatnim transformacijama i kombinacijama nezavisnih varijabli napraviti i složeniji model koji počiva na višestrukoj regresiji.
+
+\pagebreak
+
+
+
+# 4.Zaključivanje iz podataka o Facebook lajkovima glavnih glumaca, redatelja te samog filma
+
+```{r, results='hide', include=FALSE}
+#Učitavanje skupa podataka i potrebnih paketa
+require(nortest)
+```
+
+```{r}
+imdb.data <- read.csv("IMDB_1.csv",
+                      header = TRUE, sep = ",")
+#Čistimo imdb.data skup podataka od nedostajućih vrijednosti
+imdb.data.clean = imdb.data[complete.cases(imdb.data),]
+
+#Grafički prikaz raspodjele vrijednosti varijable director_facebook_likes
+plot(imdb.data.clean$director_facebook_likes)
+#Grafički prikaz raspodjele vrijednosti varijable actor_1_facebook_likes
+plot(imdb.data.clean$actor_1_facebook_likes)
+#Grafički prikaz raspodjele vrijednosti varijable actor_2_facebook_likes
+plot(imdb.data.clean$actor_2_facebook_likes)
+#Grafički prikaz raspodjele vrijednosti varijable actor_3_facebook_likes
+plot(imdb.data.clean$actor_3_facebook_likes) 
+#Grafički prikaz raspodjele vrijednosti varijable movie_facebook_likes
+plot(imdb.data.clean$movie_facebook_likes) 
+
+```
+Kao što je vidljivo na grafičkim prikazima, svaka varijabla ima stršeće vrijednosti, koje bi potencijalno mogle loše utjecati na modele linearne regresije. Stoga ih je potrebno ukloniti iz skupa podataka.
+```{r}
+#Uklanjanje stršećih vrijednosti klasičnom metodom pomoću interkvartilnog 
+#ranga(IQR) te 1. kvartila(Q1) i 3. kvartila(Q3)
+
+#Računanje Q1 i Q3
+
+quantiles.director.likes = quantile(imdb.data.clean$director_facebook_likes,
+                                    probs = c(0.25,0.5,0.75))
+quantiles.actor1.likes = quantile(imdb.data.clean$actor_1_facebook_likes,
+                                  probs = c(0.25,0.5,0.75))
+quantiles.actor2.likes = quantile(imdb.data.clean$actor_2_facebook_likes,
+                                  probs = c(0.25,0.5,0.75))
+quantiles.actor3.likes =  quantile(imdb.data.clean$actor_3_facebook_likes,
+                                   probs = c(0.25,0.5,0.75))
+quantiles.movie.likes = quantile(imdb.data.clean$movie_facebook_likes,
+                                 probs = c(0.25,0.5,0.75))
+
+
+#Računanje IQR
+iqr.director.likes = IQR(imdb.data.clean$director_facebook_likes)
+iqr.actor1.likes = IQR(imdb.data.clean$actor_1_facebook_likes)
+iqr.actor2.likes = IQR(imdb.data.clean$actor_2_facebook_likes)
+iqr.actor3.likes = IQR(imdb.data.clean$actor_3_facebook_likes)
+iqr.movie.likes = IQR(imdb.data.clean$movie_facebook_likes)
+
+#Uklanjanje stršećih vrijednosti
+id = which(imdb.data.clean$director_facebook_likes >
+             (quantiles.director.likes[1] - 1.5 * iqr.director.likes)
+           & imdb.data.clean$director_facebook_likes <
+             (quantiles.director.likes[3] + 1.5 * iqr.director.likes)
+           & imdb.data.clean$actor_1_facebook_likes >
+             (quantiles.actor1.likes[1] - 1.5 * iqr.actor1.likes)
+           & imdb.data.clean$actor_1_facebook_likes <
+             (quantiles.actor1.likes[3] + 1.5 * iqr.actor1.likes)
+           & imdb.data.clean$actor_2_facebook_likes >
+             (quantiles.actor2.likes[1] - 1.5 * iqr.actor2.likes)
+           & imdb.data.clean$actor_2_facebook_likes <
+             (quantiles.actor2.likes[3] + 1.5 * iqr.actor2.likes)
+           & imdb.data.clean$actor_3_facebook_likes >
+             (quantiles.actor3.likes[1] - 1.5 * iqr.actor3.likes)
+           & imdb.data.clean$actor_3_facebook_likes <
+             (quantiles.actor3.likes[3] + 1.5 * iqr.actor3.likes)
+           & imdb.data.clean$movie_facebook_likes >
+             (quantiles.movie.likes[1] - 1.5 * iqr.movie.likes)
+           & imdb.data.clean$movie_facebook_likes <
+             (quantiles.movie.likes[3] + 1.5 * iqr.movie.likes)
+           )
+imdb.data.final = imdb.data.clean[id,]
+
+#Grafički prikazi raspodjele vrijednosti varijabli nakon micanja stršećih vrijednosti
+
+#Grafički prikaz raspodjele vrijednosti varijable director_facebook_likes
+plot(imdb.data.final$director_facebook_likes)
+#Grafički prikaz raspodjele vrijednosti varijable actor_1_facebook_likes
+plot(imdb.data.final$actor_1_facebook_likes)
+#Grafički prikaz raspodjele vrijednosti varijable actor_2_facebook_likes
+plot(imdb.data.final$actor_2_facebook_likes) 
+#Grafički prikaz raspodjele vrijednosti varijable actor_3_facebook_likes
+plot(imdb.data.final$actor_3_facebook_likes)
+#Grafički prikaz raspodjele vrijednosti varijable movie_facebook_likes
+plot(imdb.data.final$movie_facebook_likes) 
+
+
+```
+U nastavku ćemo pomoću scatter-plota pokušati stjeći dojam o utjecaju pojedine nezavisne varijable na zavisnu varijablu imdb_score
+```{r}
+
+plot(imdb.data.final$director_facebook_likes, imdb.data.final$imdb_score)
+plot(imdb.data.final$actor_1_facebook_likes, imdb.data.final$imdb_score)
+plot(imdb.data.final$actor_2_facebook_likes, imdb.data.final$imdb_score)
+plot(imdb.data.final$actor_3_facebook_likes, imdb.data.final$imdb_score)
+plot(imdb.data.final$movie_facebook_likes, imdb.data.final$imdb_score)
+
+
+```
+Iako se nadzire da bi zavisne varijable director_facebook_likes i movie_facebook_likes mogle imati blagi (i to pozitivan) utjecaj na zavisnu varijablu imdb_score, u globalu je iz dobivenih rezultata teško zaključiti imaju li nezavisne varijable značajnijeg utjecaja na zavisnu varijablu. Kako bi ispitali pojedinačni utjecaj ovih varijabli, u nastavku je napravljen model linearne regresije pomoću jedne nezavisne varijable (regresora) i jedne zavisne varijable (imdb_score).
+
+```{r}
+#Linearni model broja  IMDB ocjene filma (imdb_score) i Facebook lajkova redatelja (director_facebook_likes)
+fit.director = lm(imdb_score~director_facebook_likes, data =imdb.data.final)
+plot(imdb.data.final$director_facebook_likes, imdb.data.final$imdb_score) #grafički prikaz podataka
+lines(imdb.data.final$director_facebook_likes, fit.director$fitted.values, col='red')
+```
+```{r}
+#Linearni model broja  IMDB ocjene filma (imdb_score) i Facebook lajkova glavnog glumca 1 (actor_1_facebook_likes)
+fit.actor1 = lm(imdb_score~actor_1_facebook_likes, data =imdb.data.final)
+plot(imdb.data.final$actor_1_facebook_likes, imdb.data.final$imdb_score) #grafički prikaz podataka
+lines(imdb.data.final$actor_1_facebook_likes, fit.actor1$fitted.values, col='red')
+```
+```{r}
+#Linearni model broja  IMDB ocjene filma (imdb_score) i Facebook lajkova glavnog glumca 2 (actor_2_facebook_likes)
+fit.actor2 = lm(imdb_score~actor_2_facebook_likes, data =imdb.data.final)
+plot(imdb.data.final$actor_2_facebook_likes, imdb.data.final$imdb_score) #grafički prikaz podataka
+lines(imdb.data.final$actor_2_facebook_likes, fit.actor2$fitted.values, col='red')
+```
+```{r}
+#Linearni model broja  IMDB ocjene filma (imdb_score) i Facebook lajkova glavnog glumca 3 (actor_3_facebook_likes)
+fit.actor3 = lm(imdb_score~actor_3_facebook_likes, data =imdb.data.final)
+plot(imdb.data.final$actor_3_facebook_likes, imdb.data.final$imdb_score) #grafički prikaz podataka
+lines(imdb.data.final$actor_3_facebook_likes, fit.actor3$fitted.values, col='red')
+```
+```{r}
+#Linearni model broja  IMDB ocjene filma (imdb_score) i Facebook lajkova filma (movie_facebook_likes)
+fit.movie = lm(imdb_score~movie_facebook_likes, data =imdb.data.final)
+plot(imdb.data.final$movie_facebook_likes, imdb.data.final$imdb_score) #grafički prikaz podataka
+lines(imdb.data.final$movie_facebook_likes, fit.movie$fitted.values, col='red')
+```
+
+## Provjera narušenosti pretpostavki modela
+
+Kako bi se dobiveni modeli uspješno analizirali i usporedili, prvo je za svaki model potrebno ispitati jesu li narušene pretpostavke linearne regresije (normalnost reziduala i homogenost varijance). Normalnost reziduala moguće je provjeriti grafički, pomoću kvantil-kvantil plota (usporedbom s linijom
+normalne razdiobe), te statistički pomoću Kolmogorov-Smirnovljevog testa. Ukoliko su navedene pretpostavke narušene, utoliko se predloženi model odbacuje.
+U svrhu lakšeg provjere normalnosti reziduala i homogenosti varijance za sve regresijske modele, definirana je funkcija koja kao ulaz prima odgovarajući model linearne regresije.
+\pagebreak
+
+```{r function}
+model_test <- function(selected.model){
+  par(mfrow=c(3,2), mai=c(1,1,1,1))
+  #1 Prikaz reziduala po indeksu danom u podacima
+  plot1 = plot(selected.model$residuals,
+       main="Residuals plot (1.)", xlab = "Index", ylab = "Residuals",
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #2 Prikaz reziduala u ovisnosti o procjenama modela
+  plot2 = plot(selected.model$fitted.values,selected.model$residuals,
+       main="Standardized residuals plot (2.)", xlab = "Fitted values", ylab = "Residuals", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2) 
+  
+  #3 Histogram reziduala
+  hist((selected.model$residuals), 
+       xlab = "Residuals", main = "Histogram of residuals (3.)", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #4 Histogram standardiziranih reziduala
+  hist(rstandard(selected.model),
+       xlab = "Standardized residuals", main = "Histogram of standardized residuals (4.)", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #5 q-q plot standardiziranih reziduala s linijom normalne distribucije
+  qqnorm(rstandard(selected.model),
+         main="q-q plot standardiziranih reziduala (5.)", cex.main = 3, cex.lab = 3, cex.axis = 2)
+  qqline(rstandard(selected.model))
+
+  #Kolmogorov-Smirnovljev test - usporedba standardiziranih reziduala s normalnom razdiobom
+  print(ks.test(rstandard(selected.model),'pnorm'))
+  
+  #Lilliefors inaciča KS-testa
+  print(lillie.test(rstandard(selected.model)))
+}
+```
+
+\pagebreak
+
+### Predviđanje varijablom director_facebook_likes
+```{r, fig.height=15, fig.width = 15}
+model_test(fit.director)
+```
+
+\pagebreak
+
+### Predviđanje varijablom actor_1_facebook_likes
+```{r, fig.height=20, fig.width = 20}
+model_test(fit.actor1)
+```
+
+\pagebreak
+
+### Predviđanje varijablom actor_2_facebook_likes
+```{r, fig.height=20, fig.width = 20}
+model_test(fit.actor2)
+```
+
+\pagebreak
+
+### Predviđanje varijablom actor_3_facebook_likes
+```{r, fig.height=20, fig.width = 20}
+model_test(fit.actor3)
+```
+
+\pagebreak
+
+### Predviđanje varijablom movie_facebook_likes
+```{r, fig.height=20, fig.width = 20}
+model_test(fit.movie)
+```
+
+\pagebreak
+
+## Zaključak
+U svim isprobanim modelima jednostavne linearne regresije, prekršene pretpostavke normalnosti razdiobe reziduala (p-vrijednost koju daju K-S test i Lilliefors test < 1.5e-6) ili homogenosti varijance. Iz navedenih razloga odbacujemo isprobane modele te dolazimo do zaključka da se pomoću Facebook lajkova glavnih glumaca, redatelja i filma ne može izgraditi pouzdani model za procjenu varijable imdb_score. 

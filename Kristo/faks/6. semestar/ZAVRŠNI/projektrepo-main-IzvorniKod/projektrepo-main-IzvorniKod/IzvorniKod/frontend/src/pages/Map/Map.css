@@ -1,0 +1,520 @@
+.mapboxgl-popup-close-button{
+   font-size: large;
+   outline: 0;
+}
+.mapboxgl-canvas-container.mapboxgl-interactive {
+   cursor: default !important;
+}
+
+.Container
+{
+   width: 100%;
+   height: 90vh;
+   display: flex;
+   /* flex-wrap: wrap; */
+   flex-direction: row;
+   justify-content: space-evenly;
+   margin: auto;
+   min-height: 80vh;
+   /* background-color: aqua; */
+}
+
+.MapContainer
+{
+   /* width: 100%; */
+   display: flex;
+   align-items: center;
+   justify-content: center;
+
+   width: 65rem;
+   min-width: 50vw;
+   border-radius: 30px;
+   height: 100%;
+   margin: auto;
+   border: 5px solid white;
+   padding: 10px; 
+
+   /* background-color: orange; */
+}
+
+.search_filter_recommended{
+   max-width: 40vw;
+   width:min-content;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   padding-left: 15px;
+
+   /* background-color: pink; */
+}
+
+.popup-container
+{
+  border-radius: 5px;
+   min-width: 150px;
+   width: auto;
+   height: auto;
+   display: flex;
+   justify-content: space-evenly;
+   flex-direction:column;
+   font-family: 'Quicksand';
+}
+.popup-container-red{
+   background-color: var(--lightRed);
+   padding: 10px;
+}
+.popup-container-yellow{
+   padding: 10px;
+   background-color: var(--lightYellow);
+}
+.popup-container-green{
+   background-color: var(--oliveGreenLight);
+   padding: 10px;
+}
+.popup-container-blue{
+   background-color: var(--babyBlue);
+   padding: 10px;
+}
+.popup-name
+{
+   font-size: 15px;
+   font-weight: 700;
+   padding-bottom: 2px;
+}
+.popup-item
+{
+   font-size: 13px;
+   display: flex;
+   flex-direction: row;
+   padding: 1px;
+}
+.popupCrown{
+   display: flex;
+   flex-direction: column;
+   justify-content: flex-end;
+}
+.crown-image{
+   height: 34px;
+   width: 48px;
+   object-fit: cover;
+   object-position: 0% 5%;
+}
+.addLocationContainer{
+   height: 220px;
+   width: 220px;
+   display: flex;
+   justify-content:space-between;
+   flex-direction: column;
+   background-color: var(--oliveGreenLight);
+   padding: 10px;
+}
+.addLocationTitle{
+   font-size:medium;
+   font-family: 'Quicksand';
+   font-weight: bold;
+   padding-bottom: 1px;
+}
+.addNameFormContainer{
+   display: flex;
+   flex-direction: row;
+   padding-bottom: 1px;
+}
+.addLocationFormContainer{
+   height: 250px;
+   width: max-content;
+   display: flex;
+   flex-direction: column;
+   justify-content: space-evenly;
+}
+.addLocFormControl{
+   font-size: small;
+   font-family: 'Quicksand';
+}
+.radioGroupAddLocation{
+   height: 25px;
+   padding-top: 1px;
+}
+.radioAddLocation{
+   height: 20px;
+}
+.changeRatingContainer{
+   display: flex;
+   justify-content: space-evenly;
+   flex-direction: column;
+}
+
+.SearchContainer
+{
+   width: 40%;
+   min-width: 300px;
+
+   height: 100%;
+   /* max-height: auto; */
+   border-radius: 30px;
+   border: 5px solid white;
+
+   /* Top-bottom | Left-right */
+   padding: 10px 10px;
+
+
+   margin: auto;
+   
+   display: flex;
+   flex-wrap: wrap;
+   overflow: hidden;
+   justify-content: center;
+   align-items: flex-start;
+   align-content: flex-start;
+
+   /* background-color: red; */
+}
+
+.SearchBar
+{
+   background-image: url('./../../assets/images/paw.png');
+   background-size: 35px;
+   background-repeat: no-repeat;
+   background-position: center;
+   background-color: var(--lightBrown);
+   opacity: 100%;
+   
+   padding-left: 80px;
+
+   font-size: 20px;
+   font-family: "Quicksand";
+
+   border-radius: 30px;
+   border: solid 2px #daa39959;
+   margin-top: 4%;
+   margin-bottom: 0px;
+   
+   width: 10%;
+   max-width: 50px;
+   height: 10%;
+   max-height: 200px;
+   min-height: 50px;
+
+   z-index: 100;
+   position: relative;
+   transition: all 0.5s ease-in-out;
+
+}
+
+.SearchBar:hover, 
+.SearchBar:not(:placeholder-shown), 
+.SearchBar:active, 
+.SearchBar:focus,
+.SearchForm:hover > .SearchBar
+{
+   background-position: center left 20px;
+
+   width: 80%;
+   max-width: 1000px;
+   opacity: 100%;
+   border: solid 2px #daa399ff;
+   justify-content: left;
+   transition: all 0.5s ease-in-out;
+}
+
+.SearchBar:hover + .Filters, .Filters:hover
+{
+   /* width: 80%; */
+}
+
+.SearchForm
+{
+   display: flex;
+   overflow: hidden;
+   flex-direction: column;
+
+   justify-content: center;
+   align-items: center;
+
+   width: 100%;
+   min-height: 90px;
+   height: auto;
+
+   transition: all 0.5s ease-in-out;
+   transition: max-height 100ms 400ms;
+   max-height: 400px;
+
+}
+
+.FiltersContainer
+{
+   display: flex;
+   flex-direction: row;
+   flex-wrap: wrap;
+   align-items: center;
+   height: auto;
+   justify-content: center;
+
+   border-radius: 30px;
+   width: 100%;
+   padding: 10px;
+   padding-bottom: 20px;
+   background-color: var(--lightBlue);
+   
+   margin-bottom: 3%;
+   margin-top: 3%;
+}
+
+.FiltersContainer > h1
+{
+   display: flex;
+   text-align: center;
+   align-items: center;
+   justify-content: center;
+   align-self:flex-start;
+
+   width: 100%;
+   /* min-width: 100px; */
+   min-height: 80px;
+}
+
+.Filters
+{
+   display: flex;
+   flex-direction: column;
+   flex-wrap: wrap;
+   overflow: hidden;
+   
+   align-items: center;
+   justify-content: center;
+   
+   margin:auto;
+   padding: 10px;
+
+   width: 50%;
+   height: auto;
+   min-height: 100px;
+   
+   max-width: 1000px;
+
+   /* background-color: rebeccapurple; */
+}
+
+.Filters > h2
+{
+   text-align: center;
+   width: 100%;
+   margin-bottom: 10px;
+}
+
+.Filter
+{
+   display: flex;
+   flex-direction: row;
+   
+   width: auto;
+   min-width: 100px;
+   max-width: 200px;
+   height: 100%;
+
+   margin: 2px 2%;
+}
+
+.Filter > p
+{
+   margin-left: 5px;
+   margin-top: 3%;
+   margin-bottom: 3%;
+}
+
+.SearchResultsContainer
+{
+   position: relative;
+   width: 80%;
+   height: 40px;
+   padding: 0px;
+   z-index: 0;
+
+   visibility: hidden;
+
+}
+
+/* .SearchResults::-webkit-scrollbar 
+{
+   display: none;
+} */
+
+.SearchResults
+{
+   display: flex 1;
+   flex-direction: column;
+   
+   overflow-y: scroll;
+   
+   justify-content: center;
+   align-content: center;
+
+   border-radius: 0px 0px 15px 15px;
+   width: 100%;
+   height: auto;
+   max-height: 250px;
+
+   margin-top: 30px;
+
+   position: absolute;
+   top: -50px;
+   z-index: 0;
+   left: 0%;
+   background-color: var(--lightBrown);
+   filter: brightness(80%);
+
+}
+
+.SearchBar:focus ~ .SearchResultsContainer,
+.SearchResultsContainer:hover
+{
+   visibility: visible;
+}
+.SearchResult
+{
+   width: 98%;
+   height: 50px;
+
+   background-color: var(--lightBrown);
+   filter: brightness(125%);
+
+   border-radius: 15px;
+   padding: 8px;
+   margin: auto;
+   margin-top: 0px;
+   margin-bottom: 5px;
+   font-size: 16px;
+
+   align-items: center;
+   justify-content: center;
+   display: flex;
+
+   transition-delay: 100ms;
+   transition: visibility 0s ease-in-out 0s;
+   transition: filter 0s ease-in-out 0s;
+}
+
+.SearchResult:first-child
+{
+   margin-top: 25px;
+}
+
+.SearchResult:hover
+{
+   width: 95%;
+   filter: brightness(110%);
+   transition: all 0.1s ease-in-out;
+   transition: filter 0.0s linear 0.0s;
+}
+
+.SearchResult:active
+{
+   filter: brightness(80%);
+   transition: all 0.01s ease-in-out;
+}
+
+.Recommended 
+{
+   margin: 10px auto;
+   padding: 2%;
+   width: 100%;
+   height: auto;
+   
+   background-color: var(--lightBrown);
+
+   border-radius: 30px;
+   padding: 20px;
+}
+
+.recommended-container{
+   display: flex;
+   overflow:auto;
+   height: auto;
+   min-height: 250px;
+   white-space: nowrap;
+
+}
+
+.recommended-item-container{
+   display: flex;
+   flex-direction: column;
+   align-items:flex-start;
+   justify-content: space-evenly;
+
+   height: auto;
+   max-height: 330px;
+   min-height: 250px;
+   min-width: 270px;
+   max-width: 270px;
+   padding: 10px;
+   border: var(--blueSteel);
+   border-radius: 5px;
+   border-style: solid;
+   margin:10px;
+   background-color: var(--lightBlue);
+
+}
+/* .recommended-container::-webkit-scrollbar 
+{
+   display: none;
+} */
+.recommended-item{
+   white-space: initial;
+   padding: 5px;
+}
+/* .recommended-item>p{
+} */
+
+@media screen and (max-width: 720px)
+{
+   .Container
+   {
+      overflow-y: auto;
+      /* overflow-x: hidden; */
+      flex-wrap: wrap;
+      height: auto;
+      width: auto;
+      max-width: 100vw;
+      align-items: center;
+      justify-content: center;
+   }
+
+   .MapContainer
+   {
+      width: 100%;
+      max-width: 100vw;
+   }
+   .search_filter_recommended{
+      min-width: 95%;
+      padding-left: 0;
+   }
+
+   .SearchContainer
+   {
+      height: auto;
+      /* min-width:600px; */
+      width: 100%;
+      padding: 0;
+   }
+   .SearchForm{
+      width: 95%;
+      /* padding-left: 2%; */
+   }
+   .Filters>h2{
+      font-size: 24px;
+   }
+   .Filter{
+      font-size: 15px;
+   }
+   .Recommended{
+      width: 95%;
+      /* margin: 0; */
+   }
+   .recommended-item-container{
+      max-width: 250px;
+      min-width: 250px;
+      width: auto;
+   }
+   .recommended-item{
+      font-size: 15px;
+   }
+}

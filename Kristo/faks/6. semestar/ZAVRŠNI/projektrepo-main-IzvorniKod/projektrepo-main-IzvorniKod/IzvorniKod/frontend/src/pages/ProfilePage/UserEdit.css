@@ -1,0 +1,112 @@
+.user-edit {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+.label-name {
+    font-family: 'Quicksand-semibold';
+    font-size: 22px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.label-input {
+    display: grid;
+    align-items: center;
+}
+.buttons-user-edit-container {
+    justify-content: center;
+    display: flex;
+    gap: 10vw;
+    margin-top: 6vh;
+}
+.label {
+    padding-left: 1vw;
+    width: 45vw;
+    height: 5vh;
+    font-size: 18px;
+    border: 2px solid grey;
+    border-radius: 10px;
+}
+.label:hover {
+    border: 2px solid black;
+}
+.row2 {
+    grid-template-columns: 1fr 3fr;
+    text-align: left;
+    padding-top: 2vh;
+    padding-bottom: 2vh;
+    padding-right: 3vw;
+    padding-left: 3vw;
+    width: 70vw;
+    column-gap: 2vw;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: var(--cloud);
+    border: 2px solid black;
+    border-radius: 10px;
+}
+/*--------when error occur---------*/
+.user-error-container {
+    width: 100%;
+    text-align: center;
+    padding: 1rem;
+    background-color: rgb(188, 125, 125);
+    font-size: 16px;
+    font-weight: 800;
+    border-radius: 10px;
+}
+.user-edit-error {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    grid-template-rows: 1fr 3fr;
+    width: 100%;
+}
+.error {
+    font-family: 'Quicksand-semibold';
+    margin-top: 5px;
+    font-size: 16px;
+    color: red;
+}
+.label-input-error {
+    padding-left: 1vw;
+    width: 45vw;
+    height: 5vh;
+    font-size: 18px;
+    border-radius: 10px;
+    border: 2px solid red;
+}
+/*------responsive design---------*/
+@media only screen and (max-width: 720px) {
+    .row2 {
+        width: 80vw;
+    }
+    .label {
+        font-size: 14px;
+    }
+    .label-name {
+        font-size: 16px;
+    }
+    .error {
+        font-size: 12px;
+    }
+    .user-error-container {
+        font-size: 14px;
+    }
+}
+
+@media only screen and (max-height: 550px) {
+    .label {
+        font-size: 12px;
+    }
+    .label-name {
+        font-size: 12px;
+    }
+    .error {
+        font-size: 8px;
+    }
+    .user-error-container {
+        font-size: 10px;
+    }
+}

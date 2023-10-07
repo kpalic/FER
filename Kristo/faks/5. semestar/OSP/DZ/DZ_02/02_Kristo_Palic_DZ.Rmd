@@ -1,0 +1,84 @@
+---
+title: "2 Osnovni tipovi podataka i operatori - DOMAĆA ZADAĆA"
+author: "Kristo Palić" 
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+---
+
+# Domaća zadaća
+
+
+
+
+1. Što je rezultat sljedećih naredbi? Razmislite o mogućem rezultatu prije izvršavanja.
+
+```{r}
+as.complex(2)
+as.integer(-3.25)
+as.logical("0")
+as.numeric(TRUE)
+as.character(11.5+2i)
+as.numeric("ABC")
+```
+
+
+2. Kako u R-u izgledaju sljedeći opisni izrazi:
+
+- “tri puta deset na devetu”
+```{r}
+x <- 3 * 10 ** 9
+x
+```
+- “logaritam od 5”
+```{r}
+x = log(5)
+x
+```
+- “cjelobrojno dijeljenje 10 sa 3”
+```{r}
+x = 10 %/% 3
+x
+```
+- “ostatak cjelobrojnog dijeljenja 10 sa 3”
+```{r}
+x = 10 %% 3
+x
+```
+
+- “tangens od 75 stupnjeva” |
+```{r}
+x = tan(75 * pi /180)
+x
+```
+
+3. Uz pomoć `if` izraza provjerite da li se rezultat dijeljenja nule s nulom smatra kao vrijednost `NA`, `NaN` ili `NULL`.
+
+```{r}
+x <- 5 / 0
+if(is.nan(x)) {
+print("5 / 0 je NaN")
+}
+
+if(is.na(x)) {
+print("5 / 0 je NA")
+}
+
+if(is.null(x)) {
+print("5 / 0 je NULL")
+}
+
+if(is.infinite(x)) {
+  print("5 / 0 je INF")
+}
+
+```
+
+4. Ubacite u varijablu `x` vrijednost `5`. Ispišite sve varijable okoline. Potom u varijablu `x` ubacite `NULL`. Postoji li i dalje ova varijabla?
+
+```{r}
+x <- 5
+x <- NULL
+print(ls())
+```
+

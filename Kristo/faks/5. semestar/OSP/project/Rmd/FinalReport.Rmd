@@ -1,0 +1,20 @@
+---
+title: "Eksploratorna analiza - IMDB_movie_dataset"
+author: "Kristo Palic"
+date: "2023-01-21"
+output: pdf_document
+---
+```{r echo=FALSE}
+library(tinytex)
+```
+
+
+```{r child = './ucitavanje_podataka.Rmd'}
+```
+
+```{r child = './prilagodba_podataka.Rmd'}
+```
+
+```{r child = './prvi_zadatak.Rmd'}
+```
+

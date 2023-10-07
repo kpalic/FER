@@ -1,0 +1,25 @@
+Ključariček, Maja;Procjena optičkog toka duž konture;2005
+Hucaljuk, Marina;Primjena Kalmanovog filtra u vizualnom praćenju objekata;2005
+Mikša, Igor;Učenje i raspoznavanje uzoraka u boji;2006
+Lombarović, Mladen;Detekcija osoba u infracrvenim slikama;2006
+Petrak, Danijela;Detekcija lica primjenom neuronskih mreža;2006
+Mijatović, Daniel;Sustav za segmentaciju slike pomakom prema srednjoj vrijednosti;2006
+Kožul, Luka;Praćenje objekata čestičnim filtrima;2006
+Kuljiš, Marko;Detekcija objekata deformabilnim predlošcima;2006
+Lokin, Boško;Mjere sličnosti slikovnih uzoraka u boji;2006
+Petraš, Deni;Lokalizacija objekata primjenom aktivnih modela oblika;2007
+Ruškan, Damir;Poravnavanje slika korištenjem modela usmjeravanja pažnje;2007
+Stojević, Mislav;Uporaba značajki boje kože za detekciju lica;2007
+Pokupec, Tomislav;Programski alat za praćenje rada i dijagnostiku složenih sustava;2007
+Bagarić, Magdalena;Detekcija lica pomoću Gaborovih značajki;2008
+Bobesić, Antonija;Primjena pravokutnih značajki za detekciju lica;2008
+Boroš, Marko;Praćenje objekata u prometnim scenama;2008
+Čepo, Domagoj;Primjena strojnog učenja u detekciji osoba u slikama;2008
+Cerovečki, Siniša;Automatizirano traženje sigurnosnih propusta u Web aplikacijama;2008
+Čleković, Vibor;Sustav za pohranu i pretraživanje slika poštanskih maraka;2008
+Dugandžić, Martina;Detekcija prometnih znakova u slikama u boji;2008 
+Grabić, Tatjana;Pretraživanje slikovnih baza temeljeno na lokalnim značajkama boje;2008 
+Svalina, Marin;Pretraživanje slikovnih baza temeljeno na značajkama teksture;2009
+Valent, Tomislav;Analiza oblika kontura koštica maslina;2009
+Zuban, Tadija;Praćenje objekata adaptivnim pomicanjem prozora pretraživanja;2009
+	

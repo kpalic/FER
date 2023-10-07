@@ -1,0 +1,73 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="hr">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1250">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Algoritam LU/LUP dekompozicije</title>
+</head>
+
+<body>
+
+<h3><span lang="en-us"><font color="#FF0000">NAPOMENA</font>: u navedenim 
+algoritmima indeksi matrica i polja počinju od 1, za razliku od C-a gdje počinju 
+od 0, pa se trebaju načiniti prilagodbe u zaglavljima programskih petlji.</span></h3>
+<hr>
+
+<h3><font face="Courier New">Algoritam LU dekompozicije (isti memorijski
+prostor)</font></h3>
+<p><font face="Courier New">za i = 1 do n-1<br>
+&nbsp;&nbsp;&nbsp; za j = i+1 do n<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A[j,i] /= A[i,i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; za k = i+1 do n<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A[j,k] -=
+A[j,i] * A[i,k];</font></p>
+<p><b>Rezultat</b>: u memorijskom prostoru matrice sustava <b><u>A</u></b>
+nalaze se gornja i donja trokutna matrica.</p>
+<h3><font face="Courier New">Supstitucija unaprijed (rješavanje <u>L</u> * <u>y</u>
+= <u>b</u> , isti memorijski prostor)</font></h3>
+<p><font face="Courier New">za i = 1 do n-1<br>
+&nbsp;&nbsp;&nbsp; za j = i+1 do n<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; b[j] -= A[j,i] * b[i];</font></p>
+<p><b>Rezultat</b>: u memorijskom prostoru vektora <b><u>b</u></b> nalazi se
+vektor <b><u>y</u></b>. Za uporabu u laboratorijskim vježbama bit će prethodno
+potrebno kopirati originalni vektor <b><u>b</u></b>.</p>
+<h3><font face="Courier New">Supstitucija unatrag (rješavanje <u>U</u> * <u>x</u>
+= <u>y</u> , isti memorijski prostor)</font></h3>
+<p><font face="Courier New">za i = n do 1<br>
+&nbsp;&nbsp;&nbsp; b[i] /= A[i,i];<br>
+&nbsp;&nbsp;&nbsp; za j = 1 do i-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; b[j] -= A[j,i] * b[i];</font></p>
+<p><b>Rezultat</b>: u memorijskom prostoru vektora <b><u>b</u></b> nalazi se rješenje
+sustava. Vrijedi ista napomena kao i kod supstitucije unaprijed.</p>
+<hr>
+
+<h3><font face="Courier New">Algoritam LUP dekompozicije (isti memorijski
+prostor)</font></h3>
+<p><span lang="en-us"><font face="Courier New">za i = 1 do n<br>
+&nbsp;&nbsp;&nbsp; P[i] = i;<br>
+</font></span><font face="Courier New">za i = 1 do n-1<br>
+<span lang="en-us">&nbsp;&nbsp;&nbsp; pivot = i;<br>
+&nbsp;&nbsp;&nbsp; za j = i+1 do n<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ako ( abs(A[P[j],i]) &gt; 
+abs(A[P[pivot],i) )<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pivot = j;<br>
+&nbsp;&nbsp;&nbsp; zamijeni(P[i],P[pivot]);</span><br>
+&nbsp;&nbsp;&nbsp; za j = i+1 do n<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A[P<span lang="en-us">[</span>j<span lang="en-us">]</span>,i] /= A[<span lang="en-us">P[</span>i<span lang="en-us">]</span>,i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; za k = i+1 do n<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A[<span lang="en-us">P[</span>j<span lang="en-us">]</span>,k] -=
+A[<span lang="en-us">P[</span>j<span lang="en-us">]</span>,i] * A[<span lang="en-us">P[</span>i<span lang="en-us">]</span>,k];</font></p>
+<p><font color="#FF0000"><b><span lang="en-us">NAPOMENA: algoritam mo</span>žete 
+izvesti tako da zaista zamijenite odgovarajuće retke matrice (jednostavnije je) 
+umjesto da elementima redaka pristupate preko indeksa, kao što je napisano u 
+ovom primjeru.</b></font></p>
+<p><b>Rezultat</b>: u memorijskom prostoru matrice sustava <b><u>A</u></b> 
+nalaze se gornja i donja trokutna matrica<span lang="en-us">, s tim da je 
+redoslijed redaka matrice zapisan u polju <u><b>P</b></u>.</span></p>
+<hr>
+
+</body>
+
+</html>

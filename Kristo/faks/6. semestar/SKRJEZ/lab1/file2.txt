@@ -1,0 +1,6 @@
+total 7
+-rw-r--r-- 1 eaprlik 1049089  279 Mar 20 11:43 file.txt
+-rw-r--r-- 1 eaprlik 1049089    0 Mar 26 17:08 file2.txt
+-rw-r--r-- 1 eaprlik 1049089  486 Mar 20 13:43 job.py
+-rw-r--r-- 1 eaprlik 1049089  224 Mar 20 11:41 lista_datoteka
+-rwxr-xr-x 1 eaprlik 1049089 1248 Mar 26 17:04 zadatak1.sh

@@ -1,0 +1,430 @@
+---
+title: "Analiza trzista nekretnina_808"
+output: pdf_document
+author: "808: Borna Budimir-Bekan, Kristo Palić, Timoteja Piveta, Josipa Vujević"
+date: "2023-01-15"
+---
+
+```{r}
+r = getOption("repos")
+r["CRAN"] = "http://cran.us.r-project.org"
+options(repos = r)
+library(dplyr)
+library(tinytex)
+#install.packages("aov", repos = "http://cran.us.r-project.org")
+#install.packages("car", repos = "http://cran.us.r-project.org")
+```
+
+# 1. Uvjetuje li broj spavaćih soba cijenu kvadrata nekretnine?
+
+U ovom dijelu istražujemo imaju li stanovi različitog broja spavaćih soba statistički značajno različitu cijenu kvadrtata.
+
+``` {r}
+data <- read.csv("preprocessed_data.csv", header = T, sep = ',')
+
+# it will remove first column (unique index - X)
+head(data)
+```
+Gledamo koji različiti brojevi spavaćih soba postoje te koliko je stanova u pojedinim određenim brojem.
+
+```{r}
+n_distinct(unique(data$BedroomAbvGr))
+NumerOfBedrooms = unlist(data$BedroomAbvGr)
+table(NumerOfBedrooms)
+```
+
+Vidimo da imamo 8 različitih kategorija stanova, od 0 do 8 spavaćih soba, bez 7.
+Zbog broja podatada različitih kategorija odlučujemo grupirati stanove sa 0 ili 1 sobom grupirat ćemo u kategoriju zvanu maxOne, a one sa 5, 6 ili 8 soba u kategoriju zvanu fiveSixEight.
+
+S obzirom da se ovdje bavimo statističkim zaključivanjem na više od dva uzorka, koristit cemo ANOVA test.
+
+ANOVA (ANalysis Of VAriance) je metoda kojom testiramo sredine više populacija. U analizi varijance pretpostavlja se da je ukupna varijabilnost u podatcima posljedica varijabilnosti podataka unutar svakog pojedine grupe (populacije) i varijabilnosti između različitih grupa. Varijabilnost unutar pojedinog uzorka je rezultat slučajnosti, a ukoliko postoje razlike u srednimana populacija, one će biti odražene u varijabilnosti među grupama. Jedan od glavnih ciljeva analize varijance je ustanoviti jesu li upravo te razlike između grupa samo posljedica slučajnosti ili je statistički značajna.
+
+Pretpostavke ANOVA-e su:
+- nezavisnost pojedinih podataka u uzorcima,
+- normalna razdioba podataka,
+- homogenost varijanci među populacijama.
+
+**Nezavisnot podataka** pretpostavljamo na temelju različitih uzoraka nad kojima se provodi ispitivanje, svaki uzorak reprezentiran je različitim brojem spavaćih soba.
+
+Provjeru **normalnosti podataka** radit ćemo preko histograma, a testiranje **homogenosti varijance** uzoraka Bartletovim testom.
+
+```{r test}
+head(data$BedroomAbvGr)
+maxOne <- subset(data, data$BedroomAbvGr == 0 | data$BedroomAbvGr == 1)
+two <- subset(data, data$BedroomAbvGr == 2)
+three <- subset(data, data$BedroomAbvGr == 3)
+four <- subset(data, data$BedroomAbvGr == 4)
+fiveSixEight <- subset(data, data$BedroomAbvGr == 5 | data$BedroomAbvGr == 6 | data$BedroomAbvGr == 8)
+
+hist(as.double(maxOne$SalePrice), 
+     breaks=25,
+     main='Histogram of zero or one bedroom house prices',
+     xlab='Scores')
+
+hist(as.double(two$SalePrice), 
+     breaks=50,
+     main='Histogram of two bedroom house prices',
+     xlab='Scores')
+
+hist(as.double(three$SalePrice), 
+     breaks=50,
+     main='Histogram of three bedroom house prices',
+     xlab='Scores')
+
+hist(as.double(four$SalePrice), 
+     breaks=50,
+     main='Histogram of four bedroom house prices',
+     xlab='Scores')
+
+hist(as.double(fiveSixEight$SalePrice), 
+     breaks=15,
+     main='Histogram of five, six or eight bedroom house prices',
+     xlab='Scores')
+```
+
+Razdiobe izgledaju normalno.
+
+```{r}
+df1 <- data.frame(group = 'maxOne', price = maxOne$SalePrice)
+df2 <- data.frame(group = 'two', price = two$SalePrice)
+df3 <- data.frame(group = 'three', price = three$SalePrice)
+df4 <- data.frame(group = 'four', price = four$SalePrice)
+df5 <- data.frame(group = 'fiveSixEight', price = fiveSixEight$SalePrice)
+
+dataMerged = rbind(df1, df2, df3, df4, df5)
+head(dataMerged)
+
+```
+
+Nadalje radimo provjeru homogenosti varijance:
+
+Testiramo tezu H0: sve varijance su jednake
+dok alternativna hipoteza H1 opovrgava H0.
+
+```{r}
+bartlett.test(price ~ group, data = dataMerged)
+```
+
+Rezultat testa nam daje p-vrijednost manju od 2.2e-16 što nam govori da je vjerojatnost da smo uočili takvu testnu statistiku da su varijance jednake uz istinitost H0, jako mala -- dakle **odbacujemo hipotezu** $H0$ o tome da su varijance jednake.
+
+Provjerimo postoje li razlike u cijenama za različiti broj spavaćih soba.
+
+```{r}
+
+# Graficki prikaz podataka
+boxplot(as.double(price) ~ group, data = dataMerged)
+
+# Test
+a = aov(price ~ group, data = dataMerged)
+summary(a)
+
+```
+Grafički prikaz sugerira da postoji razlika u cijenama među brojem spavaćih doba, što potvrđuje i ANOVA.
+
+# 2. Određuje li oblik zemljišne čestice broj katova kuće?
+
+Grupiramo podatke po obliku zemljišta i broju katova kuće u kontigencijsku tablicu u kojoj su retci brojevi katova kuće, a stupci oblik zemljišta. Katova ima jedan ili dva (ne brojimo podrum), a četiri su različita oblika zemljišta.
+
+Nad tablicom koristimo hi-kvadrat test kako bismo dosli do zaključka odudaraju li očitane vrijednosti previše od očekivanih vrijednosti. Ukoliko vrijednosti ne odudaraju previše, varijable su homogene.
+
+Testiramo tezu H0: varijable su homogene
+Alternativna hipoteza H1 opovrgava H0.
+
+```{r}
+
+data <- read.csv("preprocessed_data.csv", header = T, sep = ',')
+
+# radimo praznu 2 x 4 matricu
+mat1 <- matrix(, nrow = 2, ncol = 4)
+
+colnames(mat1) <- c("Reg", "IR1", "IR2", "IR3")
+rownames(mat1) <- c(1, 2)
+
+# imamo 4 lot shapea
+lotShapes <- unique(data$LotShape)
+
+# upisi u matricu
+for (i in (1:length(lotShapes))) {
+  mat1[1, i] = nrow(data[which(data$LotShape == unique(data$LotShape)[i] & data$X2ndFlrSF == 0),])
+  mat1[2, i] = nrow(data[which(data$LotShape == unique(data$LotShape)[i] & data$X2ndFlrSF != 0),])
+  print(lotShapes[i])
+}
+mat1
+
+chisq.test(mat1)
+
+```
+
+P-vrijednost nije dovoljno mala da odbacimo H0, što znači da zaključujemo da su varijable homogene, odnosno da broj katova kuće ne ovisi o obliku zemljišta.
+
+
+# 3. Ovisi li veličina podruma o kvartu u gradu?
+
+Gledamo koji kvartovi postoje te u kolikom broju podataka se pojavljuju.
+
+```{r}
+n_distinct(unique(data$Neighborhood))
+Neighborhood = unlist(data$Neighborhood)
+table(Neighborhood)
+```
+
+Imamo 25 različitih kvartova. S obzirom da ne želimo grupirati kvartove, radit ćemo t-test nad svim parovima kvartova.
+
+Prvo ćemo provjeriti neke početne značajke podataka, nezavisnost i normalnost podataka.
+
+**Nezavisnot podataka** pretpostavljamo na temelju dvaju različitih uzoraka nad kojima se provodi ispitivanje, svaki uzorak pripada određenom kvartu.
+
+Nadalje ispitujemo **normalnost podataka** koju ćemo provjeriti pomoću histograma.
+
+```{r}
+
+Blmngtn <- subset(data, data$Neighborhood == "Blmngtn")
+Blueste <- subset(data, data$Neighborhood == "Blueste")
+BrDale <- subset(data, data$Neighborhood == "BrDale")
+BrkSide <- subset(data, data$Neighborhood == "BrkSide")
+ClearCr <- subset(data, data$Neighborhood == "ClearCr")
+CollgCr <- subset(data, data$Neighborhood == "CollgCr")
+Crawfor <- subset(data, data$Neighborhood == "Crawfor")
+Edwards <- subset(data, data$Neighborhood == "Edwards")
+Gilbert <- subset(data, data$Neighborhood == "Gilbert")
+IDOTRR <- subset(data, data$Neighborhood == "IDOTRR")
+MeadowV <- subset(data, data$Neighborhood == "MeadowV")
+Mitchel <- subset(data, data$Neighborhood == "Mitchel")
+NAmes <- subset(data, data$Neighborhood == "NAmes")
+NoRidge <- subset(data, data$Neighborhood == "NoRidge")
+NPkVill <- subset(data, data$Neighborhood == "NPkVill")
+NridgHt <- subset(data, data$Neighborhood == "NridgHt")
+NWAmes <- subset(data, data$Neighborhood == "NWAmes")
+OldTown <- subset(data, data$Neighborhood == "OldTown")
+Sawyer <- subset(data, data$Neighborhood == "Sawyer")
+SawyerW <- subset(data, data$Neighborhood == "SawyerW")
+Somerst <- subset(data, data$Neighborhood == "Somerst")
+StoneBr <- subset(data, data$Neighborhood == "StoneBr")
+SWISU <- subset(data, data$Neighborhood == "SWISU")
+Timber <- subset(data, data$Neighborhood == "Timber")
+Veenker <- subset(data, data$Neighborhood == "Veenker")
+
+hist(as.double(Blmngtn$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Blmngtn basement size',
+     xlab='Scores')
+
+hist(as.double(Blueste$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Blueste basement size',
+     xlab='Scores')
+
+hist(as.double(BrDale$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of BrDale basement size',
+     xlab='Scores')
+
+hist(as.double(BrkSide$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of BrkSide basement size',
+     xlab='Scores')
+
+hist(as.double(ClearCr$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of ClearCr basement size',
+     xlab='Scores')
+
+hist(as.double(CollgCr$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of CollgCr basement size',
+     xlab='Scores')
+
+hist(as.double(Crawfor$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Crawfor basement size',
+     xlab='Scores')
+
+hist(as.double(Edwards$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Edwards basement size',
+     xlab='Scores')
+
+hist(as.double(Gilbert$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Gilbert basement size',
+     xlab='Scores')
+
+hist(as.double(IDOTRR$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of IDOTRR basement size',
+     xlab='Scores')
+
+hist(as.double(MeadowV$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of MeadowV basement size',
+     xlab='Scores')
+
+hist(as.double(Mitchel$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Mitchel basement size',
+     xlab='Scores')
+
+hist(as.double(NAmes$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of NAmes basement size',
+     xlab='Scores')
+
+hist(as.double(NoRidge$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of NoRidge basement size',
+     xlab='Scores')
+
+hist(as.double(NPkVill$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of NPkVill basement size',
+     xlab='Scores')
+
+hist(as.double(NridgHt$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of NridgHt basement size',
+     xlab='Scores')
+
+hist(as.double(NWAmes$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of NWAmes basement size',
+     xlab='Scores')
+
+hist(as.double(OldTown$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of OldTown basement size',
+     xlab='Scores')
+
+hist(as.double(Sawyer$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Sawyer basement size',
+     xlab='Scores')
+
+hist(as.double(SawyerW$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of SawyerW basement size',
+     xlab='Scores')
+
+hist(as.double(Somerst$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Somerst basement size',
+     xlab='Scores')
+
+hist(as.double(StoneBr$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of StoneBr basement size',
+     xlab='Scores')
+
+hist(as.double(SWISU$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of SWISU basement size',
+     xlab='Scores')
+
+hist(as.double(Timber$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Timber basement size',
+     xlab='Scores')
+
+hist(as.double(Veenker$TotalBsmtSF), 
+     breaks=25,
+     main='Histogram of Veenker basement size',
+     xlab='Scores')
+```
+
+Podatci izgledaju normalno. Sada možemo raditi t-test test.
+
+```{r}
+# Grupiramo podatke po četvrtima
+grouped_data <- group_by(data, data$Neighborhood)
+n_distinct(unique(data$Neighborhood))
+grouped_data
+
+# Stvaramo praznu listu u koju ćemo spremati p-vrijednosti
+p_values <- list()
+
+# Prolazimo kroz sve četvrti
+for (i in 1:(length(unique(data$Neighborhood))-1)) {
+  for (j in (i+1):length(unique(data$Neighborhood))) {
+    # Radimo t-test za svaki par četvrti
+    test_result <- t.test(TotalBsmtSF ~ Neighborhood, data = data, subset = Neighborhood %in% c(unique(data$Neighborhood)[i], unique(data$Neighborhood)[j]))
+    # Spremamo p-vrijednost u listu
+    p_values[[paste0(unique(data$Neighborhood)[i], "-", unique(data$Neighborhood)[j])]] <- test_result$p.value
+  }
+}
+
+# Prilagođavamo razinu značanosti Bonferronijevom korekcijom
+alpha <- 0.05
+bonferroni_alpha <- alpha / length(p_values)
+
+# Uspoređujemo p-vrijednosti prilagođenom razinom značanosti
+significant_tests <- which(p_values < bonferroni_alpha)
+
+print(length(significant_tests))
+```
+
+Na kraju smo dobili broj testova u kojima je p-vrijednost manja od bonferroni alphe. Taj broj je 141. 
+S obzirom da imamo 25 cetvrti, napravljeno je ukupno 25*24/2 = 300 testova, te je 141 statisticki značajan broj testova.
+Zbog toga zakljucujemo da velicina podruma ovisio kvartu.
+
+
+# 4. Mogu li dostupne značajke predvidjeti cijenu nekretnine?
+
+```{r}
+buildings_unfiltered <- read.csv("preprocessed_data.csv", header=TRUE, numerals="no.loss")
+```
+
+```{r}
+# Ucitamo podatke
+buildings_unfiltered <- read.csv("preprocessed_data.csv", header=TRUE, numerals="no.loss")
+
+# Izbacujemo one podatke gdje nema sale price
+ind = which(buildings_unfiltered$SalePrice >= 0)
+
+# Zelimo redove koji imaju sale price
+data_outliers = buildings_unfiltered[ind,]
+
+remove_outliers <- function(x, na.rm = TRUE, ...) {
+  qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
+  H <- 1.5 * IQR(x, na.rm = na.rm)
+  y <- x
+  y[x < (qnt[1] - H)] <- NA
+  y[x > (qnt[2] + H)] <- NA
+  y
+}
+
+# Odabiremo 10 znacajki koje zelimo provjeriti kako predvidaju cijenu
+
+#MSSubClass
+data_outliers$MSSubClass <-  remove_outliers(data_outliers$MSSubClass)
+#MSZoning
+msZoning_map <- c("A" = 1,"C" = 2, "FV"	= 3, "I" = 4, "RH" = 5, "RL" = 6, "RP" = 7, "RM" = 8)
+data_outliers$MSZoning <-  as.numeric(msZoning_map[data_outliers$MSZoning])
+data_outliers$MSZoning <-  remove_outliers(as.numeric(data_outliers$MSZoning))
+#OverallQual
+data_outliers$OverallQual <-  remove_outliers(data_outliers$OverallQual)
+#OverallCond
+data_outliers$OverallCond <- remove_outliers(data_outliers$OverallCond)
+#YearBuilt
+data_outliers$YearBuilt <- remove_outliers(data_outliers$YearBuilt)
+#YearRemodAdd
+data_outliers$YearRemodAdd <- remove_outliers(data_outliers$YearRemodAdd)
+#ExterQual
+extQual_map <- c("Ex" = 5, "Gd" = 4, "TA" = 3, "Fa" = 2, "Po" = 1)
+data_outliers$ExterQual <- as.numeric(extQual_map[data_outliers$ExterQual])
+#TotalBsmtSF
+data_outliers$TotalBsmtSF <- remove_outliers(data_outliers$TotalBsmtSF)
+#SQFT
+sqft <- remove_outliers(data_outliers$X1stFlrSF + data_outliers$X2ndFlrSF)
+#SaleType
+saleType_map <- c("Oth" = 0, "ConLD" = 1, "ConLI" = 2, "ConLw" = 3, "Con" = 4, "COD" = 5, "New" = 6, "VMD" = 7, "CWD" = 8, "WD" = 9)
+data_outliers$SaleType <- as.numeric(saleType_map[data_outliers$SaleType])
+
+#saleprice 
+
+model <- lm(data_outliers$SalePrice ~ data_outliers$MSSubClass + data_outliers$MSZoning + data_outliers$OverallQual + data_outliers$OverallCond + data_outliers$YearBuilt + data_outliers$YearRemodAdd + data_outliers$ExterQual + sqft + data_outliers$TotalBsmtSF + data_outliers$SaleType)
+summary(model)
+
+```
+Izradjen je model predvidjanja cijene nekretnine s obzirom na ovih 10 znacajki. Na temelju ispisa modela vidimo da su odabrane znacajke jako dobre gdje Pearsonov koeficijent korelacije iznosi 0.8273. Takodjer vidimo da mozemo pretpostaviti cijenu na temelju zadanog modela.
+
+KRAJ

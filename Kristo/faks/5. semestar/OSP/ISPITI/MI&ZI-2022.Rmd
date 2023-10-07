@@ -1,0 +1,608 @@
+---
+title: "MI&ZI_2022/23"
+author: "Kristo Palic"
+date: "2023-01-31"
+output: html_document
+---
+```{r setup, include = F}
+knitr::opts_chunk$set(results = 'hold')
+library(sloop)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
+
+******************
+
+## OSNOVE STATISTIČKOG PROGRAMIRANJA
+#### **Fakultet elektrotehnike i računarstva, Sveučilište u Zagrebu**
+#### 24/11/2022
+
+******************
+
+# **MEĐUISPIT**  
+
+======================================================================================
+
+#### JMBAG: 0246074767     
+#### Ime i prezime: Kristo Palić
+#### e-mail: kp024607476@fer.hr
+#### IP adresa: 86.33.75.184
+
+======================================================================================
+
+#### OSNOVNE UPUTE
+
+U nastavku slijedi niz zadataka za završni ispit. Rješenja zadatka mogu uključivati **upisivanje programskog koda** ili **čistog teksta** te **izvršavanje programskog koda**. Molimo da se pridržavate sljedećih naputaka:
+
+- prije rješavanja stisnite gumb **Knit to HTML** kako bi provjerili ispravnost sučelja te dobili predložak ispita u preglednijem obliku u prozoru preglednika s desne strane
+- ukoliko nije drugačije navedeno, prostor za rješavanje zadataka sami stvarate kombinacijom tipaka **CTRL+ALT+I** ili odabirom opcija **Insert -> R**
+- pažljivo čitajte tekstove zadataka
+- tekst zadatka može sadržavati i programski kod kojeg morate izmijeniti i nadopuniti te izvršiti već prema uputama danim u tekstu zadatka i / ili komentarima postojećeg programskog koda
+- ukoliko je rješenje zadatka programski kod koji nešto ispisuje, budite sigurni da bilježnica uključuje i taj ispis
+- programski kod slobodno komentirajte
+
+
+Nakon ispunjavanja bilježnice odaberite opciju **Knit to HTML* i pohranite rezultat u HTML obliku u predviđeni repozitorij na *Moodle* stranicama predmeta. 
+
+Pohranom HTML bilježnice pod Vašim korisničkim imenom i lozinkom garantirate da tijekom ove provjere znanje niste od drugoga primili niti pružili pomoć te da se niste koristili nedopuštenim sredstvima. Ove su radnje povreda Kodeksa ponašanja te mogu uzrokovati trajno isključenje s Fakulteta.
+
+Prije rješavanja zadataka postavite datoteku `MI_predlozak_podaci.rda` u mapu gdje se nalazi ova bilježnica i učitajte podatke iz nje uz pomoć sljedeće naredbe:
+
+```{r}
+rm(list = ls())    # brišemo postojeće varijable kako bi krenuli od nule
+load("./MI/MI_podaci.rda")
+```
+
+Učitane podatke možete vidjeti u prozoru s gornje desne strane sučelja **RStudio**, tab *Environment**.
+
+======================================================================================
+
+## ZADATCI
+
+******************
+
+**NAPOMENA** U zadacima nije dopušteno koristiti eksplicitne programske petlje!
+
+******************
+
+
+
+### 1. **(1 + 1 bod)**
+
+Stvorite sljedeće numeričke vektore:
+
+- vektor `a`: (-1000, -990, -980, ...., -10, 0)
+```{r}
+vecA <- seq(-1000, 0, 10)
+```
+
+
+- vektor `b`: (1, -1, 2, -2, ..., 99, -99, 100, -100)
+```{r}
+# vektor 1:100 s ponavljanjem svakog clana
+vecB <- rep(1:100, each = 2)
+# vektor s ponovljenim čanovima pomnožen s vektorom (1, -1, ... 1, -1)
+vecB <-  vecB * rep(c(1, -1), 100)
+```
+
+Ispišite na zaslon **prvih 10 elemenata vektora `a`** i **zadnjih 10 elemenata vektora `b`**.
+
+### Rješenje
+
+```{r}
+#a)
+head(vecA, 10)
+#vecA[1:10]
+
+#b)
+tail(vecB, 10)
+#vecB[(length(vecB) - 9):length(vecB)]
+```
+
+
+******************
+
+
+
+### 2. **(1 + 1 bod)**
+
+a) Pronađite  i ispišite najveći element matrice `m`. Ispišite koliko puta se pojavljuje u matrici.
+
+### Rješenje
+
+```{r}
+
+max(m)
+sum(m == max(m))
+
+```
+
+
+b) Ispišite sve retke matrice `m` čija je suma strogo veća od 68. Ispis mora biti u obliku matrice.
+
+### Rješenje
+
+```{r}
+m[apply(m, 1, sum) > 70,]
+```
+
+
+
+********************
+
+
+
+### 3. **(1 + 1 bod)**
+
+Stvorite listu `l` uz pomoć sljedeće naredbe:
+
+```{r}
+l<- list(a = 1:5, b = seq(2, 20, 4), c("2", "4", "6", "8", "10", "12"))
+l
+```
+
+a) pretvorite treći element liste u numerički tip i preimenujte ga u `"c"`. Ispišite listu. 
+
+
+### Rješenje
+
+```{r}
+l[[3]] <- as.numeric(l[[3]])
+names(l)[3] <- "c"
+l
+```
+
+
+b) Odgovorite: može li se gornja lista pretvoriti u podatkovni okvir? Ako da, obavite pretvorbu i ispišite novi podatkovni okvir. Ako ne, odsječak ostavite prazan i ispod odsječka obrazložite zašto pretvorba nije moguća.
+
+### Rješenje
+
+```{r}
+
+```
+
+OBJAŠNJENJE: Ne jer elementi nemaju isti broj elemenata
+
+******************************
+
+
+
+### 4.  **(1 + 1 bod)**
+
+U konzoli proučite sadržaj znakovnog vektora `t`. U prostoru za rješenje pretvorite ga u ordinalni faktor `t.f` te potom ispišite frekvencije pojedinih kategorija.
+
+### Rješenje
+
+```{r}
+t.f <- factor(t, levels = c("vrlo hladno", "hladno", "umjereno", "toplo", "vrlo toplo"), ordered = TRUE)
+table(t.f)
+```
+
+************************
+
+
+
+### 5. **(0.5 + 0.5 bod)**
+
+Proučite objekt `points`.
+
+a) O kojem se objektnom tipu radi (S3, S4, RC)? U programski odsječak ispišite naredbe kojima to možete otkriti, a ispod odsječka napišite rješenje.
+
+### Rješenje
+
+```{r}
+otype(points)
+```
+
+OBJAŠNJENJE: Radi se o objektnom tipu S4.
+
+
+b) Ispišite prosjek točaka pohranjenih u elementu naziva `"x3"` objekta `points`.
+
+
+### Rješenje
+
+```{r}
+mean(points@x3)
+```
+
+
+*******************
+
+
+
+### 6. **(2 boda)**
+
+Napravite funkciju `createExperimentMatrix(n, k)` koja za zadane cijele brojeve `n` i `k` vraća matricu dimenzija `n x k+1` u kojoj se u prvom stupcu nalaze indeksi redaka a ostatak matrice je popunjen nulama. Na primjer, za vrijednost parametra `n` i `k` jednaku `4` funkcija mora vratiti matricu koja izgleda ovako:
+
+```
+1 0 0 0 0
+2 0 0 0 0
+3 0 0 0 0
+4 0 0 0 0
+```
+Argumenti `n` i `k` moraju biti numerički, strogo veći od 1 i strogo manji od 1001. Ukoliko je funkcija primila neispravne argumente treba prestati s radom i izbaciti grešku. Ako primljeni numerički argumenti imaju decimalni dio za stvaranje matrice treba gledati samo dio ispred decimalne točke.
+
+Ispišite rezultat poziva funkcije `createExperimentMatrix(7, 3)`.
+
+### Rješenje
+
+```{r}
+createExperimentMatrix<- function(n, k) {
+  stopifnot(is.numeric(n) && is.numeric(k))
+  stopifnot(n > 1 && n < 1001 && k > 1 && k < 1001)
+  
+  cbind(1:n, matrix(0, nrow = n, ncol = k))
+}
+
+createExperimentMatrix(4,2)
+```
+
+
+*******************
+
+
+
+### 7. **(0.5 + 1.5 boda)**
+
+U konzoli proučite podatkovni okvir `earthquakes`.
+
+a) Ispišite podatke o svim potresima jačim od 8 po Richteru.
+
+### Rješenje
+
+```{r}
+head(earthquakes)
+
+earthquakes %>%
+  filter(richter > 8)
+```
+
+
+b) Za sve potrese koji su se dogodili u proljetnim mjesecima (ožujak, travanj, svibanj) u turskoj regiji (regija "Turkey") s poznatim brojem žrtava ispišite godinu, mjesec i broj stupnjeva po richteru.
+
+### Rješenje
+
+```{r}
+earthquakes %>%
+  filter(month %in% c("March", "April", "May")) %>%
+  filter(region == "Turkey") %>%
+  filter(!is.na(deaths)) %>%
+  select(year, month, richter)
+```
+
+
+
+************
+
+
+
+
+### 8. **(0.5 + 1.5 bod)**
+
+Učitajte podatke iz datoteke `worldPhones.csv` u varijablu `worldPhones`. U konzoli proučite okvir `worldPhones`.
+
+a) Odgovorite: radi li se o urednim podacima? Zašto?
+
+### Rješenje
+
+```{r}
+worldPhones <- read.csv("./MI/worldPhones.csv")
+head(worldPhones)
+```
+
+OBJAŠNJENJE: Ne. Vrijednosti kategorijskog stupca nalaze se razbacane po stupcima. 
+
+b) Izmjenite podatkovni okvir `worldPhones` tako da ima stupce `Year`, `WorldRegion` i `NumberOfPhones`. Ispišite podskup podataka konačnog podatkovnog okvira koji se odnosi na godine 1956, 1957 i 1958.
+
+### Rješenje
+
+```{r}
+library(tidyr)
+worldPhones <- pivot_longer(worldPhones, cols = N.Amer:Mid.Amer,
+                            names_to = "WorldRegion",
+                            values_to = "NumberOfPhones")
+worldPhones[worldPhones$Year %in% c(1956, 1957, 1958),]
+```
+
+******************
+
+## OSNOVE STATISTIČKOG PROGRAMIRANJA
+#### **Fakultet elektrotehnike i računarstva, Sveučilište u Zagrebu**
+#### 26/01/2023
+
+******************
+
+# **ZAVRŠNI ISPIT**  
+
+======================================================================================
+
+#### JMBAG: 0246074767     
+#### Ime i prezime: Kristo Palić
+#### e-mail: kp024607476@fer.hr
+#### IP adresa: 86.33.75.184
+
+
+======================================================================================
+
+
+Prije rješavanja zadataka postavite datoteku `music.csv` u mapu gdje se nalazi ova bilježnica i učitajte podatke iz nje uz pomoć sljedeće naredbe:
+
+```{r include=FALSE}   
+
+# učitavanje podataka iz datoteke `music.csv`
+music <- read.csv("./ZI/music.csv")
+head(music)
+
+
+# termini koje ćemo koristiti za neke od atributa
+  # `duration` - trajanje
+  # `artist.name` - naziv umjetnika
+  # `release.name` - naziv albuma
+  # `song.title` - naziv pjesme
+  # `song.hotness` - popularnost pjesme
+
+# (opcionalno) head, glimpse, summary
+# rezultate eksploratorne analize NE UKLJUČUJETE U INAČICU ZA PREDAJU
+```
+
+Učitane podatke možete vidjeti u prozoru s gornje desne strane sučelja **RStudio**, tab *Environment**.
+
+======================================================================================
+
+## ZADACI
+
+******************
+
+**NAPOMENA** U zadacima nije dopušteno koristiti eksplicitne programske petlje!
+
+******************
+
+## 1. ZADATAK (8 bodova)
+
+Za podatke iz podatkovnog okvira ispišite sljedeće:
+
+**(2 boda)**
+
+a) Za prvih 10 pjesama čiji je naziv kraći od 8 znakova ispišite naziv umjetnika i naziv pjesme.
+
+**RJEŠENJE:**
+
+```{r}
+music %>%
+  filter(nchar(song.title) < 8) %>%
+  select(artist.name, song.title) %>%
+  head(10)
+  #slice(1:10)
+```
+
+***
+
+**(2 boda)**
+b) Za sve pjesme čiji naziv sadrži niz slova "cool" ili "hot" (neovisno o veličini slova) a koje imaju poznatu godinu izlaska ispišite naziv umjetnika, naziv pjesme, godinu izdavanja i popularnost. Ispis poredajte po godini izdavanja uzlazno.
+
+**RJEŠENJE:**
+
+```{r}
+library(stringr)
+music %>%
+  filter(str_detect(tolower(song.title), "(hot|cool)")) %>%
+  filter(year > 0) %>%
+  filter(!is.na(year)) %>%
+  select(artist.name, song.title, year, song.hotness) %>%
+  arrange(year)
+```
+
+***
+
+**(2 boda)**
+c) Za nasumičnih 10 pjesama iz žanra `"blues-rock"` ispišite naziv umjetnika, naziv albuma, naziv pjesme i trajanje u minutama i sekundama (npr. 193 = "3m 13s")
+
+
+
+
+**RJEŠENJE:**
+
+```{r}
+set.seed(1281)
+
+music %>%
+  filter(genre == "blues-rock") %>%
+  slice_sample(n = 10) %>%
+  transmute(artist.name, release.name, song.title,
+            durationMin = str_c(duration %/% 60, " min ", duration %% 60, " sek"))
+  
+```
+
+***
+
+**(2 boda)**
+d) Ispišite prosječno trajanje i popularnost pjesama izdanih u '80-tima, za svaku godinu iz tog perioda. 
+
+
+**RJEŠENJE:**
+
+```{r}
+
+music %>%
+  filter(year >= 1980,year <= 1989) %>%
+  group_by(year) %>%
+  summarise(avgDuration = mean(duration), avgHotness = mean(song.hotness))
+```
+
+
+          
+******************
+
+
+## 2. ZADATAK (6 bodova)
+
+Datoteke `graph1.png`, `graph2.png` i `graph3.png` sadrže tri vizualizacije podataka iz okvira `music` (ili nekog njegovog podskupa). Pokušajte rekonstruirati ove vizualicije.
+
+**(2 boda)**
+a) `graph1.png`
+
+**RJEŠENJE:**
+
+```{r}
+knitr::include_graphics("./ZI/graph1.png")
+
+music %>%
+  filter(genre == "hip hop") %>%
+  ggplot(aes(duration)) + 
+  geom_histogram(fill = "orange", color = "black", bins = 10) + 
+  xlab("Duration of 'hip hop' songs")
+
+```
+
+
+***
+
+**(2 boda)**
+b) `graph2.png`
+
+**RJEŠENJE:**
+
+```{r}
+knitr::include_graphics("./ZI/graph2.png")
+
+music %>%
+  filter(year >= 2000, year <= 2010) %>%
+  group_by(year) %>%
+  ggplot(aes(x = as.factor(year), y = song.hotness)) + geom_boxplot() +
+  xlab("Year of release") +
+  ylab("song hotness")
+```
+
+***
+
+
+
+**(2 boda)**
+c) `graph3.png`
+
+**RJEŠENJE:**
+
+```{r}
+knitr::include_graphics("./ZI/graph3.png")
+
+music %>% ggplot(aes(x = duration, y = tempo)) + 
+  facet_wrap(time_signature ~ .) + geom_point(alpha = 0.1) +
+  ggtitle("Duration vs tempo for various time signatures, 0.1 transparency")
+```
+
+
+
+********************
+
+## 3. ZADATAK (6 bodova)
+
+Rezultate ovog zadatka ispišite u obliku postotka zaokruženog na dvije decimale, npr. `36.25%`.
+
+
+**(2 boda)**
+a) Ako pretpostavimo da se težine mačaka ravnaju po normalnoj razdiobi sa sredinom od 5 kg i standardnom devijacijom 1.5 kg, koja je vjerojatnost da će nasumično odabrana mačka imati između 6 i 7 kg?
+
+
+**RJEŠENJE:**
+
+```{r}
+str_c(round(pnorm(7, 5, 1.5) - pnorm(6, 5, 1.5), 4) * 100, "%")
+```
+
+**(4 boda)**
+
+b) 
+Procijenite vjerojatnost da kod bacanja 5 kockica dobijete "full house" (kockice prikazuju jedan broj tri puta i drugi broj 2 puta). Procjena mora biti izvedena na temelju simulacije 10,000 eksperimenata.
+
+Procijenite vjerojatnost da kod bacanja 5 kockica isti broj dobijete barem 3 puta. Procjena mora biti izvedena na temelju simulacije 10,000 eksperimenata.
+
+Procijenite vjerojatnost da kod bacanja 5 kockica dobijete “full house” (kockice prikazuju jedan broj tri puta i drugi broj 2 puta). Procjena mora biti izvedena na temelju simulacije 10,000 eksperimenata.
+
+Procijenite vjerojatnost da kod bacanja 5 kockica dobijete 5 različitih brojeva. Procjena mora biti izvedena na temelju simulacije 10,000 eksperimenata.
+
+Procijenite vjerojatnost da kod bacanja 5 kockica dobijete samo neparne brojeve. Procjena mora biti izvedena na temelju simulacije 10,000 eksperimenata.
+
+### Rješenje
+
+```{r}
+set.seed(1232)
+# neki broj barem 3 puta
+replicate(10000, sample(1:6, 5, replace = T)) %>% t %>% 
+apply(1, function(x) max(table(x)) > 2) %>% 
+  mean %>% `*`(100) %>% round(2) %>% str_c("%")
+
+# full house
+replicate(10000, sample(1:6, 5, replace = T)) %>% t %>% 
+apply(1, function(x) 3 %in% table(x) && 2 %in% table(x)) %>% 
+  mean %>% `*`(100) %>% round(2) %>%  str_c("%")
+
+# svi brojevi različiti
+replicate(10000, sample(1:6, 5, replace = T)) %>% t %>% 
+apply(1, function(x) sum(table(x) > 1) == 0 ) %>% 
+  mean %>% `*`(100) %>% round(2) %>% str_c("%")
+
+# svi neparni
+replicate(10000, sample(1:6, 5, replace = T)) %>% t %>% 
+apply(1, function(x) sum(x %% 2) == 5) %>% 
+  mean %>% `*`(100) %>% round(2) %>% str_c("%")
+```
+
+
+******************
+
+## 4. ZADATAK (5 bodova)
+
+Izvršite sljedeći odsječak koji rastavlja podatkovni okvir `music` na dva podokvira.
+
+
+```{r}
+set.seed(1233)
+
+train_ind <- sample(1:nrow(music), round(0.7 * nrow(music)))
+music.train <- music[train_ind, ]
+music.test <- music[-train_ind, ]
+
+```
+
+**(2 boda)**
+a)  Korištenjem skupa `music.train` istrenirajte model linearne regresije koji će probati pogoditi *popularnost pjesme* na osnovu trajanja pjesme, tempa i popularnosti umjetnika. Ispišite sažetak modela. Prema dobivenim rezultatima, koju varijablu smatrate najboljim, a koju najlošijim prediktorom popularnosti pjesme? 
+
+**RJEŠENJE:**
+
+```{r}
+
+linearReg <- lm(data = music.train, song.hotness ~ duration + tempo + artist.hotness)
+summary(linearReg)
+
+```
+
+*KOMENTAR REZULTATA:*
+
+Najbolji prediktor je artist.hotness, a najgori je duration
+
+******************************************************
+
+
+**(3 boda)**
+b)  Uz pomoć metode `predict` i linearnog modela iz a) zadatka stvorite predikcije korištenjem opservacija iz skupa `music.test` a potom izračunajte reziduale. Provjerite i komentirajte normalnost dobivenih reziduala. 
+
+**RJEŠENJE:**
+
+```{r}
+music.test$prediction <- predict(linearReg, music.test)
+music.test$residuals <- music.test$song.hotness - music.test$prediction
+
+music.test %>% 
+  ggplot(aes(sample = residuals)) + geom_qq()
+
+music.test %>% 
+  ggplot(aes(x = residuals)) + geom_density()
+
+music.test %>% 
+  ggplot(aes(x = residuals)) + geom_histogram()
+```
+
+*KOMENTAR REZULTATA:*
+Rezultati pokazuju odstupanje od normalnosti. QQ grad prikazuje devijacije od pravca, a na procjeni gustoće možemo vidjeti dva modaliteta

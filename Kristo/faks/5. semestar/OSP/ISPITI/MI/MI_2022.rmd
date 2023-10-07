@@ -1,0 +1,267 @@
+---
+output:
+  html_document: default
+---
+
+```{r setup, include = F}
+knitr::opts_chunk$set(results = 'hold')
+library(sloop)
+library(tidyr)
+```
+
+******************
+
+## OSNOVE STATISTIČKOG PROGRAMIRANJA
+#### **Fakultet elektrotehnike i računarstva, Sveučilište u Zagrebu**
+#### 24/11/2022
+
+******************
+
+# **MEĐUISPIT**  
+
+======================================================================================
+
+#### JMBAG:         
+#### Ime i prezime: 
+#### e-mail:       
+#### IP adresa:     
+
+
+======================================================================================
+
+#### OSNOVNE UPUTE
+
+U nastavku slijedi niz zadataka za završni ispit. Rješenja zadatka mogu uključivati **upisivanje programskog koda** ili **čistog teksta** te **izvršavanje programskog koda**. Molimo da se pridržavate sljedećih naputaka:
+
+- prije rješavanja stisnite gumb **Knit to HTML** kako bi provjerili ispravnost sučelja te dobili predložak ispita u preglednijem obliku u prozoru preglednika s desne strane
+- ukoliko nije drugačije navedeno, prostor za rješavanje zadataka sami stvarate kombinacijom tipaka **CTRL+ALT+I** ili odabirom opcija **Insert -> R**
+- pažljivo čitajte tekstove zadataka
+- tekst zadatka može sadržavati i programski kod kojeg morate izmijeniti i nadopuniti te izvršiti već prema uputama danim u tekstu zadatka i / ili komentarima postojećeg programskog koda
+- ukoliko je rješenje zadatka programski kod koji nešto ispisuje, budite sigurni da bilježnica uključuje i taj ispis
+- programski kod slobodno komentirajte
+
+
+Nakon ispunjavanja bilježnice odaberite opciju **Knit to HTML* i pohranite rezultat u HTML obliku u predviđeni repozitorij na *Moodle* stranicama predmeta. 
+
+Tijekom rješavanja bilježnice smijete se koristiti pomoćnim sredstvima kao što su podsjetnici, dokumentacija jezika R, bilježnice s predavanja, *Google* tražilica. **Ne smijete razmjenjivati informacije sa drugim polaznicima ispita bilo kojim vidom komunikacije, uključujući i elektroničku poštu, društvene mreže, chat programe ili korištenje zajedničkog dijeljenog repozitorija!**
+
+Pohranom HTML bilježnice pod Vašim korisničkim imenom i lozinkom garantirate da tijekom ove provjere znanje niste od drugoga primili niti pružili pomoć te da se niste koristili nedopuštenim sredstvima. Ove su radnje povreda Kodeksa ponašanja te mogu uzrokovati trajno isključenje s Fakulteta.
+
+Prije rješavanja zadataka postavite datoteku `MI_predlozak_podaci.rda` u mapu gdje se nalazi ova bilježnica i učitajte podatke iz nje uz pomoć sljedeće naredbe:
+
+```{r}
+rm(list = ls())    # brišemo postojeće varijable kako bi krenuli od nule
+load("MI_podaci.rda")
+```
+
+Učitane podatke možete vidjeti u prozoru s gornje desne strane sučelja **RStudio**, tab *Environment**.
+
+======================================================================================
+
+## ZADACI
+
+******************
+
+**NAPOMENA** U zadacima nije dopušteno koristiti eksplicitne programske petlje!
+
+******************
+
+
+
+### 1. **(1 + 1 bod)**
+
+Stvorite sljedeće numeričke vektore:
+
+- vektor `a`: (-1000, -990, -980, ...., -10, 0)
+- vektor `b`: (1, -1, 2, -2, ..., 99, -99, 100, -100)
+
+Ispišite na zaslon **prvih 10 elemenata vektora `a`** i **zadnjih 10 elemenata vektora `b`**.
+
+### Rješenje
+
+```{r}
+
+```
+
+
+******************
+
+
+
+### 2. **(1 + 1 bod)**
+
+a) Pronađite  i ispišite najveći element matrice `m`. Ispišite koliko puta se pojavljuje u matrici.
+
+### Rješenje
+
+```{r}
+
+```
+
+
+b) Ispišite sve retke matrice `m` čija je suma strogo veća od 68. Ispis mora biti u obliku matrice.
+
+### Rješenje
+
+```{r}
+
+```
+
+
+
+********************
+
+
+
+### 3. **(1 + 1 bod)**
+
+Stvorite listu `l` uz pomoć sljedeće naredbe:
+
+```{r}
+l<- list(a = 1:5, b = seq(2, 20, 4), c("2", "4", "6", "8", "10", "12"))
+```
+
+a) pretvorite treći element liste u numerički tip i preimenujte ga u `"c"`. Ispišite listu. 
+
+
+### Rješenje
+
+```{r}
+
+```
+
+
+b) Odgovorite: može li se gornja lista pretvoriti u podatkovni okvir? Ako da, obavite pretvorbu i ispišite novi podatkovni okvir. Ako ne, odsječak ostavite prazan i ispod odsječka obrazložite zašto pretvorba nije moguća.
+
+### Rješenje
+
+```{r}
+
+```
+
+OBJAŠNJENJE: 
+
+******************************
+
+
+
+### 4.  **(1 + 1 bod)**
+
+U konzoli proučite sadržaj znakovnog vektora `t`. U prostoru za rješenje pretvorite ga u ordinalni faktor `t.f` te potom ispišite frekvencije pojedinih kategorija.
+
+### Rješenje
+
+```{r}
+
+```
+
+************************
+
+
+
+### 5. **(0.5 + 0.5 bod)**
+
+Proučite objekt `points`.
+
+a) O kojem se objektnom tipu radi (S3, S4, RC)? U programski odsječak ispišite naredbe kojima to možete otkriti, a ispod odsječka napišite rješenje.
+
+### Rješenje
+
+```{r}
+
+```
+
+OBJAŠNJENJE: Radi se o objektnom tipu ???.
+
+
+b) Ispišite prosjek točaka pohranjenih u elementu naziva `"x3"` objekta `points`.
+
+
+### Rješenje
+
+```{r}
+
+```
+
+
+*******************
+
+
+
+### 6. **(2 boda)**
+
+Napravite funkciju `createExperimentMatrix(n, k)` koja za zadane cijele brojeve `n` i `k` vraća matricu dimenzija `n x k+1` u kojoj se u prvom stupcu nalaze indeksi redaka a ostatak matrice je popunjen nulama. Na primjer, za vrijednost parametra `n` i `k` jednaku `4` funkcija mora vratiti matricu koja izgleda ovako:
+
+```
+1 0 0 0 0
+2 0 0 0 0
+3 0 0 0 0
+4 0 0 0 0
+```
+Argumenti `n` i `k` moraju biti numerički, strogo veći od 1 i strogo manji od 1001. Ukoliko je funkcija primila neispravne argumente treba prestati s radom i izbaciti grešku. Ako primljeni numerički argumenti imaju decimalni dio za stvaranje matrice treba gledati samo dio ispred decimalne točke.
+
+Ispišite rezultat poziva funkcije `createExperimentMatrix(7, 3)`.
+
+### Rješenje
+
+```{r}
+
+```
+
+
+*******************
+
+
+
+### 7. **(0.5 + 1.5 boda)**
+
+U konzoli proučite podatkovni okvir `earthquakes`.
+
+a) Ispišite podatke o svim potresima jačim od 8 po Richteru.
+
+### Rješenje
+
+```{r}
+
+```
+
+
+b) Za sve potrese koji su se dogodili u proljetnim mjesecima (ožujak, travanj, svibanj) u turskoj regiji (regija "Turkey") s poznatim brojem žrtava ispišite godinu, mjesec i broj stupnjeva po richteru.
+
+### Rješenje
+
+```{r}
+
+```
+
+
+
+************
+
+
+
+
+### 8. **(0.5 + 1.5 bod)**
+
+Učitajte podatke iz datoteke `worldPhones.csv` u varijablu `worldPhones`. U konzoli proučite okvir `worldPhones`.
+
+a) Odgovorite: radi li se o urednim podacima? Zašto?
+
+### Rješenje
+
+```{r}
+
+
+```
+
+OBJAŠNJENJE: 
+
+b) Izmjenite podatkovni okvir `worldPhones` tako da ima stupce `Year`, `WorldRegion` i `NumberOfPhones`. Ispišite podskup podataka konačnog podatkovnog okvira koji se odnosi na godine 1956, 1957 i 1958.
+
+### Rješenje
+
+```{r}
+
+```
+
+

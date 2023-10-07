@@ -1,0 +1,152 @@
+UVOD
+Produlji. Obavijesti, nepogode, godišnja šteta zbog nepogoda, utjecaj klimatskih promjena, 
+kolicina padalina kao upozorenje gradskim sluzbama,
+godisnje izgubljenih zivota,
+materijalna i nematerijalna steta
+
+ARHITEKTURA I DIZAJN SUSTAVA
+
+2.1
+poslužitelj - klijent arhitektura
+   opis, povijest, znacajke, prednosti, mane
+   REST arhitektura
+   odgovornosti klijenta, poslužitelja, baze podataka
+
+2.2
+dizajn korisničkog sučelja
+   principi dizajna
+   česte greške
+   intuitivnost kroz dizajn
+
+2.3
+HTTP protokol, GET i POST zahtjevi.
+   korištenje
+   značenje,
+   opis, struktura, povijest
+
+Obrada zahtjeva sa poslužiteljske strane
+JSON
+
+2.4
+PgAdmin4 -mogućnosti, prednosti, mane
+Postgresql prednosti i mane 
+
+Token
+   prednosti i mane
+   sigurnost
+   višeklijentski sustav, mogući problemi,
+   sinkronizacija
+
+
+
+2.5 
+Sigurnost i zaštita podataka
+SQL injekcije
+salt + pepper password
+https protokol
+dodatni zahtjevi koji su isporučeni. Mogući napadi
+   primjeri kroz povijest
+
+
+
+
+3
+
+3.1 
+React Typescript
+struktura koda smjernice vanjske
+   primjeri
+
+3.1.2
+rect-router-dom paket
+sesija korisnika
+
+3.1.3
+automatizirana obrada podataka
+standardna obrada podataka vs auto0matizirana
+   jednostavost nadogradnje
+   početne poteškoče
+
+3.1.4 - moguce nadogradnje
+   
+3.2
+3.2.1
+python flask
+flask sql alchemy
+jwt extended
+jwt
+autentifikacija korisnika - na koji nacin? detaljno
+
+
+----
+3.2.2
+detaljno zasto ovakva struktura koda
+   modularnost
+   odrzivost
+   lako snalazenje
+   lakse testiranje
+
+3.2.5 Tokeni
+odakle, zasto, kako
+moguce izvedbe 
+   prednosti
+   mane
+nasi zahtjevi
+   zasto bas taj
+   primjeri
+
+
+3.2.6
+ORM
+   prednosti i mane
+   povijest
+   primjeri
+   moguce alternative
+
+
+!!! nadogradnja - moguće nadogradnje
+
+
+3.3
+Weather API
+   odakle im podatci
+   cijena
+   svrha
+   brzina zahtjeva
+   tocnost prognoze
+   
+python requests
+   
+
+3.4
+postgresql
+   pros i cons
+   alternative
+   mogucnost nadogradnje za prognozu
+	alternativne tablice
+	postupak
+
+3.5
+test driven developmenet
+ pros i cons
+   moguce alternative
+
+postman
+   mogucnosti
+   slike
+   primjeri
+      zahtjev/odgovor
+   autentifikacija kroz postman
+      bearer token
+
+4 
+moguce nadogradnje
+
+
+
+
+
+   
+
+
+

@@ -1,0 +1,30 @@
+---
+title: "01_Palic_Kristo_WB"
+author: "Kristo Palić"
+date: "2022-10-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Zadatak 1.1 - naredbe za provjeru i izmjenu radne mape
+
+```{r}
+# izvršite sljedeće naredbe uklanjanjem znaka komentara
+
+getwd()     # mapa u kojoj trenutno radimo
+#setwd(".")  # ovdje možemo navesti novu radnu mapu ukoliko želimo
+
+```
+
+### Zadatak 1.2 - R-ovski operator pridruživanja
+
+```{r}
+# upišite `5` u varijablu `x`
+x <- 5
+# potom ispišite varijablu `x` na zaslon
+print(x)
+
+```

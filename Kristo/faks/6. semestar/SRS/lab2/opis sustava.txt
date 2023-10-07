@@ -1,0 +1,22 @@
+Za potrebe 2. laboratorijske vježbe napravio sam dvije python skripte pomoću
+kojih upravljamo lozinkama.
+
+Baza podataka je json datoteka u koju spremam korisnicke podatke na način
+	<username>:{<password> + <salt>, <salt>, <forcepass>}
+<username> je enkriptiran pomoću SHA256
+<password + salt> su enkriptirani pomoću SHA256
+<salt> je javni ključ
+
+Za svaku lozinku generiramo "salt" 16 random hex znaka koje appendamo na
+lozinku prije šifriranja.
+
+Svaka lozinka mora biti minimalno duljine 8 i mora sadržavati barem jedan 
+broj.
+
+Prilikom upisa lozinke u terminal, sadržaj upisa je skriven pomoću funkcije getpass
+
+korisnike možemo kreirati, brisati i natjerat ih da promjene lozinku prilikom sljedećeg logina
+
+Prilikom unosa krive lozinke ili korisničkog imena ispisujemo "krivo korisnicko ime ili username"
+bez daljnjeg specificiranja
+

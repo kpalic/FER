@@ -1,0 +1,112 @@
+Dobar dan. Ja sam Kristo Palić. Moj mentor je Vedran Mornar i za potrebe završnog rada
+napravio sam sustav za praćenje vremenske prognoze.
+
+Ciljevi mog završnog rada bili su izgradnja brze i efikasne web aplikacije za
+praćenje prognoze, Korištenje meni nepoznatih teohnologija koje nisam imao 
+priliku koristiti tijekom preddiplomskog studija. Dio rada odnosi se na 
+istraživanje moguće izgradnje vlastite neuronske mreže za kratkoročnu 
+vremensku prognozu.
+
+Arhitektura sustava
+sustav se sastoji od:
+
+Klijentske aplikacije čija je uloga na interaktivan način omogućiti
+komunikaciju između korisnika i poslužitelja. Također, njena uloga je na
+intuitivan način prikazati podatke o vremenskoj prognozi.
+
+poslužiteljska aplikacija služi nam za primanje i obradu zahtjeva s klijentske
+aplikacije, dohvaćanja podataka o vremenskoj prognozi s weatherAPI-ja i komunikaciju
+s bazom podataka.
+
+Bazu podataka koristimo za spremanje i osjetljivih podataka s poslužitelja
+
+WeatherAPI je vanjsko sučelje koje koristimo za dohvat podataka o vremeskoj prognozi
+
+
+
+Koristene tehnologije:
+Klijentska aplikacija izrađena je koristeći REACT JS
+Poslužiteljska aplikacija izrađena je pomoću Python Flask Frameworka.
+Za bazu podataka koristili smo PostgreSQL.
+Koristili smo vanjsko sučelje WEATHER API za dohvat podataka o vremenskoj prognozi
+Zahtjeve i odgovore između klijentske i poslužiteljske aplikacije te između
+poslužitelja i WEATHERApija testirali smo koristeći postman
+
+
+
+Zašto REACT
+React je skupina Javascript biblioteka namjenjenih za izgradnju korisničkih
+sučelja, upravo ono što nama treba. Omogućuje stvaranje responzivnih i brzih web aplikacija.
+Neke od glavnih značajki koje su koristene su:
+komponente. U Reactu možemo napraviti komponente kao zasebne gradivne blokove 
+koje uključujemo u glavnu aplikaciju i generiramo neovisno o ostatku stranice.
+Dobar primjer komponenti bili bi header i footer, zaglavlje i podnožje koji su generirani
+na svakoj stranici.
+JSX sintaksnu ekstenziju koristili smo za pisanje HTML-a direktno u JavaScriptu čime
+se olakšava kreiranje i modifikacija korisničkog sučelja.
+Virtual DOM koji koristi algoritam uspoređivanja. Algoritam se koristi za
+ažuriranje samo onih dijelova koji su se promjenili umjesto ponovnog renderiranja
+cojele stranice. To rezultira brzim ažuriranjem sučelja i optimiziranom
+performansom aplikacije.
+
+Ovdje vidimo prikaz vremenske prognoze za određeni dan za određeni grad, u ovom slučaju Dubrovnik.
+Zaglavlje i trazilica kreirani su kao zasebne komponente i ukljuceni neovisno
+o ostatku stranice kao što je ranije objašnjeno. Vidimo intuitivan prikaz prognoze po danima. Za odabrani dan prikazuju se 
+i neke dodatne informacije poput kratkog opisa, vlažnosti zraka i vjerojatnosti kiše.
+
+Za odabrani dan dodatno se generira vremenska prognoza po satima. Intuitivan prikaz
+omogućava korisniku dohvat potrebnih informacija, a nama omogućuje umetanje
+dodatnih informacija poput vjerojatnosti padalina ili brzine i smjera vjetra
+bez potrebe za njihovim dodatnim objašnjenjima. Sve je vrlo intuitivno.
+
+Zašto Flask?
+Flask je mikro web okivr napisan u pythonu. Iako kazemo da je mikro web
+flask je iznimno moćan alat za kreiranje poslužiteljskih aplikacija. Izrada
+aplikacija u flasku podsjeća na gradnju lego kockama. Naime, FlaskAPP modul
+nam omogućuje izgradnju jako jednostavne aplikacije u kojoj je podrzano preusmjeravanje
+i nista vise. Svaka funkcionalnost nalazi se u zasebnim modulima koje uključujemo po potrebi.
+Nema potrebe za implementacijom nepotrebnih funkcionalnosti kao što je u to u nekim
+drugim frameworksima. Zbog toga su aplikacije dobro optimizirane i relativno jednostavne 
+za izgradnju. 
+Neki od modula koje sam koristio su:
+SqlAlchemy - ORM alat pomocu kojega jednostavno preslikamo tablice iz baze podataka
+u python objekt. takvim python objektom mozemo manipulirati po volji i koristiti
+ugrađene funkcije za komunikaciju s bazom i spremanje ili dohvaćanje podataka.
+Flask wtf - alat koji koji koristimo za automatsku verifikaciju web formi poput 
+forme za login ili forme za registraciju. Slicno kao sqlAlchemy forma se preslika
+u python objekt i nad njime vrši validacija.
+Flask jwt koristili smo pri autentifikaciji korisnika. prilikom logina kreiraju se 2 tokena
+access token koji koristimo pri daljnoj komunikaciji s klijentom i refresh token koji se sprema 
+u bazu. ukoliko istekne access token prije nego sto se korisnik odjavio pomocu refresh tokena
+generiramo novi access token. na taj nacin omogucavamo korisniku daljnju uporabu aplikacije
+bez potrebe za ponovnom prijavom.
+
+
+Pitanje je treba li nam baza podataka za aplikaciju koja prikazu vremensku prognozu? mozda cak i ne, ali jedan
+od ciljeva zavrsnog rada bio je ucenje novih tehnologija. Jedna od glavnih zadaća poslužitelja je upravo
+komunikacija s bazom podataka i da bih naucio kako to izvesti koristeci flask sam odlucio napraviti jednostavnu
+bazu podataka.
+Baza izrađena koristeći postgresql. objektno relacijski sustav upravljanja bazama podataka.
+u njoj spremamo podatke o korisnicima, odabrane lokacije za svakog korisnika i refresh tokene
+koje sam maloprije spominjao. Evo i sheme nase baze. vrlo je jednostavna, ali ima sve sto nam je potrebno
+
+
+
+Iako su nam podatci o vremenskoj prognozi dostupni putem weather apija. Jedan od ciljeva zavrsnog rada bio
+je kreirati vlastitu neuronsku mrezu za kratkorocnu prognozu. 
+nazalost podatci potrebni za kreiranje takve neuronske mreze nisu javno dostupni i jako su skupi. 
+govorimo o radarskim snimkama, povijesnim podatcima i trenutnim podatcima
+jedino sto sam nasao je slican api cije usluge kostaju 1500 britanskih funti mjesecno tako da je taj cilj propao u startu.
+Dio zavrsnog rada odnosi se na poluistrazivacki rad kako bih ja napravio tu neuronsku mrezu kad bih imao potrebne podatke.
+
+prvo bih se morali odluciti koju vrstu neuronske mreze koristiti. Prva opcija je rekurentna neuronska mreza. 
+Mreža gdje veze izmedu svorova formiraju usmjereni graf duz sekvence sto znaci da konekcije mogu stvoriti ciklus.
+izlaz jednog cvora mjenja stanje drugog cvora. posebno ucinkoviti za rad s podatcima gdje kontekst i vremenska ovisnost imaju utjecaj
+kao sto je slucaj s vremenskom prognozom
+Druga opcija bila bi konvolucijska neuronska mreza. Nekom ko je na mojoj razini znanja objasnio bi ju kao nepotpuni perceptron.
+manji dijelovi konvolucijske mreze specijaliziraju se za analizu odredenog dijela podatka i svaki takav dio nosi određenu težinu cijele mreze.
+Zbog toga su konvolucijske mreže vrlo ucinkovite u obradi slike. u kontekstu vremenske prognoze konvolucijske mreze mogle bi biti koristene 
+za analizui radarskih snimki i u cenje znacajki potrebnih za predviđanje.
+
+
+

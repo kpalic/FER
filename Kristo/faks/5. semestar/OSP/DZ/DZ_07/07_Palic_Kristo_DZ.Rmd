@@ -1,0 +1,133 @@
+---
+title: "Untitled"
+author: "Kristo Palić"
+date: "2022-11-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Zadaci za vježbu {-}
+
+1. R ima funkciju `which` koja pretvara logički vektor u numerički sa rednim brojevima elemenata koji su `TRUE` (tako `c(T, F, F, F, F, T, F, T)` postaje `c(1, 6, 8)`). Implementirajte vlastitu inačicu ove funkcije.
+```{r}
+ulaz <- c(T,F,F,F,F,T,F,T)
+a <- c()
+for (i in 1:length(ulaz)) {
+  if (ulaz[i] == T) {
+    a <- c(a, i)
+  }
+}
+a
+
+```
+2. Uzmimo numerički vektor x duljine n. U statistici standardiziranim momentom k-tog reda zovemo vrijednost:
+
+$$\frac{1}{n}\sum_{i=1}^n{(x_i - \bar{x})}^{k+1}$$
+
+Stvorite generator funkcija `moment(k)` koji će stvarati funkcije za računanje standardiziranog centralnog momenta k-tog reda. Stvorite funkcije `nulti_moment(x)` i `prvi_moment(x)` sa vrijednosti parametra `k` redom `0` i `1`. Testirajte funkcije na vektoru `1:1000`. Usporedite rezultate koje daje funkcija `sd` (standardna devijacija) nad vektorom `1:1000` i korijen rezultata funkcije `prvi_moment` nad istim vektorom.
+```{r}
+moment <- function (red) {
+  function(vect) {
+    suma <- 0
+    for (i in 1:length(vect)) {
+      pom <- vect[i] - mean(vect)
+      pom <- pom^(red + 1)
+      suma <- suma + pom
+    }
+    result <- (1/length(vect)) * suma
+    return (result)
+  }
+}
+
+nulti_moment <- moment(0)
+prvi_moment <- moment(1)
+
+sd(1:1000)
+sqrt(prvi_moment(1:1000))
+```
+3. Uzmimo matricu `m` stvorenu sljedećom naredbom:
+
+```{r}
+m <- rbind(1:5, seq(2, 10, 2), rep(3, 5), 3:7, seq(100, 500, 100))
+```
+
+
+Uz pomoć funkcije `apply` i nove anonimne funkcije stvorite vektor koji će sadržavati prvi parni element svakog retka, ili nulu ako pripadajući redak nema parnih elemenata.
+```{r}
+m <- rbind(1:5, seq(2, 10, 2), rep(3, 5), 3:7, seq(100, 500, 100))
+
+x <- apply(m, 1, function(x) {
+  result <- 0
+  for (i in 1:length(x)) {
+    if (x[i] %% 2 == 0) {
+      result <- x[i]
+      break;
+    }
+  }
+  return (result)
+})
+m
+cat("---------------------------------\n")
+x
+```
+4. Sljedeće naredbe stvoriti će listu od 100 elemenata gdje će svaki element biti numerički vektor nasumične duljine od 1 do 10.
+
+```{r}
+set.seed(1234)
+lista <- replicate(100, sample(1:10, sample(1:10, 1)))
+
+```
+
+
+Uz pomoć funkcija `lapply` / `sapply ` (i dodatnih naredbi ako je potrebno) stvorite:
+
+- numerički vektor `v` sa duljinama elemenata liste
+- listu `l` sa normaliziranim numeričkim vektorima originalne liste
+- numerički vektor `ind4` sa indeksima svih elemenata liste koji sadrže broj 4
+- podatkovni okvir `df5` koji kao stupce sadrži sve elemente liste duljine 5
+```{r}
+set.seed(1234)
+lista <- replicate(100, sample(1:10, sample(1:10, 1)))
+head(lista, 10)
+
+
+v <- sapply(lista, function(x) {
+  return (length(x))
+})
+v
+
+l <- sapply(lista, function(x) {
+  (x - mean(x)) / sd(x)
+})
+head(l, 10)
+
+
+ind4 <- sapply(lista, function(x) {
+  for (i in 1:length(x)) {
+    naden <- F
+    if (x[i] == 4) {
+      return (i)
+      naden = T
+      break;
+    }
+  }
+  if (naden == F) {
+    return (0)
+  }
+})
+ind4 <- unlist(ind4)
+ind4
+
+df5 <- sapply(lista, function(x) {
+  if(length(x) == 5) {
+    return (x)
+  } else {
+  
+  }
+})
+df5[sapply(df5, is.null)] <- NULL
+df5
+```

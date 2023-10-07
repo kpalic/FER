@@ -1,0 +1,66 @@
+---
+title: "08_Palic_Kristo_DZ"
+author: "Kristo Palić"
+date: "2022-11-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Zadaci za vježbu {-}
+
+1. Stvorite objekt klase `Kvadar` sa atributima `visina`, `sirina` i `dubina` i prilagođenim ispisom preko funkcije `print`. Demonstrirajte stvaranje i ispis objekta preko objektnog tipa S3 te objektnog tipa S4.
+
+```{r}
+Kvadar <- function(visina, sirina, dubina) {
+  stopifnot(visina > 0 && sirina > 0 && dubina > 0)
+  k <- list(visina = visina, sirina = sirina, dubina = dubina)
+  class(k) <- "Kvadar"
+  k
+}
+
+kocka <- Kvadar(10,10,10)
+
+kocka
+
+print.Kvadar <- function(k) {
+  rez <- paste0("VISINA: ", k$visina, ", SIRINA: ", k$sirina, ", DUBINA: ", k$dubina, "\n")
+  cat(rez)
+}
+
+kocka
+```
+
+
+
+
+
+
+
+
+
+## S4
+```{r}
+setClass("Kvadar", representation(visina = "numeric",
+                                  sirina = "numeric",
+                                  dubina = "numeric"))
+
+kocka_s4 <- new("Kvadar", visina = 10, sirina = 10, dubina = 10)
+
+getSlots("Kvadar")
+
+setMethod("print",
+          signature(x = "Kvadar"),
+          function(x) {
+            rez <- paste0("VISINA: ", x@visina, ", SIRINA: ", x@sirina, ", DUBINA: ", x@dubina, "\n")
+            cat(rez)
+          })
+
+print(kocka_s4)
+
+
+```
+
+

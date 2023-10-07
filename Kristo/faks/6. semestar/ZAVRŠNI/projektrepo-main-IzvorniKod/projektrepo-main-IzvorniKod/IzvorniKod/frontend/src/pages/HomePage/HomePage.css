@@ -1,0 +1,342 @@
+/* @font-face {
+    font-family: 'Yellowtail';
+    src: url('./assets/fonts/Yellowtail/Yellowtail-Regular.ttf');
+  } */
+
+
+.homepage-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+.top-container {
+    width: 100%;
+    height: 100%;
+    background-image: url('./../../assets/images/pexels-jozef-fehér-7473294.jpg');
+    background-size: cover;
+    /* filter: blur(3px); */
+    display: flex;
+    justify-content: center;
+}
+.text-container {
+    background-color: #d5c6b9;
+
+    opacity: 0.8;
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    height: 52%;
+    border-radius: 20px;
+
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 1%;
+    margin-top: 9vw;
+
+}
+
+.headline-dog-friendly {
+
+    color:var(--aqua);
+    font-size: 50px;
+    font-family: 'Quicksand-semibold';
+    padding-top: 6%;
+    padding-bottom: 7%;
+
+}
+.description-container{
+    font-size: 20px;
+}
+
+.button-container {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-evenly;
+    padding-top: 2vw;
+}
+
+.button {
+    margin: 10px 5px;
+    margin-top: 1%;
+    background-color: var(--aqua);
+    font-family: 'Quicksand-medium';
+    padding: 3% 5%;
+    border-radius: 30px;
+    font-size: 22px;
+}
+.button:hover {
+    cursor: pointer;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.8);
+}
+@media only screen and (max-width:601px) {
+    .text-container{
+        width: 60vw;
+        height: 50vh;
+        justify-content: space-around;
+        margin-top: 10vh;
+        padding: 3vh 5vw 3vh 5vw;
+    }
+    .headline-dog-friendly{
+        font-size: 6vmin;
+        padding: 2vh 0;
+    }
+    .description-container{
+        font-size: 3.2vmin;
+    }
+    .button {
+        padding: 3vmin 6vmin;
+        font-size: 3.2vmin;
+        margin-bottom: 1.2vh;
+    }
+}
+@media only screen and (max-width:500px) {
+    .text-container{
+        width: 80vw;
+        height: 70vh;
+        justify-content: space-around;
+        margin: auto;
+        padding: 20px;
+    }
+    .headline-dog-friendly{
+        font-size: 5vmax;
+        padding: 2vh 0;
+    }
+    .description-container{
+        font-size: 2.6vmax;
+        padding: 2vmax 2vmax 2vmax 0;
+    }
+    .button {
+        padding: 2.6vmax 5.2vmax;
+        font-size: 3vmax;
+        margin-bottom: 1.2vh;
+    }
+}
+@media only screen and (max-width:300px) {
+    .text-container{
+        width: 80vw;
+        height: 65vh;
+        justify-content: space-around;
+        margin: auto;
+        padding: 2.3vmax;
+    }
+    .headline-dog-friendly{
+        font-size: 4vmax;
+        padding: 1.6vh 0;
+    }
+    .description-container{
+        font-size: 2.4vmax;
+        padding: 1.6vmax 1.6vmax 1.6vmax 0;
+    }
+    .button {
+        padding: 2.6vmax 5.2vmax;
+        font-size: 3vmax;
+        margin-bottom: 1.2vh;
+    }
+}
+@media only screen and (min-width:601px) {
+    .text-container{
+        width: 50vw;
+        height: 46vh;
+        justify-content: space-around;
+        margin-top: 12vh;
+        padding: 3vh 5vw 5vh 5vw;
+    }
+    .headline-dog-friendly{
+        font-size: 4.6vmin;
+        padding: 2vh 0;
+        margin-top: 12vh;
+    }
+    .description-container{
+        font-size: 2.7vmin;
+    }
+    .button {
+        padding: 1.8vmin 3.6vmin;
+        font-size: 2.7vmin;
+        margin-bottom: 4.6vh;
+    }
+}
+@media (min-width: 720px) 
+{ 
+    .text-container{
+        width: 50vw;
+        height: 46vh;
+        justify-content: space-around;
+        margin-top: 12vh;
+        padding: 3vh 5vw 5vh 5vw;
+    }
+    .headline-dog-friendly{
+        font-size: 4.6vmin;
+        padding: 2vh 0;
+        margin-top: 3vh;
+    }
+    .description-container{
+        font-size: 2.4vmax;
+        padding-top: 1.6vmax;
+    }
+    .button {
+        padding: 1.8vmax 3.6vmax;
+        font-size: 2.7vmax;
+        margin-bottom: 4.5vh;
+    }
+}
+@media (min-width: 765px) and (max-width:950px) {
+    .text-container{
+        width: 60vw;
+        height: 55vh;
+        justify-content: space-around;
+        margin-top: 12vh;
+        padding: 3vh 5vw 5vh 5vw;
+    }
+    .headline-dog-friendly{
+        font-size: 4vmax;
+        padding: 2vh 0;
+        margin-top: 2vh;
+    }
+    .description-container{
+        font-size: 2.6vmax;
+        padding-top: 1.6vmax;
+    }
+    .button {
+        padding: 1.8vmax 3.6vmax;
+        font-size: 2.7vmax;
+        margin-bottom: 2vh;
+    }   
+}
+
+@media (min-width: 720px) and (max-height:400px)
+{ 
+    .text-container{
+        width: 60vw;
+        height: 60vh;
+        justify-content: space-around;
+        margin-top: 12vh;
+        padding: 3vh 5vw 5vh 5vw;
+    }
+    .headline-dog-friendly{
+        font-size: 3vmax;
+        padding: 2vh 0;
+        margin-top: 3.6vh;
+    }
+    .description-container{
+        font-size: 2vmax;
+        padding-top: 1.6vmax;
+    }
+    .button {
+        padding: 1.2vmax 2.4vmax;
+        font-size: 2vmax;
+        margin-bottom: 4vh;
+    }
+    .button-container{
+        padding-top: 0;
+    }
+}
+@media (min-width: 800px) and (max-height:600px)
+{
+    .headline-dog-friendly{
+        font-size: 2.4vmax;
+        padding: 1.8vh 0;
+        margin-top: 4vh;
+        padding-bottom: 0;
+    }
+    .description-container{
+        font-size: 1.8vmax;
+        padding-top: 2vh;
+    }
+    .button {
+        padding: 1.2vmax 2vmax;
+        font-size: 1.8vmax;
+        margin-bottom: 4.5vh;
+    }
+    .button-container{
+        padding-top: 0;
+    }
+}
+@media (max-width: 1000px) and (min-height:1200px) 
+{
+    .text-container{
+        height: 60vh;
+    }
+    .description-container{
+        padding-bottom: 2vh;
+    }
+    .button {
+        margin-bottom: 2vh;
+    }
+}
+@media (min-width: 1024px) {
+    .text-container{
+        width: 50vw;
+        height: 50vh;
+        justify-content: space-around;
+        margin-top: 12vh;
+        padding: 3vh 5vw 5vh 5vw;
+    }
+    .headline-dog-friendly{
+        font-size: 4.2vmin;
+        padding: 2vh 0;
+        margin-top: 3.5vh;
+    }
+    .description-container{
+        font-size: 2.2vmax;
+        padding-top: 1.6vmax;
+    }
+    .button {
+        padding: 1.8vmax 3.6vmax;
+        font-size: 2.7vmax;
+        margin-bottom: 4vh;
+    }
+    .button-container{
+        padding-top: 1vh;
+    }
+}
+
+@media (min-width: 1024px) and (max-height: 768px) {
+    .text-container{
+        width: 50vw;
+        height: 60vh;
+        justify-content: space-around;
+        margin-top: 12vh;
+        padding: 3vh 5vw 5vh 5vw;
+    }
+    .headline-dog-friendly{
+        font-size: 4.6vmin;
+        padding: 2vh 0;
+        margin-top: 6vh;
+    }
+    .description-container{
+        font-size: 2.1vmax;
+        padding-top: 1.6vmax;
+    }
+    .button {
+        padding: 1.6vmax 3.2vmax;
+        font-size: 2.4vmax;
+        margin-bottom: 5.5vh;
+    }
+}
+
+@media (min-width: 1280px) 
+{ 
+    .text-container{
+        width: 50vw;
+        height: 50vh;
+        justify-content: space-around;
+        margin-top: 15vh;
+        padding: 3vh 5vw;
+    }
+    .headline-dog-friendly{
+        font-size: 4.4vmin;
+        padding: 2vh 0;
+        margin-top: 0;
+    }
+    .description-container{
+        padding-top: 1vh;
+        font-size: 2.7vmin;
+    }
+    .button {
+        padding: 2.5vmin 5.5vmin;
+        font-size: 3.4vmin;
+        margin-bottom: 2vh;
+    }  
+}

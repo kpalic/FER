@@ -1,0 +1,24 @@
+---
+title: "Untitled"
+author: "Kristo Palic"
+date: "2023-01-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(rmarkdown)
+install.packages("xfun")
+
+```
+
+```{r echo=FALSE}
+rmarkdown::render("FinalReport.Rmd", 
+                  output_file = "final_report.pdf", 
+                  params = list(child1 = "ucitavanje_podataka.Rmd", 
+                                child2 = "prilagodba_podataka.Rmd",
+                                child3 = "prvi_zadatak.Rmd"))
+
+```
+

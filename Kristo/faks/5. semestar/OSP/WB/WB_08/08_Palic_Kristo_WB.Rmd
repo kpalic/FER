@@ -1,0 +1,194 @@
+---
+title: "8 Object oriented systems in R"
+author: ""
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+---
+
+
+
+```{r setup_korisnik, include = F}
+library(sloop)
+knitr::opts_chunk$set(results = 'hold')
+```
+
+
+## Zadatak 8.1 - funkcija `otype`
+
+```{r}
+library(sloop)
+
+a <- rep(c(T, F), 10)
+b <- factor(c("up", "up", "down", "up", "down", "down", "down"))
+c <- data.frame(x = 1:10, y = seq(-5, 5, length = 10))
+
+# isprobajte funkciju `otype` nad ovim varijablama
+otype(a)
+otype(b)
+otype(c)
+
+```
+
+
+
+## Pregled objektnog modela S3
+
+Objektni model S3 je povijesno najstariji objektni model programskog jezika R, dizajniran primarno za lakoću korištenja i jednostavnost poziva pripadnih funkcija. Radi se o prilično neformalnom objektnom modelu kod kojeg vrijedi da je **S3 objekt zapravo običan osnovni objekt za kojeg je definirant atribut `class`**.
+
+
+## Primjer 8.1 - stvaranje novog S3 objekta
+
+```{r}
+# stvaramo novi objekt klase `Person`
+pero <- list(id = "12345678", surname = "Peric", weight = 78)
+class(pero) <- "Person"
+
+```
+
+
+
+## Zadatak 8.1 - konstruktorska funkcija
+
+
+```{r}
+# stvorite funkciju naziva `Person` 
+# ulazni parametri: id, surname, weight
+# povratna vrijednosti: objekt klase "Person" 
+# prije stvaranja objekta funkcija mora provjeriti da je:
+#      - `id` jednoelementni znakovni vektor od točno 8 znakova
+#      - `surname` jednoelementni znakovni vektor
+#      - `weight` jednoelementni pozitivni numerički vektor
+
+
+Person <- function(id, surname, weight) {
+  stopifnot(is.character(id) && nchar(id) == 8)
+  stopifnot(is.character(surname))
+  stopifnot(is.numeric(weight) && weight > 0)
+  pom <- list(id = id, surname = surname, weight = weight)
+  class(pom) <- "Person"
+  pom
+}
+
+# stvorite varijablu `john`, objekt klase `Person` sa sljedećim karakteristikama:
+# id: 13571313, surname: Watson, weight: 76
+john <- Person("13571313", "Watson", 76)
+# ispišite varijablu `john`
+john
+
+```
+
+
+
+
+
+## Primjer 8.2 - nasljeđivanje S3 objekta
+
+
+```{r, eval = F}
+mate <- list(oib = "12345678", lastname = "Peric", weight = 78, yearEmpl = 2001)
+class(mate) <- c ("Employee", "Person")
+```
+
+
+## Zadatak 8.2 - generičke funkcije
+
+```{r}
+# ispišite izvorni kod funkcije `summary` (unesite samo ime funkcije!)
+summary
+
+#ispišite izvorni kod funkcije koja se uistinu izvodi
+# kada pozivate `summary(f)` gdje je `f` objekt klase `factor`
+summary.factor
+```
+
+
+
+
+
+## Zadatak 8.3 - implementacija nove generičke funkcije
+
+```{r}
+peter <- Person(id = "12345678", surname = "Parker", weight = 78)
+
+# implementirajte funkciju koja će omogućiti korištenje
+# generičke funkcije `print` nad objektom klase `Person`
+# pri čemu će se na zaslon ispisati
+# ID: <id>, surname: <surname>, weight: <weight>
+# koristite se funkcijom `paste` za konkatenaciju znakovnik nizova
+# i funkcijom `cat` za ispisivanje na zaslon
+
+print.Person <- function(p) {
+  rez <- paste0("ID: ", p$id, ", surname: ", p$surname, ", weight: ", p$weight, "\n")
+  cat(rez)
+}
+
+# ispišite varijablu `peter`
+peter
+
+```
+
+
+
+
+
+## Zadatak 8.4  - funkcija `methods`
+
+```{r}
+# prikažite sve do sad poznate implementacije generičke funkcije `summary`
+methods(summary)
+# provjerite koje sve implementacije generičkih funkcija postoje za klasu `factor`
+methods(class = "factor")
+```
+
+
+## Kratki pregled S4 objekata
+
+## Primjer 8.3 - stvaranje nove S4 klase
+
+```{r}
+# definicija predloška
+setClass("Person", representation(id = "character", 
+                                  surname = "character",
+                                  weight = "numeric"))
+
+# instanciranje klase
+pero <- new("Person", id = "12345678", 
+                      surname = "peric", 
+                      weight = 76)
+
+```
+
+Jedna bitna razlika jest što umjesto operatora `$` koristimo operator `@` za pristup atributima ("slot"-ovima) klase. Isto tako, funkcija `getSlots` nam vraća sve atribute odabrane klase.
+
+## Primjer 8.4 - pristup atributima S4 klase
+
+```{r}
+# ispiši atribute klase `Person` 
+getSlots("Person")
+
+# dohvati vrijednosti atributa varijable `pero` 
+paste0(pero@id, ": ", pero@surname)
+
+```
+
+S4 također koristi generičke funkcije, ali uz određene promjene u sintaksi. Ovdje nećemo previše ulaziti u detalje, već ćemo samo prikazati kratki primjer pridjeljivanja postojeće generičke funkcije S4 objektu uz pomoć funkcije `setMethod`.
+
+## Primjer 8.5 - S4 objekti i generičke funkcije
+
+```{r}
+setMethod("print", 
+  signature(x = "Person"),
+  function(x) {
+    rez <- paste0("ID:", x@id, ", surname:", x@surname, ", weight:", x@weight, "\n")
+    cat(rez)
+  })
+
+print(pero)
+```
+
+***
+
+## Zadaci za vježbu {-}
+
+1. Stvorite objekt klase `Kvadar` sa atributima `visina`, `sirina` i `dubina` i prilagođenim ispisom preko funkcije `print`. Demonstrirajte stvaranje i ispis objekta preko objektnog tipa S3 te objektnog tipa S4.

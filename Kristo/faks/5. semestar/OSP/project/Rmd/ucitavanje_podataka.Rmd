@@ -1,0 +1,28 @@
+# Učitavanje podataka
+```{r echo=FALSE}
+#UCITAVANJE BIBLIOTEKA
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+source("../R/custom.R")
+```
+
+
+
+Pozicioniranje u radni repozitorij
+```{r}
+root_dir <- setProjectWorkingDirectory()
+```
+
+Učitavanje obavljamo pomoću read.csv funkcije
+```{r}
+data_file <- file.path(root_dir, "data", "IMDB_movie_dataset.txt")
+data <- read.csv(data_file)
+```
+
+Podatke spremamo u globalni spremnik kako bi joj svi ostali dijelovi projekta mogli pristupiti. 
+```{r}
+save(data, file = "data.RData")
+```
+
+

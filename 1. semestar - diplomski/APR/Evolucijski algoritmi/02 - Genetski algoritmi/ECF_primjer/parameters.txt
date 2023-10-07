@@ -1,0 +1,76 @@
+<ECF>
+	<Algorithm>
+		<SteadyStateTournament>
+			<Entry key="tsize">3</Entry>              <!-- tournament size -->
+		</SteadyStateTournament>
+		<CoordinateLineSearch>
+			<Entry key="delta">1</Entry>
+			<Entry key="localonly">0</Entry>
+			<Entry key="precision">1e-006</Entry>
+		</CoordinateLineSearch>
+		<ArtificialBeeColony>
+			<Entry key="elitism">1</Entry>            <!-- Elitism: the current best food source is preserved (default: 1) -->
+			<Entry key="limit">300</Entry>            <!-- Maximum number of cycles for each individual (default: 300) -->
+		</ArtificialBeeColony>
+		<RouletteWheel>
+			<Entry key="crxprob">0.5</Entry>          <!-- crossover rate -->
+			<Entry key="selpressure">10</Entry>       <!-- selection pressure: how much is the best individual 'better' than the worst -->
+		</RouletteWheel>
+		<DifferentialEvolution>
+			<Entry key="F">1</Entry>                  <!-- scaling constant -->
+			<Entry key="CR">0.9</Entry>               <!-- crossover rate -->
+		</DifferentialEvolution>
+		<ParticleSwarmOptimization>
+			<Entry key="weightType">0</Entry>         <!-- weight type update: 0 - constant, 1 - time dependant (based on max generations) -->
+			<Entry key="weight">0.8</Entry>           <!-- initial inertia weight (either constant or time dependant) -->
+			<Entry key="maxVelocity">100</Entry>      <!-- max particle velocity -->
+		</ParticleSwarmOptimization>
+		<GeneticAnnealing>
+			<Entry key="energybank">100</Entry>        <!-- total starting energy bank (fitness dependant) -->
+			<Entry key="coolingfactor">0.7</Entry>     <!-- simulated annealing cooling factor -->
+			<Entry key="elitism">0</Entry>             <!-- is the best individual preserved -->
+		</GeneticAnnealing>
+		<Elimination>
+			<Entry key="gengap">0.6</Entry>            <!-- generation gap (percentage of population to be eliminated) -->
+			<Entry key="selpressure">10</Entry>        <!-- selection pressure: how much is the worst individual 'worse' than the best -->
+		</Elimination>
+		<RandomSearch>
+		</RandomSearch>
+	</Algorithm>
+
+	<Genotype>
+		<FloatingPoint>
+			<Entry key="lbound">-50</Entry>
+			<Entry key="ubound">150</Entry>
+			<Entry key="dimension">2</Entry>
+		</FloatingPoint>
+<!--
+		<Binary>
+			<Entry key="lbound">-50</Entry>
+			<Entry key="ubound">150</Entry>
+			<Entry key="precision">6</Entry>
+			<Entry key="dimension">3</Entry>
+		</Binary>
+-->
+	</Genotype>
+
+	<Registry>
+		<Entry key="function">6</Entry>         <!-- sets the objective function -->
+
+		<Entry key="population.size">200</Entry>
+		<Entry key="mutation.indprob">0.5</Entry>
+
+		<Entry key="term.stagnation">5000</Entry>
+		<Entry key="term.fitnessval">1e-8</Entry>
+		<Entry key="term.eval">1000000</Entry>
+		<Entry key="term.maxtime">100</Entry>
+		<Entry key="term.maxgen">100000</Entry>
+
+		<Entry key="log.frequency">100</Entry>
+		<Entry key="log.level">3</Entry>
+		<Entry key="log.filename">log.txt</Entry>
+
+		<Entry key="batch.repeats">1</Entry>              <!-- number of independent runs to perform (default: 1) -->
+		<Entry key="batch.statsfile">stats.txt</Entry>    <!-- output batch end of run stats in a single file (default: none) -->
+	</Registry>
+</ECF>

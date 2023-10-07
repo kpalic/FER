@@ -1,0 +1,40 @@
+Postupak trazenja unimodalnog intervala
+
+Ulazne velicine:
+- tocka: pocetna tocka pretrazivanja
+- h: pomak pretrazivanja
+- f: ciljna funkcija
+
+Izlazne vrijednosti:
+- unimodalni interval [l, r]
+
+unimodalni(double h, double tocka, double& l, double &r)
+{
+	l = tocka - h, r = tocka + h; 
+	double m = tocka;
+	double fl, fm, fr;
+	uint step = 1;
+
+	fm = f(tocka);
+	fl = f(l);
+	fr = f(r);
+
+	if(fm < fr && fm < fl)
+		return;
+	else if(fm > fr)
+		do
+		{	l = m;
+			m = r;
+			fm = fr;
+			r = tocka + h * (step *= 2);
+			fr = f(r);
+		} while(fm > fr);
+	else 
+		do
+		{	r = m;
+			m = l;
+			fm = fl;
+			l = tocka - h * (step *= 2);
+			fl = f(l);
+		} while(fm > fl);
+}

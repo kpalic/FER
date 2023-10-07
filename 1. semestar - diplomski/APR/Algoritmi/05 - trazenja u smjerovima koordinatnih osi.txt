@@ -1,0 +1,20 @@
+Algoritam pretrazivanja po koordinatnim osima
+
+ulazne velicine:
+- x0: pocetna tocka
+- e: preciznost
+- n: broj dimenzija
+
+koordinatno_trazenje(x0, e, n)
+{
+	x = x0;
+	ponavljaj {
+		xs = x;
+		za(i = 1; i <= n; i++) {
+			odrediti lambda koji minimizira F(x + lambda * e_i) // e_i je jedinicni vektor s jedinicom na i-tom mjestu
+			x = x + lambda * e_i;
+		}
+	} dokje( |x - xs| > e);
+	
+	vrati x;
+}

@@ -1,0 +1,198 @@
+```{r echo=FALSE}
+source("../R/custom.R")
+
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(pander)
+```
+
+# Prilagodba podataka
+
+Podatke ucitavamo iz data.RData globalnog spremnika.
+```{r}
+load("data.RData")
+```
+
+5043 filmova, svaki sa 28 atributa 5043 x 28 data.frame
+Ispisani medijan, srednja vrijednost, kvartali, minimum i maximum za numeričke varijable kao i broj NA atributa u određenom stupcu.
+
+\newpage
+```{r}
+pander(summary(data))
+```
+\newpage
+
+Detaljna struktura varijabli unutar podatkovnog skupa. 
+```{r}
+str(data, width = 85, strict.width = "cut")
+```
+
+
+```{r}
+missing_values <- sapply(data, function(x) sum(is.na(x)))
+print(missing_values, width = 100)
+```
+sapply() funkcija primjenjuje is.na() funkciju na svaki stupac data.framea, a funkcija sum() prebrojava NA vrijednosti svakog stupca. 
+Rezultat funkcije je vektor s brojem NA vrijednosti za svaki stupac.
+
+\
+\
+\
+\
+Izbacujemo duplikate
+```{r}
+
+# Identificiramo duplikate na temelju imena filma
+duplicate_rows <- duplicated(data, by = "movie_title")
+
+# Izbacujemo duplikate iz originalnog seta podataka
+data <- data[!duplicate_rows, ]
+save(data, file = "data.RData")
+```
+
+\
+\
+\
+Cistimo podatke potrebne za odgovaranje na prvo pitanje
+```{r}
+
+## 1. Pitanje
+modifiedDataForFirst <- data %>%
+    mutate(genres = strsplit(genres, "\\|")) %>%
+    tidyr::unnest(genres) %>%
+    filter(imdb_score != 0) %>%
+    filter(!is.na(imdb_score)) %>%
+    filter(genres == "Action" |
+           genres == "Comedy" |
+           genres == "Drama" |
+           genres == "Romance" |
+           genres == "Horror" |
+           genres == "Thriller" |
+           genres == "Animation")
+
+# Na ovaj način rastavili smo filmove koji pripadaju u više od jedne kategorije
+# i izbrisali retke koji nemaju ocjenu.
+
+save(modifiedDataForFirst, file = "data.RData")
+```
+
+\
+\
+\newpage
+Kreiranje grafova
+```{r eval=FALSE, fig.cap="Histogram"}
+# Potrebno je koristiti drugačiju funkciju za spremanje jer ggsave ima 
+# neobjašnjivi problem s histogramima
+
+hist(action$imdb_score, 
+     breaks=30, 
+     main="Histogram of imdb_score", 
+     xlab="Scores")
+dev.copy(png, file = "../figures/report/actionHistogram.png")
+dev.off()
+
+hist(as.double(drama$imdb_score),
+     breaks=50,
+     main='Histogram of imdb scores of Drama movies',
+     xlab='Scores')
+dev.copy(png, file = "../figures/report/dramaHistogram.png")
+dev.off()
+
+hist(as.double(romance$imdb_score),
+  breaks=50,
+  main='Histogram of imdb scores of Romance movies',
+  xlab='Scores')
+dev.copy(png, file = "../figures/report/romanceHistogram.png")
+dev.off()
+
+hist(as.double(comedy$imdb_score),
+  breaks=50,
+  main='Histogram of imdb scores of Romance movies',
+  xlab='Scores')
+dev.copy(png, file = "../figures/report/comedyHistogram.png")
+dev.off()
+
+hist(as.double(thriller$imdb_score),
+  breaks=50,
+  main='Histogram of imdb scores of Thriller movies',
+  xlab='Scores')
+dev.copy(png, file = "../figures/report/thrillerHistogram.png")
+dev.off()
+
+hist(as.double(horror$imdb_score),
+  breaks=50,
+  main='Histogram of imdb scores of Horror movies',
+  xlab='Scores')
+dev.copy(png, file = "../figures/report/horrorHistogram.png")
+dev.off()
+
+hist(as.double(animation$imdb_score),
+  breaks=50,
+  main='Histogram of imdb scores of Animation movies',
+  xlab='Scores')
+dev.copy(png, file = "../figures/report/animationHistogram.png")
+dev.off()
+```
+\
+\newline
+Kreiranje QQ-plota
+```{r eval=FALSE, fig.cap="QQ-plots"}
+qqnorm(action$imdb_score, xlab = "Scores", 
+       main = "QQ plot of imdb scores of ACTION movies")
+dev.copy(png, file = "../figures/report/actionQQplot.png")
+dev.off()
+
+qqnorm(drama$imdb_score, xlab = "Scores", 
+       main = "QQ plot of imdb scores of DRAMA movies")
+dev.copy(png, file = "../figures/report/dramaQQplot.png")
+dev.off()
+
+qqnorm(romance$imdb_score, xlab = "Scores", 
+       main = "QQ plot of imdb scores of ROMANCE movies")
+dev.copy(png, file = "../figures/report/romanceQQplot.png")
+dev.off()
+
+qqnorm(comedy$imdb_score, xlab = "Scores", 
+       main = "QQ plot of imdb scores of COMEDY movies")
+dev.copy(png, file = "../figures/report/comedyQQplot.png")
+dev.off()
+
+qqnorm(thriller$imdb_score, xlab = "Scores", 
+       main = "QQ plot of imdb scores of THRILLER movies")
+dev.copy(png, file = "../figures/report/thrillerQQplot.png")
+dev.off()
+
+qqnorm(horror$imdb_score, xlab = "Scores", 
+       main = "QQ plot of imdb scores of HORROR movies")
+dev.copy(png, file = "../figures/report/horrorQQplot.png")
+dev.off()
+
+qqnorm(animation$imdb_score, xlab = "Scores", 
+       main = "QQ plot of imdb scores of ANIMATION movies")
+dev.copy(png, file = "../figures/report/animationQQplot.png")
+dev.off()
+```
+
+
+\
+\
+Kreiranje Box-plota
+```{r, eval=FALSE, fig.cap="Boxplots of imdb scores"}
+boxplot(data$imdb_score, xlab = "imdb scores")
+ggsave(path = "../figures/expl/", filename = "imdbScoresBoxPlot.png", device = "png")
+
+boxplot(data$gross, xlab = "gross income")
+ggsave(path = "../figures/expl/", filename = "imdbGrossBoxPlot.png", device = "png")
+
+boxplot(data$cast_total_facebook_likes, xlab = "total fb likes")
+ggsave(path = "../figures/expl/", filename = "imdbFBLikes.png", device = "png")
+
+```
+Po uzoru na projekt iz SAP-a odabrati ću par varijabli i nad njima napraviti
+statističku analizu i iznijeti zaključke
+
+
+
+
+

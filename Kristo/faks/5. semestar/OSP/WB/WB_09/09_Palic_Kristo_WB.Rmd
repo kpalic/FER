@@ -1,0 +1,409 @@
+---
+title: "9 Koncept urednih podataka"
+author: ""
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+---
+
+
+
+```{r include=FALSE}
+library(magrittr)
+library(tidyr)
+knitr::opts_chunk$set(results = 'hold')
+```
+
+
+## Pohrana međurezultata
+
+Pogledajmo sljedeći primjer: zamislimo da u jeziku R želimo stvoriti 100 nasumičnih realnih varijabli u rasponu [0,100], zaokružiti ih na dvije decimale, iz ovog skupa odabrati uzorak od 10 varijabli, izračunati aritmetičku sredinu uzorka i ispisati ga na zaslon. Jedno od mogućih programskih rješenja moglo bi biti sljedeće:
+
+```{r}
+set.seed(1234)  # (zbog ponovljivosti)
+
+# rješenje gornjeg primjera
+rez <- runif(100, 0, 100) # 100 nasumičnih varijabli iz uniformne razdiobe od 0 do 100
+rez <- round(rez,2)
+rez <- sample(rez, 10)
+rez <- mean(rez)
+rez
+```
+
+Ovakav kod ima dosta nepotrebnog ponavljanja - u svakom retku koristimo varijablu `rez` koja čuva međurezultate i operator pridruživanja pomoću kojeg pridružujemo nove rezultate varijabli `rez`. Alternativno, mogli smo sve obaviti u jednom retku.
+
+## ZADATAK 9.1 - učahurene funkcije
+
+```{r}
+set.seed(1234)
+
+# ponovite gornji primjer, ali uz pomoć samo jednog retka programskog koda
+rez2 <- mean(sample(round(runif(100,0,100), 2), 10))
+rez2
+```
+
+
+Ovdje vidimo jedan tipičan primjer "kodnog sendviča"
+
+-  ukoliko želimo sve obaviti bez eksplicitnog čuvanja međurezultata kao rezultat ćemo dobiti programski kod koji je podložan greškama kod pisanja te je vrlo teško čitljiv.
+
+## Operator cjevovoda - sintaksa
+
+
+```{r, eval = FALSE}
+library(magrittr)
+
+h(g(f(x), y), z, w)                      # kod bez %>% operatora
+
+f(x) %>% g(., y) %>% h(., z, w)          # kod sa %>% operatorom
+
+```
+
+## Operator cjevovoda - sintaksa (2)
+
+Ako je rezultat prethodne funkcije na prvom mjestu sljedeće funkcije, onda se točka (štoviše, cijeli taj argument) može izbaciti, tako da je sintaksa još kraća:
+
+```{r, eval = FALSE}
+
+f(x) %>% g(y) %>% h(z,w)                 # kod sa %>% bez korištenja točke
+
+```
+
+
+
+## ZADATAK 9.2 - operator `%>%`
+
+
+```{r}
+set.seed(1234)
+
+# ponovo rješite prvi primjer uz pomoć %>% operatora
+
+```
+
+
+## Pohrana rezultata uz operator cjevovoda
+
+Krajnji rezultat našeg "lanca" funkcija možemo pohraniti uobičajenim načinom:
+
+```{r}
+suma <- 1:10 %>% sum   # rezultat se pohranjuje u varijablu 'suma'
+```
+
+ali je možda vizualno konzistentnije koristiti "obrnuti" operator pridruživanja: `->`.
+
+```{r}
+1:10 %>% sum -> suma   # radi istovjetno gornjem primjeru
+```
+
+
+
+
+## ZADATAK 9.3 - funkcija `lapply` i operator `%>%`
+
+
+
+```{r}
+l <- list(a = 1:10, b = 10:20, c = 100:200)
+
+# stvorite matricu koja će sadržavati prvi i zadnji element svakog elementa liste
+# elementi moraju biti poredani po retcima
+# koristite funkcije lapply, unlist i matrix te %>% operator
+# rezultat spremite u varijablu `rez`
+
+    
+# ispišite `rez`
+
+```
+
+
+
+## Operatori kao funkcije (2)
+
+```{r}
+# svaki par naredbi jest ekvivalentan
+2 + 3
+`+`(2, 3)
+
+1 : 5
+`:`(1, 5)
+
+x <- c(1, 2, 3)
+`<-`("x", c(1,2,3))
+
+x[1]
+`[`(x, 1)
+
+```
+
+## ZADATAK 9.4 - Složenija uporaba operatora cjevovoda
+
+
+
+```{r, eval = F}
+set.seed(1234)
+
+# "uredite" sljedeću naredbu uz pomoć operatora cjevovoda 
+matrix(table(sample(round(sqrt(sample(1:10000, 10000, replace = T))), 100))[1:9], 3, 3)
+```
+
+
+
+
+
+## ZADATAK 9.5 - podatkovni skup `studenti`
+
+
+```{r}
+# učitajte podatke iz datoteke `studenti.csv` u varijablu `studenti`
+# ne zaboravite na parametar `stringsAsFactors`!
+
+# upoznajte se sa podacima uz pomoć standardnih funkcija za tu svrhu
+# (names, sapply - class, str, head, summary ...)
+# u daljnim primjerima za ovaj postupak koristiti ćemo se izrazom "proučite okvir.."
+
+```
+
+
+
+
+
+## ZADATAK 9.6 - prilagodba parametara učitavanja podatkovnog skupa
+
+
+```{r}
+# ponovo učitajte podatke iz datoteke `studenti.csv` u varijablu `studenti`
+# naredbi `read.csv` dodajte parametar `na.strings` sa znakovnim nizom koji predstavlja NA
+
+
+# proučite okvir `studenti`
+
+```
+
+
+
+
+
+
+## Funkcija `pivot_longer`(paket `tidyr`)
+
+```{r, eval = FALSE}
+pivot_longer(data, cols, names_to, values_to, values_drop_na)
+```
+
+- `data` podatkovni okvir
+- `cols` stupci koje "pivotiramo" - navodimo nazive stupaca (bez navodnika), sintaksu `stupac_od:stupad_do` ili stupce koje NE želimo sa prefiksom `-`
+- `names_to` reprezentira ime novog stupca kojeg stvaramo (u našem slučaju stupac `"Predmet"`)
+- `values_drop_na` omogućuje odabir ispuštanja opservacija sa `NA` vrijednostima
+
+
+
+## ZADATAK 9.7 - funkcija `pivot_longer`
+
+
+```{r}
+# stvorite podatkovni okvir `ocjene` uz pomoć funkcije `pivot_longer` i okvira `studenti`
+# nove stupce nazovite "Predmet" i "Ocjena"
+
+
+# proučite okvir `ocjene`
+
+```
+
+
+
+## Funkcija `pivot_wider`
+
+Funkcija koja radi inverzan posao od `pivot_longer` jest funkcija `pivot_wider`. Ona će podatke iz kombinacije kategorijskog stupca i vrijednosti "raširiti" tako da kategorije postaju nazivi stupaca a vrijednosti se "raspršuju" po odgovarajućim stupcima.
+
+## Funkcija `pivot_wider`
+
+```{r, eval = FALSE}
+pivot_wider(data, names_from, names_prefix = "", values_from, values_fill = NULL)
+```
+
+- `data` podatkovni okvir
+- `names_from` ime stupaca čije vrijednosti "pivotiramo" u široki oblik
+- `names_prefix` opcionalni prefiks (bez navodnika) kojeg možemo staviti novim stupcima, korisno ako su novi nazivi stupaca brojevi
+- `values_from` ime stupca u kojem se nalaze vrijednosti koje raspršujemo po novoj tablici
+- `values_fill` opcionalna vrijednost za nedostajuće vrijednosti; ako parametar stavimo na `NULL` vrijednosti će biti `NA`
+
+
+
+## ZADATAK 9.8 - funkcija `pivot_wider`
+
+
+```{r}
+# "raširite" podatkovni okvir `ocjene` uz pomoć naredbe `pivot_wider`
+# rezultat pohranite u okvir `studenti2`
+
+# proučite okvire `studenti` i `studenti2`
+
+```
+
+
+
+## ZADATAK 9.9 - podatkovni skup `auti`
+
+
+```{r}
+# učitajte datoteku `auti.csv` u podatkovni okvir naziva `auti`
+
+# proučite okvir `auti`
+
+```
+
+
+
+
+
+## ZADATAK 9.10 - funkcija `pivot_wider` (2)
+
+
+```{r}
+# stvorite okvir `auti2` koji će biti uređena inačica okvira `auti`
+
+# proučite okvir `auti2`
+
+```
+
+
+
+
+## ZADATAK 9.11 - podatkovni skup `potrosackaKosarica`
+
+
+```{r}
+# učitajte podatke iz datoteke `potrosackaKosarica.csv` u podatkovni okvir imena `racuni`
+
+# proučite okvir `racuni`
+```
+
+
+## ZADATAK 9.12 - pretvorba okvira u "dugi" format
+
+```{r}
+# pretvorite podatke okvira `racuni` iz "širokog" formata u "dugi"
+
+# rezultat pohranite u datoteku 'potrosackaKosaricaDugiFormat.csv'
+```
+
+
+
+
+## ZADATAK 9.13 - pretvorba okvira u "široki" format
+
+
+```{r}
+# pokušajte "dugi" format oblikovati natrag u "široki"
+# pohranite rezultat u datoteku `potrosackaKosaricaSirokiFormat.csv`
+
+```
+
+
+
+## Funkcije `separate` i `unite`
+
+
+
+Paket `tidyr` ima još niz korisnih funkcija namijenjenih "uređivanju" podataka a mi ćemo ovdje obratiti još dvije koje se relativno često koriste - `separate` i `unite`.
+
+Funkcija `separate` je korisna kada neki stupac ima "složene" vrijednosti koje želimo rastaviti u dva ili više stupaca.
+
+## ZADATAK 9.14 - podatkovni skup `odjeli`
+
+
+```{r}
+# čitajte podatke iz datoteke `odjeli.csv` u varijablu `odjeli`
+
+# proučite okvir `odjeli`
+
+```
+
+
+## Funkcija `separate`
+
+Paket `tidyr` za ovakve potrebe nudi funkciju `separate` sa sljedećim potpisom:
+
+```{r, eval = FALSE}
+separate(data, col, into, sep = "[^[:alnum:]]+", remove = TRUE,
+  convert = FALSE, extra = "warn", fill = "warn", ...)
+```
+
+Potpunu dokumentaciju funkcije možemo pogledati naredbom `?separate` a ovdje ćemo navesti objašnjenje nekih važnijih parametara:
+
+- `col` - stupac kojeg rastavljamo (ne moramo koristiti navodnike)
+- `into` - imena novih stupaca (preporučuje se koristiti znakovni vektor)
+- `sep` - separator vrijednosti u originalnom stupcu, *default*-na vrijednost je zapravo regularni izraz za "nešto što nije alfanumerički znak"
+- `remove` - opisuje da li je potrebno ukloniti originalni stupac ili ne
+
+Pokušajmo primijeniti ovu funkciju na tablicu `odjeli`. Ponovimo usput princip korištenja *pipeline* operatora.
+
+
+## ZADATAK 9.15 - funkcija `separate`
+
+
+```{r}
+# razdvojite stupac `Kvartal` u stupce `Kvartal` i `Godina` uz uklanjanje originalnog stupca
+# rezultat pohranite u varijablu `odjeli2`
+# sve učinite u sklopu jedne naredbe uz pomoć `%>%` operatora
+
+
+# proučite okvir `odjeli2`
+
+```
+
+
+
+## Funkcija `unite`
+
+Za kraj naučimo još funkciju `unite` koja se nešto rijeđe koristi a zapravo je inverz funkcije `separate`. Potpis funkcije `unite` je:
+
+```{r, eval = FALSE}
+unite(data, col, ..., sep = "_", remove = TRUE)
+```
+
+I u ovom slučaju dokumentaciju lako dohvaćamo sa `?unite`, a ovdje dajemo opis parametara koji potencijalno zahtijevaju dodatno objašnjenje:
+
+- `col` - ime novog stupca (nije nužno koristiti navodnike)
+- `...` - imena stupaca koje spajamo - ne moramo koristiti navodnike, a ukoliko ima puno stupaca možemo se koristiti sličnom sintaksom za odabir kao i kod funkcije `gather`
+
+Isprobajmo naredbu na okviru `odjeli2`.
+
+## ZADATAK 9.16 - funkcija `unite`
+
+
+```{r}
+# spojite stupce `Kvartal` i `Godina` iz tablice `odjeli2` u jedinstven stupac `Kvartal`
+# uklonite stupce `Kvartal` i `Godina`
+# koristite `-` kao separator
+# spremite rezultat u varijablu `odjeli3`
+# sve ovo izvedite u sklopu jedne naredbe uz pomoć `%>%` operatora
+
+
+# proučite okvire `odjeli` i `odjeli3`
+
+```
+
+
+## Zadaci za vježbu {-}
+
+1. Inicijalizirajte generator slučajnih brojeva uz pomoć naredbe `set.seed(1234)`. Potom uz pomoć jedne naredbe i `%>%` operatora izvedite sljedeće:
+
+- stvorite 100000 nasumičnih brojeva izvučenih iz normalne razdiobe za aritmetičkom sredinom 10000 i standardnom devijacijom 1000
+- zaokružite brojeve na prvi veći cijeli broj
+- izbacite duplikate iz skupa
+- poredajte skup po veličini
+- slučajnim odabirom iz skupa izvucite 100 elemenata
+- organizirajte tih 100 elemenata u matricu 10 x 10, složenu po retcima
+- izračunajte sume redaka matrice
+- ispišite prosjek suma redaka na zaslon. 
+
+2. U datoteci `weather.csv` nalaze se podaci o izmjerenim vremenskim uvjetima od strane meteorološke stanice koja svaki sat vremena mjeri temperaturu, tlak, vlažnost i brzinu vjetra (podaci su preuzeti i prilagođeni iz podatkovnog skupa paketa `weatherData` dostupnog na CRAN-u). Izvedite sljedeće:
+- učitajte datoteku u podatkovni okvir i proučite učitane podatke (`names`, `str`, `summary`, `head`...)
+- odgovorite: da li se radi o urednim podacima? Zašto?
+- poduzmite odgovarajuće korake kako bi dobili podatkovni okvir koji odgovara principu urednih podataka
+- spremite "uređeni" u okvir u datoteku `weatherClean.csv`
+
+
+

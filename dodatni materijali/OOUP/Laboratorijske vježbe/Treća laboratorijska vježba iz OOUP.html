@@ -1,0 +1,907 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!-- saved from url=(0053)http://www.zemris.fer.hr/~ssegvic/ooup/ooup3lab.shtml -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <link rel="stylesheet" type="text/css" href="./Treća laboratorijska vježba iz OOUP_files/ooup.css">
+  <meta name="language" content="croatian">
+  <meta name="author" content="Sinisa Segvic">
+  <title> Treća laboratorijska vježba iz OOUP</title>
+</head>
+
+<body>
+
+<h2>Treća laboratorijska vježba iz OOUP</h2>
+
+
+<h3>1. Tvornice (30% bodova)</h3>
+
+Ova vježba razmatra oblikovanje tvornica 
+koje ne ovise o konkretnim tipovima.
+Takve tvornice ćemo nazivati generičkim tvornicama,
+iako njihova izvedba ne mora biti povezana 
+s generičkim programiranjem.
+Glavna prednost generičkih tvornica jest u tome 
+što ih nije potrebno mijenjati
+kad želimo stvarati nove vrste komponenata.
+U svim vježbama ćemo razmatrati 
+primjer s kućnim ljubimcima
+kojeg smo razmatrali 
+i u prvoj laboratorijskoj vježbi.
+Htjet ćemo omogućiti 
+stvaranje novih vrsta ljubimaca
+bez potrebe za mijenjanjem 
+kôda koji inicira stvaranje.
+U C-u, ključni poziv bi bio:
+
+<pre>struct Animal* p1=myfactory("cat", "Ofelija");
+</pre>
+
+Zadatak generičke tvornice je asocirati
+simbolički identifikator <code>cat</code> s 
+konkretnim podatkovnim tipom <code>struct Cat</code>.
+Na žalost, izvedbe generičkih tvornica 
+čvrsto su vezane uz izvedbene detalje programskih jezika
+pa ćemo stoga pojedine jezike morati razmatrati ponaosob.
+
+<p>
+Obavezni dio vježbe uključuje izvedbu u C-u (1.1), 
+te <em>barem jednu</em> od izvedbi u 
+Pythonu (1.2), C++-u (1.3) i Javi (1.4).
+Naravno, uvijek su dobrodošli i studenti 
+koji riješe više od obaveznog dijela.
+
+</p><p><b>1.1.</b>
+Prvo ćemo pogledati kako bismo generičku tvornicu izveli u C-u.
+S obzirom da C ima vrlo ograničene mogućnosti introspekcije,
+jedini donekle portabilni način da taj cilj postignemo 
+jest zapakirati konkretne objekte u dinamičke biblioteke (.dll,.so).
+Međutim, prije nego što uronimo u detalje,
+definirajmo naš cilj sljedećim ispitnim izvornim kôdom.
+
+</p><pre>#include "myfactory.h"
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef char const* (*PTRFUN)();
+
+struct Animal{
+  PTRFUN* vtable;
+  // vtable entries:
+  // 0: char const* name(void* this);
+  // 1: char const* greet();
+  // 2: char const* menu();
+};
+
+// parrots and tigers defined in respective dynamic libraries
+
+// animalPrintGreeting and animalPrintMenu similar as in lab 1
+
+int main(int argc, char *argv[]){
+  for (int i=0; i&lt;argc/2; ++i){
+    struct Animal* p=(struct Animal*)myfactory(argv[1+2*i], argv[1+2*i+1]);
+    if (!p){
+      printf("Creation of plug-in object %s failed.\n", argv[1+2*i]);
+      continue;
+    }
+
+    animalPrintGreeting(p);
+    animalPrintMenu(p);
+    free(p); 
+  }
+}
+</pre>
+
+Zadatci vježbe su sljedeći:
+<ol><li>
+   Implementirati funkciju
+   <pre>   void* myfactory(char const* libname, char const* ctorarg);
+   </pre>
+   Funkcija treba 
+   i) otvoriti biblioteku zadanu prvim argumentom 
+      (<code>libname</code>),
+   ii) učitati iz nje funkciju <code>create</code>,
+   iii) pozvati create sa svojim drugim argumentom 
+      (<code>ctorarg</code>), te 
+   iv) dobiveni pokazivač vratiti pozivatelju.
+   Zbog jednostavnosti, funkcija treba pretpostaviti
+   da se tražena biblioteka nalazi u tekućem kazalu
+   te dekorirati ime biblioteke tekućim kazalom './'
+   i standardnom ekstenzijom <code>.so</code> (UNIX) 
+   ili <code>.dll</code> (Windows).
+   Prije pisanja kôda preporučamo proučiti funkcije 
+   <code>dlopen</code> i <code>dlsym</code> (UNIX), odnosno 
+   <code>LoadLibrary</code> i <code>GetProcAddress</code> (Windows).
+   Također, provjerite da li u potpunosti razumijete
+   <a href="http://stackoverflow.com/questions/5322958/is-it-possible-to-portably-define-a-function-that-accepts-any-number-of-argument">značenje</a>
+   deklaracije tipa <code>PTRFUN</code>.
+   Neka prototip funkcije bude u <code>myfactory.h</code>,
+   a izvedba u <code>myfactory.c</code>.
+</li><li>
+   Implementirati funkcije <code>animalPrintGreeting</code> 
+   i <code>animalPrintMenu</code>.
+   Implementacija će biti vrlo slična kao i u vježbi 1.
+   Međutim, pripazite da sada do imena ljubimca
+   dolazimo pozivom metode <code>name</code> (indeks 0 virtualne tablice).
+   Sada bi se glavni program trebao moći prevesti
+   (na UNIXU: <code>gcc main.c myfactory.c -ldl</code>).
+   Pokretanje dobivene izvršne datoteke treba rezultirati porukom 
+   <code>Creation of plug-in objects failed.</code>.
+</li><li>
+   Implementirati dinamičke biblioteke 
+   <code>parrot.so</code> i <code>tiger.so</code> 
+   (odnosno <code>parrot.dll</code> i <code>tiger.dll</code> na Windowsima).
+   Izvedba će ponovo biti vrlo slična izvedbama
+   odgovarajućih funkcija u prvoj laboratorijskoj vježbi.
+   Izvorni kod treba 
+   i) definirati konkretni tip ljubimca strukturom
+      koja će osim pokazivača na virtualnu tablicu 
+      imati i pokazivač na ime.
+   ii) implementirati funkcije ("metode"): 
+       <code>name</code>, <code>greet</code> i <code>menu</code>.
+   iii) definirati virtualnu tablicu,
+   te iv) definirati funkciju za stvaranje novih objekata na gomili s prototipom
+   <code>void* create(char const* name);</code>
+   Izvorni kôd dinamičkih biblioteka smjestite u datoteke 
+   <code>tiger.c</code> i <code>parrot.c</code> te ih prevedite
+   (na UNIXU, za <code>parrot.c</code>: 
+    <code>gcc -shared -fPIC parrot.c -o parrot.so</code>)
+</li><li>
+   Ponovo testirati glavni program i otkloniti eventualne nedostatke.
+   Sljedeća preporuka bi vam mogle pomoći da ne lutate previše.
+   Neka se sve datoteke izvornog koda
+   (<code>main.c</code>, <code>myfactory.c</code>, 
+    <code>myfactory.h</code>, <code>parrot.c</code>, <code>tiger.c</code>)
+   nalaze u istom kazalu.
+   Prevođenje i testiranje tada možete provesti
+   pasteanjem sljedećeg bloka naredbi u terminal
+   (naravno, možete napraviti i skriptu).
+   <pre>     gcc main.c myfactory.c -ldl
+     gcc -shared -fPIC tiger.c -o tiger.so
+     gcc -shared -fPIC parrot.c -o parrot.so
+     ./a.out tiger mirko parrot modrobradi
+   </pre>
+</li><li>
+  Predložiti rješenje koje bi klijentima biblioteke
+  omogućilo fleksibilnost pri alociranju 
+  memorijskog prostora za novi objekt.
+  Vaše rješenje mora omogućiti stvaranje objekata na stogu
+  odnosno unutar odvojeno alociranog memorijskog prostora,
+  kao što je bilo traženo i u prvom zadatku prve vježbe.
+  Uputa 1: 
+    generičku tvornicu potrebno je prekrojiti.
+  Uputa 2: 
+    biblioteke trebaju definirati dvije dodatne funkcijer;
+    prva funkcija (možete je zvati sizeof) vraća 
+    veličinu objekata u bajtovima;
+    druga funkcija (možete je zvati construct)
+    inicijalizira objekt u memorijskom prostoru
+    kojeg zadaje pozivatelj.
+  Uputa 3: 
+    memoriju na stogu možete zauzeti lokalnim poljem znakova
+    ili pozivom funkcije alloca (ili _malloca);
+    na Windowsima funkcionira samo ova druga opcija.
+</li></ol>
+
+<p><b>1.2.</b>
+Sada ćemo razmotriti izvedbu generičkih tvornica u Pythonu.
+Kako vježba ne bi bila prelaka,
+razmotrit ćemo malo teži problem.
+Potrebno je napisati program koji će napraviti sljedeće:
+i) iz svake datoteke izvornog koda u kazalu plugins
+   instancirati po jednog ljubimca, te 
+ii) sve instancirane ljubimce predstaviti 
+   načinom glasanja i omiljenim obrokom.
+Ispitni program bi izgledao ovako:
+
+</p><pre>def test():
+  pets=[]
+  # obiđi svaku datoteku kazala plugins 
+  for mymodule in os.listdir('plugins'):
+    moduleName, moduleExt = os.path.splitext(mymodule)
+    # ako se radi o datoteci s Pythonskim kodom ...
+    if moduleExt=='.py':
+      # instanciraj ljubimca ...
+      ljubimac=myfactory(moduleName)('Ljubimac '+str(len(pets)))
+      # ... i dodaj ga u listu ljubimaca
+      pets.append(ljubimac)
+
+  # ispiši ljubimce
+  for pet in pets:
+    printGreeting(pet)
+    printMenu(pet)
+</pre>
+
+Ispis ispitnog programa treba izgledati ovako:
+<pre>Ljubimac 0 pozdravlja: Sto mu gromova!
+Ljubimac 0 voli brazilske orahe.
+Ljubimac 1 pozdravlja: Mijau!
+Ljubimac 1 voli mlako mlijeko.
+</pre>
+
+Upute:
+<ol><li>
+   Ljubimce predstavi razredima 
+   <code>tiger</code> i <code>parrot</code> 
+   koje ćeš smjestiti u istoimene module kazala plugins.
+   Kao i do sada, ljubimci trebaju definirati
+   konstruktor koji u argumentu prima ime ljubimca,
+   te metode <code>name</code>, 
+   <code>greet</code> i <code>menu</code>.
+   Pojedine ljubimce možeš opisati s 9 redaka Pythona.
+</li><li>
+   Funkcija <code>myfactory</code> treba koristiti 
+   funkciju <code>import_module</code> modula <code>importlib</code>,
+   te ugrađenu funkciju <code>getattr</code>.
+   Za definiciju funkcije dovoljna su 3 retka
+   uključujući i zaglavlje.
+</li></ol>
+
+<p><b>1.3.</b>
+U C++-u možemo dinamički stvarati komponente iz dinamičkih biblioteka,
+ali tim se ovdje nećemo baviti jer smo to već obradili 
+u odjeljku koji se odnosi na programski jezik C.
+Ovdje ćemo međutim pokazati jednu drugu mogućnost,
+a ta je da tvornica stvara objekte konkretnih razreda
+koji su prevedeni i ugrađeni u izvršnu datoteku,
+ali bez da bude ovisna o njima.
+Ključ za ostvarivanje te funkcionalnosti je mogućnost 
+da lokalne varijable u dosegu datoteke 
+inicijaliziramo povratnom vrijednošću funkcije
+za koju će se prevoditelj pobrinuti da bude pozvana 
+na samom početku izvđenja programa,
+prije ulaska u funkciju <code>main()</code>.
+Naš zadatak će biti analogan zadatku u Pythonu:
+proiterirati svim ukompajliranim ljubimcima
+te svakog od njih predstaviti načinom glasanja i omiljenim obrokom.
+U izvedbi valja koristiti sljedeće pretpostavke.
+</p><ol><li>
+  Svi ljubimci izvode razred Animal:
+  <pre>  class Animal{
+  public:
+    virtual char const* name()=0;
+    virtual char const* greet()=0;
+    virtual char const* menu()=0;
+  };
+  </pre>
+</li><li>
+  Svaki konkretni tip treba izvesti u zasebnoj komponenti.
+  Konkretni tipovi trebaju definirati:
+  <ul><li>
+    konstruktor čiji argument je ime ljubimca.
+  </li><li>
+    statičku funkciju koja konstruira nove objekte, npr:
+    <pre>    static void* myCreator(const std::string&amp; arg){
+      return new Parrot(arg);
+    }
+    </pre>
+  </li><li>
+    statičku varijablu čija incijalizacijska funkcija
+    registrira gornju funkciju u tvornici:
+    <pre>    static int hreg=myfactory::instance().registerCreator("parrot", myCreator);
+    </pre>
+  </li><li>
+    Ova ideja opisana je u knjizi Modern C++ Design Andreia Alexandrescua.
+    Međutim, u <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3797.pdf">standardu</a>
+    postoji odredba (3.6.2) prema kojoj bi prevoditelj bio slobodan
+    odgoditi incijalizaciju lokalnih varijabli u dosegu datoteke
+    sve do trenutka kad se pozove prva funkcija iz te datoteke.
+    S obzirom na to da se funkcije komponenata s konkretnim tipovima
+    ne pozivaju izravno, to bi značilo da bi se naša inicijalizacija 
+    mogla ne obaviti nikad.
+    Ipak, dominantno mišljenje eksperata je da se ta odredba odnosi
+    isključivo na dinamičke biblioteke, te da sve postojeće implementacije
+    pozivaju inicijalizaciju svih statički linkanih modula 
+    (a to bi bio upravo naš slučaj)
+    prije poziva funkcije main().
+    Detalje možete čitati u 
+    <a href="https://groups.google.com/forum/#!topic/comp.lang.c++.moderated/M8o9usl3YsY">raspravi</a>
+    na comp.lang.c++.
+  </li></ul>
+  Definicije razreda i pojedinih metoda konkretnih razreda
+  mogu biti u istoj datoteci.
+</li><li>
+  Neka tvornica bude jedinstveni objekt (singleton) koji:  
+  <ul><li>
+    održava asocijativno polje <code>creators_</code>
+    koje povezuje simbolička imena razreda
+    s pokazivačima na odgovarajuće konstrukcijske funkcije
+  </li><li>
+    konkretnim razredima omogućava 
+    registriranje konstrukcijske funkcije
+    metodom <code>registerCreator</code>
+  </li><li>
+    klijentima omogućava kreiranje novih objekata
+    preko simboličkog imena metodom <code>create</code>
+  </li><li>
+    klijentima omogućava dohvaćanje vektora
+    sa simboličkim imenima svih konkrentih objekata
+  </li></ul>
+    <pre>    // myfactory.hpp
+    class myfactory{
+    public:
+      typedef void* (*pFunCreator)(const std::string&amp;);
+      typedef std::map&lt;std::string, pFunCreator&gt; MyMap;
+    public:
+      static myfactory &amp;instance();
+    public:
+      int registerCreator(const std::string &amp;id, pFunCreator pfn);
+    public:
+      void *create(const std::string &amp;id, const std::string &amp;arg);
+      std::vector&lt;std::string&gt; getIds();
+    private:
+      myfactory();
+      ~myfactory();
+      myfactory(const myfactory&amp;);
+      MyMap creators_;
+    };
+
+    // myfactory.cpp
+    myfactory&amp; myfactory::instance(){
+      static myfactory theFactory;
+      return theFactory;
+    }
+
+   // some implementations missing...
+    </pre>
+</li></ol>
+
+Zbog jednostavnosti, predložili smo da funkcija create vraća <code>void*</code>
+pa klijenti tvornice moraju koristiti ružne pretvorbe pokazivača (castove).
+Bolje rješenje je moguće izvesti upotrebom predložaka,
+a to zainteresiranim studentima ostavljamo za neobaveznu vježbu.
+Glavni program može izgledati ovako:
+
+<pre>int main(void){
+  myfactory&amp; fact(myfactory::instance());
+  std::vector&lt;std::string&gt; vecIds=fact.getIds();
+  for (int i=0; i&lt;vecIds.size(); ++i){
+    std::ostringstream oss;
+    oss &lt;&lt;"Ljubimac " &lt;&lt;i;
+    Animal* pa=(Animal*) fact.create(vecIds[i], oss.str());
+    printGreeting(*pa);
+    printMenu(*pa);
+    delete pa; 
+  }
+}
+</pre>
+
+Preporuka: sve datoteke (<code>main.cpp</code>, <code>animal.hpp</code>, 
+<code>myfactory.cpp</code>, <code>myfactory.hpp</code>, 
+<code>parrot.cpp</code>, <code>tiger.cpp</code>) 
+smjestite u isto kazalo.
+U tom slučaju prevođenje i pokretanje dobivamo jednostavno s:
+<pre>g++ *cpp; ./a.out
+</pre>
+
+
+<p>
+Napomena za one koji bi ovako nešto htjeli isprogramirati u C-u.
+Na žalost, C-ov standard ne predviđa mogućnost pozivanja 
+korisničkih funkcija prije funkcije <code>main()</code>.
+Međutim, nema nikakvih načelnih prepreka 
+da se takva funkcionalnost ostvari,
+pa većina prevoditelja za to nudi nestandardna proširenja
+(gcc: constructor attribute, msvc: pragma data_seg autostart).
+
+</p><p><b>1.4.</b>
+Na kraju pogledajmo kako bismo generičku tvornicu mogli ostvariti u Javi.
+Pretpostavimo da je definiran apstraktni razred <code>hr.fer.zemris.ooup.lab2.model.Animal</code> s apstraktnim metodama:
+</p><pre>	public abstract String name();
+	public abstract String greet();
+	public abstract String menu();</pre>
+
+i konkretnim metodama:
+
+<pre>	public void animalPrintGreeting() {
+		...
+	}
+	
+	public void animalPrintMenu() {
+		...
+	}</pre>
+
+Pretpostavimo da će korisnik konkretne implementacije razreda <code>Animal</code> stavljati u paket <code>hr.fer.zemris.ooup.lab2.model.plugins</code> i da će
+svaka životinja imati konstruktor koji prima jedan string (njezino ime). Primjerice:
+
+<pre>public class Parrot extends Animal {
+
+	private String animalName;
+
+	public Parrot(String name) {
+		...
+	}
+
+}</pre>
+
+Potrebno je napisati razred <code>AnimalFactory</code> koji ima statičku metodu <code>newInstance</code> kojom stvara proizvoljnu životinju ali na način da ne postoji <i>compile-time</i> ovisnost, odnosno da se sve razrješava tijekom izvođenja programa:
+
+<pre>public class AnimalFactory {
+
+	public static Animal newInstance(String animalKind, String name) {
+		...
+		return ...;
+	}
+	
+}</pre>
+
+Uz pretpostavku da su <code>.class</code> datoteke za navedene životinje dostupne u <i>classpath</i>-u Javinom virtualnom stroju, dinamičko učitavanje novih razreda moguće
+je obaviti statičkom metodom <code>forName</code> razreda <code>Class</code>:
+
+<pre>Class&lt;Animal&gt; clazz = null;
+clazz = (Class&lt;Animal&gt;)Class.forName("hr.fer.zemris.ooup.lab2.model.plugins."+animalKind);</pre>
+
+Jednom kad imamo referencu na razred, stvaranje novog primjerka razreda preko defaultnog konstruktora moguće je obaviti pozivom metode <code>newInstance()</code>:
+
+<pre>Animal animal = (Animal)clazz.newInstance();</pre>
+
+Međutim, u ovom slučaju to neće raditi jer naše životinje nemaju defaultni konstruktor već konstruktor koji prima jedan argument tipa <code>String</code>. Stoga se možemo
+osloniti na <i>Java Reflection API</i>, potražiti konstruktor koji prima jedan <code>String</code> i potom ga pozvati, kako je ilustrirano u nastavku:
+
+<pre>Constructor&lt;?&gt; ctr = clazz.getConstructor(String.class);
+Animal animal = (Animal)ctr.newInstance(name);</pre>
+
+U slučaju da <code>.class</code> datoteke nisu dostupne u <i>classpath</i>-u Javinom virtualnom stroju već su negdje drugdje na disku, stvaranje novih primjeraka uporabom
+poziva <code>Class.forName(...)</code> neće raditi. U tom slučaju potrebno je stvoriti primjerak <i>ClassLoader</i>-objekta kojem će se kao argument dati staza do mjesta
+na kojem se nalaze <code>.class</code> datoteke pa koristiti njegovu metodu <code>loadClass(...)</code> ili pak inačicu metode<code>Class.forName</code> koja prima i referencu
+na <i>ClassLoader</i> koji treba koristiti. Evo primjera:
+
+<pre>ClassLoader parent = AnimalFactory.class.getClassLoader();
+
+URLClassLoader newClassLoader = new URLClassLoader(
+	new URL[] {
+		// Dodaj jedan direktorij (završava s /)
+		new File("D:/java/plugins/").toURI().toURL(),
+		// Dodaj jedan konkretan JAR (ne završava s /)
+		new File("D:/java/plugins-jarovi/zivotinje.jar").toURI().toURL()
+	}, parent);</pre>
+
+Sada možemo pisati:
+
+<pre>Class&lt;Animal&gt; clazz = (Class&lt;Animal&gt;)newClassLoader.loadClass("hr.fer.zemris.ooup.lab2.model.plugins."+animalKind);</pre>
+
+ili
+
+<pre>Class&lt;Animal&gt; clazz = (Class&lt;Animal&gt;)Class.forName("hr.fer.zemris.ooup.lab2.model.plugins."+animalKind, true, newClassLoader);</pre>
+
+Međutim, ako se koriste <i>ClassLoader</i>-i, važno je napomenuti da bi naš <i>Factory</i> razred trebao pamtiti referencu na već stvoreni <i>ClassLoader</i> i uvijek koristiti isti <i>ClassLoader</i>
+za učitavanje iste vrste životinja.
+
+<!------------------------------------------------------------------------------------------------------------------->
+<h3>2. Grafičko sučelje za uređivač teksta (70% bodova)</h3>
+
+<h4>2.1 Upoznavanje s osnovnim komponentama GUI-ja</h4>
+  <!--okvirna metoda, promatrač?-->
+  Proučiti osnovne razrede standardne grafičke biblioteke jezika po izboru 
+  koji korisniku omogućavaju stvaranje 
+  potpuno prilagođenih komponenata grafičkog korisničkog sučelja 
+  (npr. javax.swing.JComponent u Javinoj biblitoteci Swing,
+   System.Windows.Forms.Control u grafičkoj biblioteci C#-a,
+   ili tkinter.TK u standardnoj biblioteci Pythona).
+  Odabrati osnovni razred koji nudi grafičke primitive poput drawLine, drawPolygon ili drawText
+  (ne koristiti razrede koji nude formatirani prikaz grafike i teksta).  
+  Proučiti ostvarivanje osnovne interakcije s odabranim osnovnim razredom
+  poput iscrtavanja geometrijskih oblika i teksta te očitavanja pritisnutih tipaka.
+  Nasljeđivanjem osnovnog razreda oblikujte grafičku komponentu koja:
+  <ul><li>
+    prikazuje jednu vodoravnu i jednu okomitu 
+    crvenu liniju debljine jednog piksela,
+  </li><li>
+    dva retka proizvoljnog teksta,
+  </li><li>
+    zatvara prozor u kojem je smještena kad korisnik pritisne tipku Enter.
+  </li></ul>
+  Napišite program koji prikazuje prethodno oblikovanu komponentu u zasebnom prozoru 
+  (npr. javax.swing.JFrame u Javinoj biblitoteci Swing, System.Windows.Forms.Form u biblioteci C#-a),
+  te završava s radom kad komponenta zatvori svoj prozor.
+  
+  <p>
+  Vidimo da osnovni razred omogućava da grafički podsustav 
+  samostalno poziva naš kod za crtanje kad god se za to javi potreba, 
+  iako je oblikovan i izveden davno prije naše grafičke komponente.
+  Koji oblikovni obrazac to omogućava?
+  
+  </p><p>
+  Vidimo također da naša grafička komponenta preko osnovnog razreda 
+  može dobiti informacije o pritisnutim tipkama
+  bez potrebe za čekanjem u radnoj petlji.
+  Koji oblikovni obrazac to omogućava?
+
+  
+</p><h4>2.2 Osnovni model dokumenta i njegovo prikazivanje</h4>
+
+  <p>
+  Oblikovati grafičku komponentu TextEditor koja će korisnicima omogućiti
+  prikazivanje i jednostavno uređivanje teksta.
+  Vaš zadatak je pratiti položaj kursora, pritiske na tipke,
+  iscrtavati liniju koja predstavlja kursor te
+  iscrtati tekst na površini komponente.
+  Vaša komponenta treba se temeljiti na primitivnim prozorima
+  (npr. JFrame pod Swingom odnosno Tk() pod tkinterom)
+  te ne smije koristiti komponente visoke razine
+  (npr. Text pod tkinterom odnosno JTextArea pod Swingom).
+
+  </p><p>
+  Sve podatke o tekstu kojeg uređujemo, položaju kursora
+  te trenutno označenom dijelu teksta (selekciji)
+  potrebno je enkapsulirati zasebnim razredom TextEditorModel.
+  TextEditor treba sadržavati TextEditorModel.
+  TextEditorModel treba sadržavati sljedeće podatkovne članove: 
+  </p><ul><li>
+    lines ... lista redaka teksta
+  </li><li>
+    selectionRange ... koordinate (redak,stupac) početka i kraja označenog dijela teksta
+  </li><li>
+    cursorLocation ... koordinate trenutnog položaja kursora, odnosno znaka ispred kojeg se nalazi kursor
+  </li></ul>
+  Koordinate je potrebno enkapsulirati razredom Location. 
+  Raspon koordinata je potrebno enkapsulirati razredom LocationRange koji sadrži dva primjerka razreda Location.
+  TextEditorModel u konstruktoru treba primiti znakovni niz s početnim tekstom, 
+  razlomiti ga na znakovima prelaska u novi red, te ga pretvoriti u listu redaka.
+  
+  <p>
+  Isprobajte ispravan rad razvijenih komponenata tako da:
+  </p><ul><li>
+    stvorite primjerak komponente TextEditorModel te ga inicijalizirajte znakovnim nizom s više redaka
+  </li><li>
+    stvorite primjerak grafičke komponente TextEditor, te je povežite s prethodno stvorenim primjerkom razreda TextEditorModel
+  </li><li>
+    povežite taj primjerak sa zasebnim prozorom te prikažite prozor
+  </li><li>
+    provjerite je li tekstovni sadržaj komponente dobro prikazan
+  </li></ul>
+
+<h4>2.3 Iteriranje preko redaka teksta</h4>
+  U razred TextEditorModel dodajte i sljedeće dvije metode:
+  <ul><li>
+    Iterator<string> allLines(); vraća iterator koji prolazi kroz sve retke dokumenta
+  </string></li><li>
+    Iterator<string> linesRange(int index1, int index2); vraća iterator koji prolazi kroz dani raspon redaka 
+                                                         (prvi uključiv, drugi isključiv).
+  </string></li></ul>
+  Ažurirajte kod za prikaz redaka teksta tako da koristi razvijeni iterator.
+
+  
+<h4>2.4 Pomicanje kursora</h4>
+  Podrška za kretanje kursora treba uzeti u obzir da se promjene položaja trebaju odraziti i na prikaz kursora u uređivaču kao i u statusnoj traci koju ćemo naknadno dodati. Kako biste to podržali, omogućite razredu TextEditorModel da bude izdavač informacije o položaju kursora:
+  <ul><li>
+    definirajte sučelje promatrača CursorObserver s metodom updateCursorLocation(Location loc)
+  </li><li>
+    u razredu TextEditorModel omogućite prijavu i odjavu promatrača tipa CursorObserver
+  </li><li>
+    u razred TextEditorModel dodati metode  moveCursorLeft(), moveCursorRight(), moveCursorUp() i moveCursorDown() koje pokušavaju promijeniti položaj kursora
+  </li><li>
+    svaku uspješnu promjenu položaja kursora razred TextEditorModel treba dojaviti svim promatračima
+  </li></ul>
+  
+  <p>
+  Izmijenite TextEditor na način da nakon svakog pritiska tipaka za pomicanje kursora pozove odgovarajuću metodu razreda TextEditorModel. Također izmijenite metodu za iscrtavanje razreda TextEditor tako da prikazuje položaj kursora kratkom okomitom crtom. 
+  Osigurajte da TextEditor dobiva informacije o promjenama položaja kursora bilo da TextEditor naslijedi CursorObserver i prijavi se kao promatrač u svom konstruktoru, bilo da se za to koristi pomoćni (ili još bolje anonimni) razred.
+  
+</p><h4>2.5 Označavanje teksta</h4>
+  Omogućiti razredu TextEditorModel da bude izdavač informacije o promjenama teksta:
+  <ul><li>
+    definirajte sučelje promatrača TextObserver s metodom updateText()
+  </li><li>
+    u razredu TextEditorModel omogućite prijavu i odjavu promatrača tipa TextObserver
+  </li><li>
+    u razred TextEditorModel dodati metode:
+	 <ul>
+	 <li>deleteBefore(); kojom se briše znak iza kojeg je kursor i pomiče poziciju kursora unatrag (lijevo)
+     </li><li>deleteAfter(); kojom briše znak ispred kojeg je kursor i ne mijenja poziciju kursora
+     </li><li>deleteRange(LocationRange r); koja briše predani raspon znakova
+	 </li><li>getSelectionRange(): LocationRange; koja vraća raspon položaja koji čine trenutnu selekciju
+	 </li><li>setSelectionRange(LocationRange range); koja postavlja raspon položaja koji čine trenutnu selekciju
+     </li></ul>
+  </li><li>
+    svaku uspješnu promjenu teksta razred TextEditorModel treba dojaviti svim promatračima
+  </li></ul>
+
+  <p>
+  Izmjenite TextEditor tako da pomicanje kursora dok je pritisnuta tipka Shift ažurira aktivnu selekciju u modelu.
+  Također izmijenite metodu za iscrtavanje razreda TextEditor tako da dio teksta koji je označen prikazuje drugačijom
+  pozadinskom bojom. Pozivanjem prethodno definiranih metoda osigurajte da pritisak tipke Backspace briše znak ispred
+  kursora a pritisak tipke Del briše znak iza kursora, ako ne postoji selekcija. Ako postoji selekcija, pritisak bilo koje
+  od tih tipaka briše selektirani tekst.
+  
+</p><h4>2.6 Modificiranje teksta unosom novih znakova preko tipkovnice</h4>
+  Omogućite razredu TextEditorModel da modificira dokument umetanjem znakova.
+  <ul><li>
+    u razred TextEditorModel dodati metode:
+	 <ul>
+     <li>insert(char c); kojom se umeće znak na mjesto na kojem je kursor i pomiče se kursor
+     </li><li>insert(String text); kojom se umeće proizvoljan tekst (potencijalno više redaka) na mjesto na kojem je kursor i pomiče se kursor
+     </li></ul>
+  </li></ul>
+  
+  Izmjenite TextEditor tako da pritisak znakovnih, numeričkih i sličnih tipaka ažurira trenutni dokument ubacivanjem
+  znakova na poziciju na kojoj je kursor. Ako u trenutku ubacivanja znaka postoji definirana selekcija, ona se najprije
+  briše a potom se ubacuje znak.
+  
+  <p>
+  Ako je ascii vrijednost znaka 10 (tj. Enter), metoda treba redak u kojem je kursor prelomiti na dva retka: prvi čine svi
+  znakovi koji su bili ispred trenutne pozicije kursora a drugi redak čine znakovi koji su bili iza pozicije kursora;
+  time se povećava broj redaka teksta za jedan. Položaj kursora mijenja se tako da odgovara početku retka koji je nastao
+  od znakova koji su bili iza trenutnog položaja kursora.
+  
+  </p><p>
+  Obratite pažnju na to da bi od ovog trenutka nadalje
+  sve promjene dokumenta trebalo provoditi na uniformni način
+  kako biste omogućili opozivanje i vraćanje izmjena.
+
+</p><h4>2.7 Izrada prilagođenog međuspremnika (clipboard)</h4>
+  Omogućiti razredu TextEditor da koristi vlastiti clipboard koji omogućava prijenos više dijelova teksta.
+  Definirajte razred ClipboardStack koji ima podatkovni član Stack<string> texts; te popratne metode za stavljanje
+  teksta na stog, micanje teksta sa stoga, čitanje teksta s vrha stoga ali bez micanja, ispitivanje ima li teksta
+  na stogu te brisanje stoga.
+  
+  <p>
+  Omogućiti razredu ClipboardStack da bude izdavač informacije o promjenama u clipboardu:
+  </p><ul><li>
+    definirajte sučelje promatrača ClipboardObserver s metodom updateClipboard()
+  </li><li>
+    u razredu ClipboardStack omogućite prijavu i odjavu promatrača tipa ClipboardObserver
+  </li></ul>
+
+  Modificirajte razred TextEditor tako da podrži sljedeće kombinacije tipaka:
+  <ul>
+  <li>CTRL+C trenutnu selekciju (ako postoji) pusha na stack u clipboard; 
+  </li><li>CTRL+X trenutnu selekciju (ako postoji) pusha na stack u clipboard i potom je briše u modelu teksta;
+  </li><li>CTRL+V tekst s vrha stoga u clipboardu čita (ali ne miče) i ubacuje ga u model pozivom metode insert(...)
+  </li><li>CTRL+SHIFT+V tekst s vrha stoga u clipboardu čita i uklanja ga sa stoga te umeće u model teksta pozivom metode insert(...)
+  </li></ul>
+
+<h4>2.8 Opoziv izmjena u dokumentu (undo)</h4>
+
+  Definirajte sučelje EditAction koji sadrži metode execute_do() i execute_undo(), u skladu s oblikovnim obrascem Naredba. 
+
+  <p>
+  Potom definirajte razred UndoManager čija je struktura sljedeća:
+  </p><ul>
+  <li>Stack&lt;EditAction&gt; undoStack;
+  </li><li>Stack&lt;EditAction&gt; redoStack;
+  </li><li>undo(); // skida naredbu s undoStacka, pusha je na redoStack i izvrsava
+  </li><li>push(EditAction c); // brise redoStack, pusha naredbu na undoStack
+  </li></ul>
+
+  Neka razred UndoManager bude Subjekt (OO Promatrač) za informacije 
+  o statusu stogova undoStack (prazan ili ne) i redoStack (prazan ili ne).
+  Izzborničke stavke za pokretanje naredbi undo i redo 
+  mogu biti Promatrači koji se onemogućuju kada je odgovarajuci stog prazan.
+
+  <p>
+  Prođite kroz sve metode modela koje mijenjaju tekst (umeću znakove, brišu znakove) 
+  te u svakoj od njih stvorite primjerak razreda izvedenog iz EditAction 
+  koji pamti informacije potrebne za provođenje i poništavanje akcije 
+  (npr. što se briše, što se dodaje, na kojoj lokaciji itd.).
+  Stvoreni objekt pohranite na stog primjerka UndoManagera.
+
+  </p><p>
+  Modificirajte razred TextEditor tako da podrži sljedeće kombinacije tipaka:
+  </p><ul>
+  <li>CTRL+Z skida naredbu sa stoga undoStack, prebacuje je na redoStack i pokreće metodu execute_undo().
+  </li><li>CTRL+Y skida naredbu sa stoga redoStack, pokreće metodu execute_do() i prebacuje naredbu na undoStack.
+  </li></ul>
+
+  <p>
+  Osigurajte da u programu u svakom trenutku može postojati
+  samo jedan primjerak razreda UndoManager primjenom obrasca Jedinstveni objekt.
+  
+</p><h4>2.9 Izborničke stavke i alatne trake</h4>
+
+  Proučite kako se u grafičkoj biblioteci radi s izbornicima 
+  (u Javi to su razredi JMenuBar, JMenu, JMenuItem).
+  U prozor dodajte strukturu izbornika koja je prikazana u nastavku:
+
+<pre>File
+ +- Open
+ +- Save
+ +- Exit
+Edit
+ +- Undo
+ +- Redo
+ +- Cut
+ +- Copy
+ +- Paste
+ +- Paste and Take
+ +- Delete selection
+ +- Clear document
+Move
+ +- Cursor to document start
+ +- Cursor to document end
+</pre>
+
+  <p>
+  Proučite kako se u grafičkoj biblioteci radi s alatnim trakama (u Javi to je razred JToolbar).
+  U prozor na vrh dodajte jednu alatnu traku koja sadrži gumbe Undo, Redo, Cut, Copy, Paste.
+
+  </p><p>
+  Osigurajte da izborničke stavke i gumbi alatne trake pokreću za to predviđene akcije. Također osigurajte
+  da su pojedine izborničke stavke te gumbi alatne trake omogućeni samo kada je to smisleno; primjerice,
+  stavka Cut ili Copy ne smije biti omogućena ako ne postoji selekcija u dokumentu; Undo ne smije biti omogućen
+  ako ne postoji barem jedna naredba na undo stogu a Redo ne smije biti omogućen ako ne postoji barem jedna
+  naredba na redo stogu; Paste ne smije biti omogućen ako je clipboard prazan. Kojim oblikovnim obrascem ovo 
+  možete postići?
+
+</p><h4>2.10 Statusna traka</h4>
+  
+  Proučite kako se u grafičkoj biblioteci radi sa statusnim trakama (u Javi za to može poslužiti razred JLabel s obrubom).
+  Opremite program statusnom trakom u kojoj se ispisuje trenutni položaj kursora te broj redaka teksta. 
+  Kojim oblikovnim obrascem ovo možete postići?
+
+<h4>2.11 Dinamičko dodavanje proširenja programa (plugin)</h4>
+
+  Kao posljednji dio ovog zadatka potrebno je omogućiti 
+  dinamičko proširenje funkcionalnosti programa dodavanjem pluginova. 
+  Svaki plugin se definira kao biblioteka 
+  koja sadrži razred koji izvodi sljedeće sučelje:
+
+<pre>interface Plugin {
+  String getName(); // ime plugina (za izbornicku stavku)
+  String getDescription(); // kratki opis
+  void execute(TextEditorModel model, UndoManager undoManager, ClipboardStack clipboardStack);
+}
+</pre>
+
+  Metoda execute(...) prima reference na sve relevantne razrede kako bi mogla ostvariti proizvoljnu funkcionalnost.
+  Potrebno je napraviti sljedeće pluginove:
+
+  <ul>
+  <li><b>Statistika</b>: plugin koji broji koliko ima redaka, riječi i slova u dokumentu i to prikazuje korisniku u dijalogu.
+  </li><li><b>VelikoSlovo</b>: prolazi kroz dokument i svako prvo slovo riječi mijenja u veliko ("ovo je tekst" ==&gt; "Ovo Je Tekst").
+  </li></ul>
+  
+  Ovisno u kojem jeziku radite, program treba na odgovarajući način na disku potražiti i učitati sve raspoložive pluginove 
+  te ih dinamički dodati u strukturu izbornika. Za tu potrebu u izborničku strukturu treba dodati još i izbornik "Plugins"
+  čije će stavke program dinamički stvoriti prilikom pokretanja, temeljem pronađenih pluginova.
+
+<h3>3. Pametni pokazivači (5% bodova)</h3>
+<p><strong>Napomena</strong>:
+Ova vježba nije obavezna, ali slobodno je riješite.
+</p><p>
+
+Proučite način korištenja pametnih pokazivača 
+posljednjeg standarda jezika C++: 
+<a href="https://en.wikipedia.org/wiki/Smart_pointer">1</a>,
+<a href="http://stackoverflow.com/questions/106508/what-is-a-smart-pointer-and-when-should-i-use-one">
+2</a>,
+<a href="http://stackoverflow.com/questions/8334886/c11-smart-pointer-policies">
+3</a>.
+Napišite kratke ispitne programe za 
+<kbd>unique_ptr</kbd>, <kbd>shared_ptr</kbd>
+i <kbd>weak_ptr</kbd>.
+Proučite izvorni kod implementacije tih komponenata
+u distribuciji vašeg prevodioca (&lt;memory&gt;)
+i pokušajte razumjeti kako te komponente rade,
+na konceptualnoj razini.
+
+</p><h3>4. Parsanje aritmetičkih izraza (5% bodova)</h3>
+<p><strong>Napomena</strong>:
+Ova vježba nije obavezna, ali slobodno je riješite.
+
+</p><p>
+Potrebno je napisati jednostavni rekurzivni program 
+za parsiranje, prikazivanje i evaluiranje aritmetičkih izraza. 
+Program treba podržavati operacije 
+zbrajanja, oduzimanja, množenja i dijeljenja, 
+te grupiranje zagradama nad brojčanim i simboličkim podatcima.
+Evaluiranje simboličkih podataka implementirajte
+prozivanjem globalnog rječnika <code>Symbols</code>.
+
+</p><p>
+Neka se program temelji na funkciji <code>parseExpression</code>
+koja treba kreirati kompozit koji predstavlja sintaksno stablo izraza.
+Sve komponente kompozita trebaju definirati konstruktor,
+metodu <code>toStr</code> koja sadržaj kompozita izražava znakovnim nizom
+(u Pythonu ovu metodu ima smisla nazvati 
+ <code>__str__</code> ili <code>__repr__</code>),
+te metodu <code>evaluate</code> koja evaluira vrijednost kompozita.
+
+</p><p>
+Ispitajte razvijeni program na način 
+da ručno postavite vrijednosti simbola,
+pokrenete parsiranje izraza zadanog znakovim nizom,
+te zatim ispišete parsirani izraz
+kao i njegovu numeričku vrijednost.
+Preporučeni primjer ispitivanja 
+u interaktivnoj ljusci Pythona
+prikazan je u nastavku.
+</p><pre>&gt;&gt;&gt; tree=parseExpression("6*(x+4)/2-3-x")
+&gt;&gt;&gt; tree.toStr()
+((((6.0*(x+4.0))/2.0)-3.0)-x)
+&gt;&gt;&gt; tree.evaluate() # ovo ne radi jer ne znamo x!
+...
+KeyError: 'x'
+&gt;&gt;&gt; Symbols['x']=5
+&gt;&gt;&gt; tree.evaluate()
+19.0
+&gt;&gt;&gt; x=5; 6*(x+4)/2-3-x # proba
+19.0
+&gt;&gt;&gt; Symbols['x']=4     # radi i za drugi x
+&gt;&gt;&gt; tree.evaluate()
+17.0
+</pre>
+
+<!-- TODO: dodati nove operatore, slučajne varijable -->
+<b>Pomoć</b>
+
+<p>
+Parsiranje može biti vrlo težak zadatak
+ako problemu ne pristupimo na pravi način.
+Situaciju posebno kompliciraju sljedeći problemi:
+</p><ul><li>
+  različiti prioriteti operatora,
+</li><li>
+  grupiranje izraza zagradama,
+</li><li>
+  desna asocijativnost operatora.
+</li></ul>
+
+<p>
+Stoga elegantno rješenje možemo postići
+ako razrješavamo operatore redoslijedom
+koji odgovara njihovom prioritetu.
+Pri tome moramo paziti da zanemarimo 
+operatore koji su uokvireni zagradama.
+Kako bismo pogodili asocijativnost,
+operatore treba uzimati u obzir s desna na lijevo.
+Kad obradimo sve operatore, potrebno je provjeriti
+radi li se o izrazu kojeg grupiraju zagrade.
+Ako to nije slučaj, vraćamo atomarni izraz
+koji može biti broj ili simbol.
+
+</p><p>
+Kôd koji implementira gore skicirani algoritam
+parsiranja prikazan je u nastavku.
+Prikazani kôd treba modificirati na način da
+na izlazu proizvede kompozit 
+kojeg jednostavno možemo ispisati i evaluirati,
+u skladu s uputama danim na početku zadatka.
+Traženi program može se napisati 
+u manje od 60 redaka Pythona,
+uključujući i 20 redaka modificirane funkcije <code>parse</code>.
+
+</p><pre># adapted from  http://news.ycombinator.com/item?id=284842
+def parse(strinput):
+  for operator in ["+-", "*/"]:
+    depth = 0
+    for p in range(len(strinput) - 1, -1, -1):
+      if strinput[p] == ')': depth += 1
+      elif strinput[p] == '(': depth -= 1
+      elif depth==0 and strinput[p] in operator:
+        # strinput is a compound expression
+        return (strinput[p], parse(strinput[:p]), parse(strinput[p+1:]))
+  strinput = strinput.strip()
+  if strinput[0] == '(':
+    # strinput is a parenthesized expression?
+    return parse(strinput[1:-1])
+  # strinput is an atom!
+  return strinput
+</pre>
+
+
+<div id="footer">
+<hr style="height:5px">
+  <table width="100%" style="margin-left:auto; margin-right:auto;">
+  <tbody><tr> <td style="width:100%; text-align:left" valign="top">
+    Izrađeno 
+    <a href="http://www.vim.org/">vi</a>-jem i
+    <a href="http://www.gedit.org/">gedit</a>om. 
+
+    <!--flastmod file="${DOCUMENT_NAME}"-->
+    Posljednja promjena: Friday, 13-May-2022 09:35:18 CEST
+  </td></tr><tr> <td style="width:50%; text-align:left" valign="top">
+    Svi komentari su dobrodošli: 
+    <img src="./Treća laboratorijska vježba iz OOUP_files/email.png" alt="sinisa segvic at fer hr" width="150" style="vertical-align:text-bottom">
+    </td><td style="width:50%; text-align:right" valign="bottom">
+    <a href="http://www.zemris.fer.hr/~ssegvic/ooup">Povratak</a>
+  </td></tr></tbody></table>
+
+  <p>
+</p></div>
+
+
+
+
+
+</string></body></html>

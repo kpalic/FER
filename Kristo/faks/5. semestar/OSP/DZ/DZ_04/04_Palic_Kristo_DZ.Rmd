@@ -1,0 +1,66 @@
+---
+title: "04_Palic_Kristo_DZ"
+author: "Kristo Palić"
+date: "2022-11-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Zadaci za vježbu {-}
+
+
+
+1. U mapi zajedno sa ovom bilježnicom pronađite datoteku `mjestoNOHEADER.csv` koja predstavlja datoteku istovjetnu datoteci `mjesto.csv` osim sljedećih značajki:
+
+- nedostaju imena stupaca
+- korišten je razmak kao razdvojnik
+
+Pokušajte uz pomoć dokumentacije učitati podatke iz ove datoteke u varijablu `mjestoNH` koja će biti istovjetna varijabli `mjesto` korištenoj u lekciji.
+
+```{r}
+
+mjestoNH <- read.csv("mjestoNH.csv",header = FALSE, sep = " ", col.names = c("pbr","nazivMjesta","prosjPlacaKn","brojStanovnika","prirez"))
+mjestoNH
+
+```
+
+2. U mapi zajedno sa ovom bilježnicom pronađite datoteku `racun.csv` i učitajte ju u varijablu `racun`. Pripazite da nizovi znakova nisu automatski pretvoreni u faktore. Ispišite na zaslon:
+
+- broj redaka ove tablice
+- broj stupaca tablice
+- imena stupaca tablice
+
+```{r}
+racun <- read.csv("racun.csv")
+nrow(racun)
+ncol(racun)
+colnames(racun)
+racun
+
+
+```
+3. Za tablicu `racun` napravite sljedeće:
+
+- faktorizirajte stupac `katArtikl`
+- ispišite šifru, naziv i cijenu svih artikala kategorije "slatkisi i grickalice" jeftinijih od 12 Kn
+- ispišite koliko proizvoda koje kategorije se nalazi u računu
+- dodajte stupac ukupno koji će sadržavati ukupnu cijenu pojedine stavke uračunavajući i cijenu i količinu
+- izračunajte ukupni iznos računa
+
+```{r}
+
+
+racun$katArtikl <- factor(racun$katArtikl)
+racun[racun$katArtikl == "slatkisi i grickalice" & racun$cijena < 12, c("sifArtikl", "nazArtikl", "cijena")]
+table(racun$katArtikl)
+racun$ukupno <- racun$cijena * racun$kolicina
+racun
+x <- sum(racun$ukupno)
+x
+class(racun$katArtikl)
+
+```
+

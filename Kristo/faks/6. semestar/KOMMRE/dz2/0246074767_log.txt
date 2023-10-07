@@ -1,0 +1,7 @@
+GENERIRANJE PRIVATE I PUBLIC KLJUCA
+1. openssl genrsa -out private.pem 2048
+2. openssl rsa -in private.pem -outform PEM -pubout -out 0246074767.pem
+POTPISIVANJE DATOTEKE
+3. openssl dgst -sha256 -sign private.pem -out 0246074767.sig 0246074767.imn
+VERIFIKACIJA
+4. openssl dgst -sha256 -verify 0246074767.pem -signature 0246074767.sig 0246074767.imn

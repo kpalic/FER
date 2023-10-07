@@ -1,0 +1,59 @@
+:root{
+    /* colors */
+    --blueSteel: #4b5556;
+    --aqua: #5f7880;
+    --tan: #caa78d;
+    --sunKissed: #cca085;
+    --cloud: #d3d5d4;
+    --khakiBrown: #ba8052;
+    --lightBrown: #d5c6b9;
+    --lightBlue: #c0c9c3;
+    --darkBlue: #2b4e52;
+    --oliveGreen: #bab86c;
+    --oliveGreenLight:#cdd4ab;
+    --lightRed:#f3aba4;
+    --lightYellow: #fee4a9;
+    --babyBlue:#89b9e5;
+}
+
+@font-face {
+    font-family: 'Quicksand';
+    src: url('./assets/fonts/Quicksand/static/Quicksand-Regular.ttf');
+  }
+  
+  @font-face {
+    font-family: 'Quicksand-medium';
+    src: url('./assets/fonts/Quicksand/static/Quicksand-Medium.ttf');
+  }
+  
+  @font-face {
+    font-family: 'Quicksand-semibold';
+    src: url('./assets/fonts/Quicksand/static/Quicksand-SemiBold.ttf');
+  }
+  
+  @font-face {
+    font-family: 'Quicksand-bold';
+    src: url('./assets/fonts/Quicksand/static/Quicksand-Bold.ttf');
+  }
+  
+  @font-face {
+    font-family: 'Quicksand-light';
+    src: url('./assets/fonts/Quicksand/static/Quicksand-Light.ttf');
+  }
+  @font-face {
+    font-family: 'Yellowtail';
+    src: url('./assets/fonts/Yellowtail/Yellowtail-Regular.ttf');
+  }
+  
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html {
+    font-size: 16px;
+    font-family: 'Quicksand', sans-serif;
+  }

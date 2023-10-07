@@ -1,0 +1,101 @@
+.register-main-container{
+    height: 100%;
+    min-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.register-container{
+    height: 100%;
+    width: 30%;
+    background-color: var(--cloud);
+    padding: 3rem;
+    border-radius: 0.5rem;
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+}
+.register-title{
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: large;
+}
+.register-form{
+    display: flex;
+    flex-direction: column;
+}
+.go-to-login{
+    margin-top: 0.5rem;
+}
+.go-to-link{
+    margin-left: 0.5rem;
+}
+.error-container{
+  width: 100%;
+  height: fit-content;
+  padding: 1rem;
+  background-color: rgb(188, 125, 125);
+  margin-bottom: 1rem;
+  font-size: 15px;
+  font-weight: 800;
+  border-radius: 10px;
+}
+@media only screen and (max-width: 1080px) {
+  .register-container {
+    margin-top: 5%;
+    margin-bottom: 5%;
+    width: 60%;
+  }
+}
+@media only screen and (max-width: 720px) {
+  .register-container {
+    margin-top: 10%;
+    margin-bottom: 10%;
+    width: 80%;
+  }
+}
+@media only screen and (max-width: 375px) {
+    .register-container {
+      width: 90%;
+      height: 100%;
+      border-radius: 0;
+      padding: 1.5rem;
+    }
+}
+
+@media only screen and (min-width: 1080px) {
+  .register-container {
+    margin-top: 5vh;
+    margin-bottom: 5vh;
+    width: 35vw;
+  }
+}
+
+/*------loading animation-------*/
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center; 
+  align-items: center; 
+  box-sizing: border-box;
+}
+.loader-container {
+  width: 100vw;
+  height: 100vh;
+  bottom: 0px;
+  left: 0px;
+  position: fixed;
+  background: rgba(29, 29, 29, 0.834);
+  z-index: 1;
+}
+@media only screen and (max-width: 720px) {
+  .loader-container {
+    z-index: 2;
+  }
+}

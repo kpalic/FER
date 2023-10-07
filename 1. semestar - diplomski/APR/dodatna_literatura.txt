@@ -1,0 +1,18 @@
+
+1. Rješavanje sustava linearnih jednadžbi
+- Uvod u numerièku matematiku za inženjere, Element, 2013
+
+2. Postupci nelinearne optimizacije
+- Nocedal J., Wright S.J.: Numerical optimization (Springer, 1999)
+- Convex Optimization, Cambridge university press, 2004
+
+3. Genetski algoritmi
+- M. Èupiæ: Prirodom inspirirani optimizacijski algoritmi. Metaheuristike. http://java.zemris.fer.hr/nastava/pioa/
+- M. Golub: Skripta 1. dio: Genetski algoritmi, http://www.zemris.fer.hr/~golub/ga/ga_skripta1.pdf
+
+4. Analiza prijelaznih pojava
+- S. Turk, L. Budin: Analiza i projektiranje raèunalom, Školska knjiga, Zagreb, 1989.
+
+5. Pogreške u postupcima analize
+- David Goldberg: What Every Computer Scientist Should Know About Floating-Point Arithmetic, http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.22.6768
+- http://www.floating-point-gui.de/

@@ -1,0 +1,1799 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+---
+title: "Antropometrijski podatci američkih vojnih snaga"
+output: pdf_document
+---
+U nastavku statistički se ispituju različite antropometrijske mjere američkih vojnih snaga i njihovi odnosi.
+Nad podatcima isprobani su modeli jednostruke i višestruke regresije, ANOVA, različiti testovi za normalnost podataka i mnogi drugi, kako bi se odgovorilo na (neka) pitanja vezana uz ovaj skup podataka.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, results='hide', include=FALSE}
+
+ require(nortest)
+ require(fastDummies)
+
+ options(warn=-1)
+
+```
+
+
+# Antropometrijski podaci
+
+Podatci za analizu dani su u datoteci `ANSUR_II_data` te sadrže informacije o antropometrijskim mjerama vojnika. 
+
+```{r data, results='hide'}
+
+  ANSUR = read.table('ANSUR_II_data.csv',header = T,sep = ",") #učitavanje podataka
+  summary(ANSUR)
+  
+  female_soldiers = ANSUR[ANSUR$Gender == "Female",] #podatci o ženskim vojnicima
+  male_soldiers = ANSUR[ANSUR$Gender == "Male",] #podatci o muškim vojnicima
+  
+  #podatci u kojima su kodirane vrijednosti Gender_Male i Gender_Female
+  ANSUR.d = dummy_cols(ANSUR,select_columns='Gender')
+  
+  
+  
+
+```
+
+
+# Usporedba opsega bicepca kod dešnjaka, ljevaka i ambideksternih vojnika
+
+# Imaju li dešnjaci veći opseg bicepsa od ljevaka?
+
+Mjerenja su provedena na bicepsu desne ruke u stanju napetosti mišića. Stoga s obzirom na način mjerenja prirodno je pretpostaviti da dešnjaci imaju malu prednost nad ljevacima. To ćemo pokušati dokazati statističkim testiranjem podataka mjerenja.
+
+Radi inicijalne usporedbe pogledat ćemo prosječne opsege bicecpsa dešnjaka i ljevaka.
+```{r}
+desnjaci = ANSUR[ANSUR$WritingPreference== "Right hand",]
+ljevaci = ANSUR[ANSUR$WritingPreference== "Left hand",]
+
+desnoMean = mean(desnjaci$bicepscircumferenceflexed)
+ljevoMean = mean(ljevaci$bicepscircumferenceflexed)
+
+cat(' Prosjek opsega bicepsa vojnika koji preferiraju desnu ruku iznosi ',
+    mean(desnjaci$bicepscircumferenceflexed),'\n',
+   'Prosjek opsega bicepsa vojnika koji preferiraju lijevu ruku iznosi ',
+    mean(ljevaci$bicepscircumferenceflexed),'\n')
+
+```
+
+```{r}
+
+boxplot(desnjaci$bicepscircumferenceflexed, ljevaci$bicepscircumferenceflexed,
+names = c('Prefering right hand','Prefering left hand'),
+main='Boxplot biceps circumference - flexed')
+
+```
+
+
+Ne postoje velike indikacije da dešnjaci imaju veći opseg od ljevaka.
+
+Provodimo ispitivanje t-testom, ali prvo ćemo provjeriti neke početne značajke podataka (normalnost i nezavisnost podataka).
+
+**Nezavisnot podataka** pretpostavljamo na temelju dvaju različitih uzoraka nad kojima se provodi ispitivanje, prvi uzorak predstavljaju vojnici koji preferiraju desnu ruku, a drugi oni koji preferiraju lijevu ruku.
+
+Nadalje ispitujemo normalnost podataka koju ćemo provjeriti pomoću dvije vrste grafova (histogramima i qqplot-ovima)
+
+```{r}
+
+par(mfrow= c(1,2))
+
+dHistData <- desnjaci$bicepscircumferenceflexed
+dHist <- hist(dHistData, 
+              breaks=seq(min(desnjaci$bicepscircumferenceflexed)-1,
+                         max(desnjaci$bicepscircumferenceflexed)+1,2),
+              xlab="Circumference in mm",
+   main="Prefering right hand")
+
+dxF <- seq(min(dHistData),max(dHistData),length=30)
+dyF <- dnorm(dxF,mean=mean(dHistData),sd=sd(dHistData))
+dyF <- dyF*diff(dHist$mids[1:2]*length((dHistData)))
+
+lines(dxF, dyF, col="red", lwd=2)
+
+legend("topright", c("Normal curve"), col=c("red"), lwd=2, cex=0.7)
+
+
+dHistData <- ljevaci$bicepscircumferenceflexed
+dHist <- hist(dHistData,
+              breaks=seq(min(ljevaci$bicepscircumferenceflexed)-1,
+                         max(ljevaci$bicepscircumferenceflexed)+1,2),
+              xlab="Circumference in mm",
+   main="Prefering left hand")
+
+dxF <- seq(min(dHistData),max(dHistData),length=30)
+dyF <- dnorm(dxF,mean=mean(dHistData),sd=sd(dHistData))
+dyF <- dyF*diff(dHist$mids[1:2]*length((dHistData)))
+
+lines(dxF, dyF, col="red", lwd=2)
+
+legend("topright", c("Normal curve"), col=c("red"), lwd=2, cex=0.7)
+
+
+```
+
+Prikaz podataka histogramima upućuje na **normalnost podataka**. Nadalje koristimo se qqplot-ovima za daljnji prikaz ponašanja podataka.
+
+
+```{r, echo=FALSE}
+
+par(mfrow= c(1,2))
+
+qqnorm(desnjaci$bicepscircumferenceflexed, frame = FALSE,main='Prefering right hand')
+qqline(desnjaci$bicepscircumferenceflexed, col = "red", lwd = 2)
+qqnorm(ljevaci$bicepscircumferenceflexed, frame = FALSE,main='Prefering left hand')
+qqline(ljevaci$bicepscircumferenceflexed, col = "red", lwd = 2)
+
+```
+
+Prikazom podataka qqplot-ovima također upućuje na **normalnost podataka**.
+Sada uz pretpostavku da sve pretpostavke zadovoljeno možemo prijeći na sljedeći korak ispitivanja.
+
+Nakon nezavistosti i normalnosti podataka gledamo razliku u varijancama naših dvaju uzoraka.
+Koristimo se testom o jednakosti varijanci.
+
+Prvo ćemo pogledati koliko iznose varijance naših dvaju uzoraka.
+
+```{r}
+cat(' Varijanca prvog uzorka (dešnjaci): ', var(desnjaci$bicepscircumferenceflexed), '\n', 
+    'Varijanca drugog uzorka (ljevaci): ', var(ljevaci$bicepscircumferenceflexed), '\n')
+
+
+```
+
+Vidimo da same varijance nisu znatno različite, a to ćemo pokušati potvrditi **testom o jednakosti varijanci**.
+Početna hipoteza ovog testa(H0): Varijance naših dvaju uzoraka su jednake.
+
+
+\pagebreak
+```{r}
+var.test(desnjaci$bicepscircumferenceflexed, ljevaci$bicepscircumferenceflexed)
+
+```
+
+Test o varijanci nam daje p-vrijednost od 0.6708, što znači da ne možemo odbaciti našu početnu hipotezu H0 o jednakosti varijanci.
+
+Nakon testa o jednakosti varijanci (**pretpostavljajući njihovu jednakost**) možemo prijeći na t-test koji provodimo uz dosadašnje pretpostavke.
+
+
+```{r}
+t.test(desnjaci$bicepscircumferenceflexed, ljevaci$bicepscircumferenceflexed,
+       alt = "greater", var.equal = TRUE)
+
+```
+
+**Zaključak:** T-test nam daje p vrijednost od 0.3459 što znači da ne možemo odbaciti hipotezu H0 (H0: jednakost prosječnih opsega bicepsa kod dešnjaka i ljevaka).
+Kako testiranjem danog uzorka ne možemo odbaciti nultu hipotezu, **dani rezultati nisu dovoljni da bi donijeli zaključak o takvom pitanju** što ne potvrđuje suprotnu implikaciju.
+Ovaj test nam daje informaciju da nad danim skupom podataka ne možemo zaključiti nikakvu značajnu prednost vojnika dešnjaka nad vojnicima ljevacima u prosječnoj širini bicepsa.
+
+\  
+\  
+
+Dalje provodimo slično testiranje ali nad drugačijim skupom podataka.
+
+\pagebreak
+
+# Imaju li dešnjaci veći opseg bicepsa od ambideksternih vojnika?
+
+Postupak testiranja je sličan prethodnom jer i sada imamo dvije različite grupe uzoraka nad kojima radimo testiranje, to jest dešnjaci i ambideksterni vojnici **nezavisni** su skupovi podataka.
+
+```{r, echo = FALSE}
+
+ambideksterni = ANSUR[ANSUR$WritingPreference== "Either hand (No preference)",]
+
+cat('Prosjek opsega bicepsa vojnika koji nemaju određenu preferencu za ruku iznosi ',
+    mean(ambideksterni$bicepscircumferenceflexed),'\n', 
+    ' Dok smo za dešnjake to već izračunali u prethodnom ispitivanju i iznosi ', 
+    mean(desnjaci$bicepscircumferenceflexed),'\n')
+
+```
+
+Kod ove dvije grupe ispitanika na prvi pogled izgleda da postoji značajna razlika u opsega.
+
+```{r}
+boxplot(desnjaci$bicepscircumferenceflexed, ambideksterni$bicepscircumferenceflexed,
+names = c('Prefering right hand','Not prefering any hand'),
+main='Boxplot biceps circumference - flexed')
+
+```
+Na boxplot-u možemo uočiti da je vojnicima koji preferiraju desnu ruku prvi, treći kvartil i interkvartilni rank "više" pozicioniran, ali ne značajno puno.
+
+\pagebreak
+
+Pogledajmo an temelju koliko podataka izvodimo testiranje.
+```{r}
+cat('Broj sakupljenih podataka za ljevake iznosi ', dim(desnjaci), '\n')
+cat('Broj sakupljenih podataka za ambidekstere iznosi ',dim(ambideksterni), '\n')
+
+```
+Uočavamo da je razlika u veličini podataka vrlo velika te ćemo to imati na umu prilikom izvođenja testiranja.
+Premda su oba uzorka dovoljno velika za preporučenu veličinu uzoraka prilikom izvođenja t-test-a radi sigurnosti možemo ispitivanje provesti na malo drugačiji način.
+
+Ako zaključimo da su varijance dobivenih podataka različite, mogli bismo korisititi *Welch-ov* t-test na kojeg to manje utječe. 
+*Welch-ov* t-test se još zove i **t-test za nejednakost varijanci**.
+U suprotnom testiranje možemo nastaviti provođenjem t-testa jer su oba uzorka dovoljno velika, a sam je uzorak robustan na razlike u veličini uzoraka. Također t-test je robustan i na odstupanje od normalnosti podataka.
+
+Za to nam je potreban test o jednakosti varijanci, ali prije svega provjerit ćemo normalnost podataka ambideksternih vojnika(za dešnjake smo to proveli u prethodnom pitanju)
+
+```{r}
+
+dHistData <- ambideksterni$bicepscircumferenceflexed
+dHist <- hist(dHistData,breaks=15, xlab="Circumference in mm",
+   main="Ambidextrous soliders biceps circumference")
+
+
+qqnorm(ambideksterni$bicepscircumferenceflexed, frame = FALSE,
+       main='Ambidextrous soliders biceps circumference')
+qqline(ambideksterni$bicepscircumferenceflexed, col = "red", lwd = 2)
+
+```
+Histogram i qqplot nam **ne potvrđuju normalnost podataka** te iako izgledom naginju na normalnu distribuciju podataka samu pretpostavku treba ispitati nekim od testova normalnosti.
+
+Radi bolje preciznosti koristit ćemo se dvama testovima za dokazivanje normalnosti.
+*Shapiro–Wilk*-ov test o normalnosti koji se smatra vrlo jakim, ako ne i najačim testom za dobivenu važnost.
+Dodatno provest ćemo i *Lilleforse* test koji je inačica *Kolomogorov-Smirnov* testa za normalnost (jer testiramo samo uzorke populacije,a ne cijelu populaciju pa nam očekivana vrijednost i varijanca nisu poznate).
+
+
+```{r}
+library(nortest)
+
+lillie.test(ambideksterni$bicepscircumferenceflexed)
+
+shapiro.test(ambideksterni$bicepscircumferenceflexed)
+
+```
+**Zaključak:** Rezultati testova nam daju p vrijednosti od 0.1517 te 0.0594 što je u oba slučaja veća vrijednost od početno postavljene vrijednosti za razinu značajnosti (*alpha* = 0.05). Stoga **ne možemo odbaciti hipotezu** $H0$ o tome da podatci dolaze iz normalne distribucije.
+
+Nastavak ispitivanja radimo sa **pretpostavkom** da podatci dolaze iz **normalne distribucije**.
+
+Dalje provjeravamo varijance danih podataka. Za to ponovno koristimo **test o jednakosti varijanci**.
+
+
+```{r}
+var.test(desnjaci$bicepscircumferenceflexed, ambideksterni$bicepscircumferenceflexed)
+
+```
+
+
+Test o jednakosit varijanci nam daje p-vrijednost od 0.2517 te tako **ne možemo odbaciti** našu početnu $H0$ hipotezu da su varijance uzoraka jednake.
+
+Nastavljamo uz pretpostavku da su varijance dvaju uzoraka jendake.
+
+Koristimo t-test jer su za njega ispunjeni svi preduvjeti.
+
+```{r}
+t.test(desnjaci$bicepscircumferenceflexed, ambideksterni$bicepscircumferenceflexed,
+       alt = "greater", var.equal = TRUE)
+
+```
+T-test nam daje p-vrijednost od 0.04847 što je manje od početne razine značajnosti (*alpha*=0.05) te na temelju toga **odbacujemo** početnu $H0$ hipotezu o jednakosti prosječnih vrijednosti opsega bicepsa kod vojnika koji preferiraju desnu ruku i ambideksternih vojnika. Odbacivanje početne hipoteze ide **u korist alternativne** $H1$ hipoteze koja tvrdi da je prosječna vrijednost opsega bicepsa značajno veća kod dešnjaka nego kod ambideksternih vojnika.
+
+
+Prije konačnog zaključka provjesti ćemo još jedan test nad podatcima, a to je *Welch-ov* t-test još zvan t-test nejednakih varijanci.
+Iako u našem ispitivanju nismo došli do zaključka da su nam varijance nejednake (upravo suprotno pretpostavili smo da su različite) to nije bitno za ovaj test jer se on u startu ne bazira na pretpostavci o nejednakosti varijanci stoga čak i ako ga upotrijebimo kod slučaja gdje smo pretpostavili da su varijance jednake, on donosi ispravan rezultat.
+
+*Welch-ov* test u R Studio-u je implementiran pod t.test() i automatski se izvodi ako var.equal zastavica nije postavljena na *FALSE*
+
+
+```{r}
+t.test(desnjaci$bicepscircumferenceflexed, ambideksterni$bicepscircumferenceflexed,
+       alt="greater")
+
+```
+
+\  
+\  
+
+**Zaključak**: Konačno i *Welch-ov* t-test nam daje isti rezultat kao i dosada. Dobivena p-vrijendost je manja od početno postavljene vrijednosti značajnosti testa(*alpha*=0.05) stoga **možemo odbaciti** početnu hipotezu $H0$ o jednakosti srednjih vrijednosti danih podataka. Odbacivanje početne hipoteze ide **u korist alternativne** $H1$ hipoteze koja tvrdi da je vrijednost opsega bicepsa u prosjeku značajno veća kod dešnjaka nego kod ambideksternih vojnika.
+
+Stoga, nakon ispitivanja i rezultata testa na temelju prikupljenih podataka o vojnicima u kampovima američka vojske, donosimo zaključak na temelju statističkog zaključivanja da je vrijednost opsega bicepsa napete ruke u prosjeku značajno veća kod dešnjaka nego kod ambideksternih vojnika.
+
+\  
+
+Svakako poželjnije je da se ispitivanje provede nad sličnijim veličinama uzoraka pa bi u ovom slučaju bilo dobro da se ispitivanje provede sa više ispitanika koji ne preferiraju niti jednu ruku, to jest ambideksternih vojnika američkih vojnih kampova.
+
+\pagebreak
+
+
+# Razlike antropometrijskih značajki s obzirom na spol vojnika (muškarci vs. žene)
+
+Za neke od antropometrijskih značajki prirodno je pretpostaviti da jedan od spolova dominira na temelju bioloških predispozicija, dok za neke ne možemo iznijeti pretpostavku.
+Takve pretpostavke ćemo promotriti u statističkim ispitivanjima nekih značajki.
+
+
+Za ovo ispitivanje odabrali smo varijable mjerenja: opseg mišića listova, izbočenje uha te duljina glave
+
+```{r}
+# prvo ćemo podatke razdvojiti u dvije varijable s obzirom na spol
+
+femaleSoliders = ANSUR[ANSUR$Gender == "Female",]
+maleSoliders = ANSUR[ANSUR$Gender == "Male",]
+
+cat(' Podataka o muškarcima imamo: ' ,nrow(maleSoliders), '\n',
+    'Podataka o ženama imamo: ', nrow(femaleSoliders), '\n')
+
+if(nrow(femaleSoliders) + nrow(maleSoliders) == nrow(ANSUR)){
+  cat(' I vidimo da su u ovoj podjeli svi ispitanici obuhvaćeni tim dvama skupinama\n')
+} else {
+  cat(' I vidimo da u ovoj podjeli svi ispitanici ne spadaju unutar te dvije skupine\n')
+}
+
+```
+Kako smo ispitanike podijelili po spolu dobili smo dvije nezavisne grupe uzoraka te za daljnje ispitivanje s obzirom na spol za sve testove **vrijedi nezavisnot podataka!**
+
+\pagebreak
+
+# Postoji li razlika u srednjim vrijednostima opsega mišića listova?
+
+Pogledat ćemo prvo neke općenite značajke naših podataka.
+
+```{r, echo={FALSE}}
+
+malMean = mean(maleSoliders$calfcircumference)
+femMean = mean(femaleSoliders$calfcircumference)
+
+cat(' Prosjek opsega mišića lista kod muškaraca iznosi ',
+    malMean,'mm\n',
+   'Prosjek opsega mišića lista kod žena iznosi ',
+    femMean,'mm\n')
+
+```
+
+
+
+```{r, echo={FALSE}}
+
+par(mfrow= c(2,2))
+
+dHistData <- maleSoliders$calfcircumference
+dHist <- hist(dHistData,
+              breaks=seq(min(maleSoliders$calfcircumference)-1,
+                         max(maleSoliders$calfcircumference)+1,2),
+              xlab="Circumference in mm",
+   main="Male")
+
+dxF <- seq(min(dHistData),max(dHistData),length=30)
+dyF <- dnorm(dxF,mean=mean(dHistData),sd=sd(dHistData))
+dyF <- dyF*diff(dHist$mids[1:2]*length((dHistData)))
+
+lines(dxF, dyF, col="red", lwd=2)
+
+legend("topright", c("Normal curve"), col=c("red"), lwd=2, cex=0.7)
+
+qqnorm(maleSoliders$calfcircumference, frame = FALSE,main='Male')
+qqline(maleSoliders$calfcircumference, col = "red", lwd = 2)
+
+dHistData <- femaleSoliders$calfcircumference
+dHist <- hist(dHistData,
+              breaks=seq(min(femaleSoliders$calfcircumference)-1,
+                         max(femaleSoliders$calfcircumference)+1,2),
+              xlab="Circumference in mm",
+   main="Female")
+
+dxF <- seq(min(dHistData),max(dHistData),length=30)
+dyF <- dnorm(dxF,mean=mean(dHistData),sd=sd(dHistData))
+dyF <- dyF*diff(dHist$mids[1:2]*length((dHistData)))
+
+lines(dxF, dyF, col="red", lwd=2)
+
+legend("topright", c("Normal curve"), col=c("red"), lwd=2, cex=0.7)
+
+qqnorm(femaleSoliders$calfcircumference, frame = FALSE,main='Female')
+qqline(femaleSoliders$calfcircumference, col = "red", lwd = 2)
+
+
+```
+```{r,echo={FALSE}}
+
+boxplot(maleSoliders$calfcircumference, femaleSoliders$calfcircumference,
+names = c('Male','Female'),
+main='Boxplot calf circumference')
+
+```
+
+Do sada možemo primjetiti da postoje indikacije u razlici srednjih vrijednosti opsega mišića listova, a to ćemo pokušati dokazati statističkim testiranjem.
+Također na temelju histograma i qqplot-ova možemo vidjeti da su nam podatci **normalno distribuirani**.
+
+Kako bi smo znali kojim testom ćemo se koristiti potrebno je obraditi jednakost/razliku u varijancama podataka. Koristimo se **testom o jednakosti varijanci**.
+
+```{r}
+
+cat(' Varijanca prve populacije (muškarci): ', var(maleSoliders$calfcircumference), '\n', 
+    'Varijanca druge populacije (žene): ', var(femaleSoliders$calfcircumference), '\n')
+
+var.test(maleSoliders$calfcircumference, femaleSoliders$calfcircumference)
+
+
+```
+
+Na temelju dobivenih rezultata testa o jednakostima varijanci (p-vrijednost je manja od *alpha*: 0.03534 < 0.05) **možemo odbaciti nultu hipotezu** $HO$, to jest dolazimo do zaključka da su **varijance različite**.
+
+Sada možemo odabrati test kojim ćemo pokušati pronaći odgovor na dano pitanje, a to je t-test s nejednakim varijancama (*Walch-ov* t-test)
+
+```{r}
+
+t.test(maleSoliders$calfcircumference, femaleSoliders$calfcircumference, alt="greater")
+
+```
+
+**Zaključak: **Provedeni test nam daje vrlo malu p-vrijednost koja je manja od 0.05, stoga možemo odbaciti $H0$ hipotezu u korist alternative koja tvrdi da **muškarci u prosjeku imaju značajno veći opseg mišića listova nego žene**. 
+
+\pagebreak
+
+
+# Postoji li razlika u srednjim vrijednostima izbočenja uha?
+
+Pogledat ćemo prvo neke općenite značajke naših podataka.
+
+```{r, echo={FALSE}}
+
+malMean = mean(maleSoliders$earprotrusion)
+femMean = mean(femaleSoliders$earprotrusion)
+
+cat(' Prosjek izbočenja uha kod muškaraca iznosi ',
+    malMean,'mm\n',
+   'Prosjek izbočenja uha kod žena iznosi ',
+    femMean,'mm\n')
+
+```
+
+
+
+```{r, echo={FALSE}}
+
+par(mfrow= c(2,2))
+
+dHistData <- maleSoliders$earprotrusion
+dHist <- hist(dHistData,
+              breaks=seq(min(maleSoliders$earprotrusion)-1,
+                         max(maleSoliders$earprotrusion)+1,2),
+              xlab="Protrusion in mm",
+   main="Male")
+
+dxF <- seq(min(dHistData),max(dHistData),length=30)
+dyF <- dnorm(dxF,mean=mean(dHistData),sd=sd(dHistData))
+dyF <- dyF*diff(dHist$mids[1:2]*length((dHistData)))
+
+lines(dxF, dyF, col="red", lwd=2)
+
+legend("topright", c("Normal curve"), col=c("red"), lwd=2, cex=0.7)
+
+qqnorm(maleSoliders$earprotrusion, frame = FALSE,main='Male')
+qqline(maleSoliders$earprotrusion, col = "red", lwd = 2)
+
+dHistData <- femaleSoliders$earprotrusion
+dHist <- hist(dHistData,
+              breaks=seq(min(femaleSoliders$earprotrusion)-1,
+                         max(femaleSoliders$earprotrusion)+1,2),
+              xlab="Protrusion in mm",
+   main="Female")
+
+dxF <- seq(min(dHistData),max(dHistData),length=30)
+dyF <- dnorm(dxF,mean=mean(dHistData),sd=sd(dHistData))
+dyF <- dyF*diff(dHist$mids[1:2]*length((dHistData)))
+
+lines(dxF, dyF, col="red", lwd=2)
+
+legend("topright", c("Normal curve"), col=c("red"), lwd=2, cex=0.7)
+
+qqnorm(femaleSoliders$earprotrusion, frame = FALSE,main='Female')
+qqline(femaleSoliders$earprotrusion, col = "red", lwd = 2)
+
+
+```
+```{r,echo={FALSE}}
+
+boxplot(maleSoliders$earprotrusion, femaleSoliders$earprotrusion,
+names = c('Male','Female'),
+main='Boxplot ear protrusion')
+
+```
+
+Do sada možemo primjetiti da postoje indikacije u razlici srednjih vrijednosti izbočenja uha, a to ćemo pokušati dokazati statističkim testiranjem.
+Također na temelju histograma i qqplot-ova možemo vidjeti da su nam podatci **normalno distribuirani**.
+
+Kako bi smo znali kojim testom ćemo se koristiti potrebno je obraditi jednakost/razliku u varijancama podataka. Koristimo se **testom o jednakosti varijanci**.
+
+```{r}
+
+cat(' Varijanca prve populacije (muškarci): ', var(maleSoliders$earprotrusion), '\n', 
+    'Varijanca druge populacije (žene): ', var(femaleSoliders$earprotrusion), '\n')
+
+var.test(maleSoliders$earprotrusion, femaleSoliders$earprotrusion)
+
+
+```
+
+Na temelju dobivenih rezultata testa o jednakostima varijanci (p-vrijednost je manja od *alpha*: 5.828e-10 < 0.05) **možemo odbaciti nultu hipotezu** $HO$, to jest dolazimo do zaključka da su **varijance različite**.
+
+Sada možemo odabrati test kojim ćemo pokušati pronaći odgovor na dano pitanje, a to je t-test s nejednakim varijancama (*Walch-ov* t-test)
+
+```{r}
+
+t.test(maleSoliders$earprotrusion, femaleSoliders$earprotrusion, alt="greater")
+
+```
+
+
+**Zaključak: **Provedeni test nam daje vrlo malu p-vrijednost koja je manja od 0.05, stoga **možemo odbaciti** $H0$ **hipotezu u korist alternative** koja tvrdi da **muškarci u prosjeku imaju značajno veće izbočenje uha nego žene**. 
+
+\pagebreak
+
+
+# Postoji li razlika u srednjim vrijednostima duljine glave?
+
+Pogledat ćemo prvo neke općenite značajke naših podataka.
+
+```{r, echo={FALSE}}
+
+malMean = mean(maleSoliders$headlength)
+femMean = mean(femaleSoliders$headlength)
+
+cat(' Prosjek duljine glave kod muškaraca iznosi ',
+    malMean,'mm\n',
+   'Prosjek duljine glave kod žena iznosi ',
+    femMean,'mm\n')
+
+```
+
+```{r, echo={FALSE}}
+
+par(mfrow= c(2,2))
+
+dHistData <- maleSoliders$headlength
+dHist <- hist(dHistData,
+              breaks=seq(min(maleSoliders$headlength)-1,
+                         max(maleSoliders$headlength)+1,2),
+              xlab="Length in mm",
+   main="Male")
+
+dxF <- seq(min(dHistData),max(dHistData),length=30)
+dyF <- dnorm(dxF,mean=mean(dHistData),sd=sd(dHistData))
+dyF <- dyF*diff(dHist$mids[1:2]*length((dHistData)))
+
+lines(dxF, dyF, col="red", lwd=2)
+
+legend("topright", c("Normal curve"), col=c("red"), lwd=2, cex=0.7)
+
+qqnorm(maleSoliders$calfcircumference, frame = FALSE,main='Male')
+qqline(maleSoliders$calfcircumference, col = "red", lwd = 2)
+
+
+
+dHistData <- femaleSoliders$calfcircumference
+dHist <- hist(dHistData,
+              breaks=seq(min(femaleSoliders$calfcircumference)-1,
+                         max(femaleSoliders$calfcircumference)+1,2),
+              xlab="Length in mm",
+   main="Female")
+
+dxF <- seq(min(dHistData),max(dHistData),length=30)
+dyF <- dnorm(dxF,mean=mean(dHistData),sd=sd(dHistData))
+dyF <- dyF*diff(dHist$mids[1:2]*length((dHistData)))
+
+lines(dxF, dyF, col="red", lwd=2)
+
+legend("topright", c("Normal curve"), col=c("red"), lwd=2, cex=0.7)
+
+qqnorm(femaleSoliders$headlength, frame = FALSE,main='Female')
+qqline(femaleSoliders$headlength, col = "red", lwd = 2)
+
+
+```
+
+
+```{r,echo={FALSE}}
+
+boxplot(maleSoliders$headlength, femaleSoliders$headlength,
+names = c('Male','Female'),
+main='Boxplot head length')
+
+```
+Do sada možemo primjetiti da postoje indikacije u razlici srednjih vrijednosti duljine glave, a to ćemo pokušati dokazati statističkim testiranjem.
+Također na temelju histograma i qqplot-ova možemo vidjeti da su nam podatci **normalno distribuirani**.
+
+Kako bi smo znali kojim testom ćemo se koristiti potrebno je obraditi jednakost/razliku u varijancama podataka. Koristimo se **testom o jednakosti varijanci**.
+
+```{r}
+
+cat(' Varijanca prve populacije (muškarci): ', var(maleSoliders$headlength), '\n', 
+    'Varijanca druge populacije (žene): ', var(femaleSoliders$headlength), '\n')
+
+var.test(maleSoliders$headlength, femaleSoliders$headlength)
+
+
+```
+
+Na temelju dobivenih rezultata testa o jednakostima varijanci (p-vrijednost je manja od *alpha*: 0.002233 < 0.05) možemo odbaciti nultu hipotezu $HO$, to jest dolazimo do zaključka da su **varijance različite**.
+
+Sada možemo odabrati test kojim ćemo pokušati pronaći odgovor na dano pitanje, a to je t-test s nejednakim varijancama (*Walch-ov* t-test)
+
+```{r}
+
+t.test(maleSoliders$calfcircumference, femaleSoliders$calfcircumference, alt="greater")
+
+```
+
+**Zaključak: **Provedeni test nam daje vrlo malu p-vrijednost koja je manja od 0.05, stoga možemo odbaciti $H0$ hipotezu u korist alternative koja tvrdi da **muškarci u prosjeku imaju značajno veću duljine glave nego žene**.
+
+\pagebreak
+
+# Predviđanje kilaže
+## Jednostavna linearna regresija
+
+## Utjecaj nezavisne varijable na zavisnu
+
+Ispituju se antropometrijske mjere i promatra se njihov "utjecaj" na kilažu vojnika.
+
+Odabrane su sljedeće mjere: visina(stature), opseg prsa(chestcircumference), opseg struka(waistcircumference), opseg bedra(thighcircumference) opseg stražnjice(buttockcircumference), širina                šake(handbreadth), dužina uha(earlength), ispupčenje uha(ear protrusion).
+
+Isprobane su mjere koje izravno "utječu" na kilažu vojnika (visina, opseg prsa, opseg struka, opseg bedra, opseg stražnjice, širina šake) i mjere koje ne bi trebale utjecati na kilažu (duljina uha, ispupčenje uha). (pretpostavka)
+
+Utjecaj pojedine nezavisne varijable na zavisnu varijablu (kilaža) prikazan je pomoću scatter plot-a.
+
+```{r scatter plots, fig.height=7, fig.width=20}
+
+par(mfrow=c(1,2), mai=c(1,1,1,1))
+
+plot(ANSUR$stature,ANSUR$weightkg, 
+     xlab = "Stature", ylab = "Weight in kilograms", 
+      cex.main = 2, cex.lab = 2, cex.axis = 2) #visina vs kilaža
+
+plot(ANSUR$chestcircumference,ANSUR$weightkg, 
+     xlab = "Chest circumference", ylab = "Weight in kilograms",
+      cex.main = 2, cex.lab = 2, cex.axis = 2) #opseg prsa vs kilaža
+
+plot(ANSUR$waistcircumference,ANSUR$weightkg,
+     xlab = "Waist circumference", ylab = "Weight in kilograms", 
+      cex.main = 2, cex.lab = 2, cex.axis = 2) #opseg struka vs kilaža
+
+plot(ANSUR$thighcircumference,ANSUR$weightkg, 
+     xlab = "Thigh circumference", ylab = "Weight in kilograms", 
+      cex.main = 2, cex.lab = 2, cex.axis = 2) #opseg bedra vs kilaža
+
+plot(ANSUR$buttockcircumference,ANSUR$weightkg,
+     xlab = "Buttock circumference", ylab = "Weight in kilograms", 
+      cex.main = 2, cex.lab = 2, cex.axis = 2) #opseg stražnjice vs kilaža
+
+plot(ANSUR$handbreadth,ANSUR$weightkg, 
+     xlab = "Hand breadth", ylab = "Weight in kilograms",
+      cex.main = 2, cex.lab = 2, cex.axis = 2) #širina šake vs kilaža
+
+plot(ANSUR$earlength,ANSUR$weightkg, 
+     xlab = "Ear length", ylab = "Weight in kilograms", 
+      cex.main = 2, cex.lab = 2, cex.axis = 2) #dužina uha vs kilaža
+
+plot(ANSUR$earprotrusion,ANSUR$weightkg,
+     xlab = "Ear length", ylab = "Weight in kilograms", 
+      cex.main = 2, cex.lab = 2, cex.axis = 2) #ispupčenje uha vs kilaža
+
+```
+
+Rezultati upućuju na to da bi visina, opseg prsa, opseg struka, opseg bedra, opseg stražnjice, širina šake mogle koristiti za predviđanje kilaže vojnika.
+Čini se da duljina uha i ispupčenje uha (samostalno) nemaju velik utjecaj na kilažu.
+
+\pagebreak
+
+## Korelacijski koeficijent i veza s linearnim modelom
+
+Korelacijski koeficijent opisuje smjer i prirodu veze dviju varijabli.
+
+Odabrane su samo neke od prije isprobanih nezavisnih varijabla - visina, opseg prsa, opseg bedra i opseg stražnjice.
+
+```{r korelacijski koeficijent}
+
+cor.test(ANSUR$stature,ANSUR$weightkg)
+
+cor.test(ANSUR$chestcircumference,ANSUR$weightkg)
+
+cor.test(ANSUR$thighcircumference,ANSUR$weightkg)
+
+cor.test(ANSUR$buttockcircumference,ANSUR$weightkg)
+
+
+```
+Najveću korelaciju s kilažom pokazuje varijabla chestcircumference.
+P vrijednosti svih varijabli ukazuju da veza između pojedine varijable i kilaže postoji.
+
+\pagebreak
+
+## Primjena modela linearne regresije
+
+U nastavku je isproban model jednostavne linearne regresije - procjenjen je odnos jedne nezavisne varijable (regresora) i jedne zavisne varijable.
+
+Svi modeli prikazani su grafički zajedno sa nezavisnom varijablom kojom predviđaju kilazu.
+
+```{r jednostavna regresija 1}
+
+#linearni model kilaže (weightkg) i visine vojnika (stature)
+fit.stature = lm(weightkg~stature,data=ANSUR)
+
+```
+
+```{r, fig.height = 5, fig.width = 11, echo = FALSE}
+#grafički prikaz podataka
+plot(ANSUR$stature,ANSUR$weightkg, 
+     xlab = "Stature", ylab = "Weight in kilograms",cex.main = 1, cex.lab = 1, cex.axis = 1) 
+#grafički prikaz procijenjenih vrijednosti iz modela
+lines(ANSUR$stature,fit.stature$fitted.values,col='red') 
+```
+
+```{r jednostavna regresija 2}
+#kilaža (weightkg) i opseg prsa (chestcircumference)
+fit.chestcircumference = lm(weightkg~chestcircumference,data=ANSUR) 
+```
+
+```{r, fig.height = 5, fig.width = 11, echo = FALSE}
+plot(ANSUR$chestcircumference,ANSUR$weightkg,
+     xlab = "Chest circumference", ylab = "Weight in kilograms", cex.main = 1, cex.lab = 1, cex.axis = 1) 
+lines(ANSUR$chestcircumference,fit.chestcircumference$fitted.values,col='red') 
+```
+
+```{r jednostavna regresija 3}
+#kilaža (weightkg) i opseg bedra (thighcircumference)
+fit.thighcircumference = lm(weightkg~thighcircumference,data=ANSUR)
+```
+
+```{r, fig.height = 5, fig.width = 11, echo = FALSE}
+plot(ANSUR$thighcircumference,ANSUR$weightkg,
+     xlab = "Thigh circumference", ylab = "Weight in kilograms", cex.main = 1, cex.lab = 1, cex.axis = 1) 
+lines(ANSUR$thighcircumference,fit.thighcircumference$fitted.values,col='red') 
+```
+
+```{r jednostavna regresija 4}
+#kilaža (weightkg) i opseg stražnjice (buttockcircurmference)
+fit.buttockcircumference = lm(weightkg~buttockcircumference,data=ANSUR) 
+```
+
+```{r, fig.height = 5, fig.width = 11, echo = FALSE}
+plot(ANSUR$buttockcircumference,ANSUR$weightkg, 
+     xlab = "Buttock circumference", ylab = "Weight in kilograms", cex.main = 1, cex.lab = 1, cex.axis = 1) 
+lines(ANSUR$buttockcircumference,fit.buttockcircumference$fitted.values,col='red') 
+
+```
+
+Čini se da svi modeli relativno dobro predviđaju vrijednosti kilaže, ali treba statistički dokazati ispravnost modela.
+
+\pagebreak
+
+## Normalnost reziduala, homogenost varijance, ocjena kvalitete modela
+
+### Uvod
+
+Dobivene modele treba analizirati i usporediti, a za svaki model prvo se treba provjeriti je su li narušene pretpostavke modela jednostavne linearne regresije.
+Ako su pretpostavke narušene, model se odbacuje.
+Za model jednostavne linearne regresije potrebno je provjeriti **normalnost reziduala** i **homogenost varijance**. 
+
+Normalnost reziduala može se provjeriti grafički uz pomoć **kvantil-kvantil plota** (usporedbom s linijom normalne razdiobe).
+
+Normalnost reziduala dobro je provjeriti statistički - pomoću **Kolmogorov-Smirnovljevog testa** (ili Lilifeforceovom inačicom).
+Kolmogorov-Smirnovljev test je neparametarski test koji služi za provjeru dolaze li podatci iz neke točno odredene distribucije - u ovom slučaju uspoređujemo distribuciju reziduala naših modela s normalnom distribucijom.
+**Lillieforceva inačica** Kolmogorov-Smirnovljevog testa koristi se kad su očekivanje i varijanca populacije nepoznate.
+
+Ako pretpostavke modela nisu (neprihvatljivo) prekršene, moguće je primijeniti različite statističke testove o procijenjenim koeficijentima i kvaliteti modela. 
+
+Za sve testove pretpostavlja se razina signifikantnosti od 5%.
+
+\pagebreak
+
+### Definicija pomoćne funkcije
+
+Ova funkcija koristi se za provjeru normalnosti reziduala i homogenosti varijance u modelima linearne regresije.
+
+```{r function}
+
+normality_homogenity <- function(selected.model){
+  
+  par(mfrow=c(3,2), mai=c(1,1,1,1))
+  
+  #1 prikaz reziduala po indeksu danom u podacima
+  p1 = plot(selected.model$residuals,
+       main="Residuals plot (1.)", xlab = "Index", ylab = "Residuals",
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #2 prikaz reziduala u ovisnosti o procjenama modela
+  p2 = plot(selected.model$fitted.values,selected.model$residuals,
+       main="Standardized residuals plot (2.)", xlab = "Fitted values", ylab = "Residuals", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2) 
+  
+  #3 histogram reziduala
+  hist((selected.model$residuals), 
+       xlab = "Residuals", main = "Histogram of residuals (3.)", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #4 histogram standardiziranih reziduala
+  hist(rstandard(selected.model),
+       xlab = "Standardized residuals", main = "Histogram of standardized residuals (4.)", 
+       cex.main = 3, cex.lab = 3, cex.axis = 2)
+  
+  #5 q-q plot standardiziranih reziduala s linijom normalne distribucije
+  qqnorm(rstandard(selected.model),
+         main="Standardized residuals q-q plot (5.)", cex.main = 3, cex.lab = 3, cex.axis = 2)
+  qqline(rstandard(selected.model))
+
+  #6 Kolmogorov-Smirnovljev test - usporedba standardiziranih reziduala s normalnom razdiobom
+  print(ks.test(rstandard(selected.model),'pnorm'))
+  
+  #7 Lillieforce inaciča KS-testa
+  print(lillie.test(rstandard(selected.model)))
+
+}
+
+```
+
+\pagebreak
+
+### Predviđanje na temelju visine
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+normality_homogenity(fit.stature)
+
+```
+
+1. Reziduali se čine jednoliko raspršeni, ali teško je na ovom grafu suditi o normalnosti reziduala.
+2. Graf prikazuje heterogenost varijance - reziduali se "šire" s povećanjem y (fitted values) - narušena je pretpostavka modela o homogenosti varijance.
+3. Čini se da su reziduali raspodijeljeni normalnom distribucijom ukošenom ulijevo.
+4. Čini se da su standardizirani reziduali raspodijeljeni normalnom distribucijom ukošenom ulijevo.
+5. Oblik q-q plota ukazuje na normalnu distribuciju ukošenu ulijevo (pozitivna ukošenost).
+
+KS TEST:  Budući da je  p-value = 4.007e-06, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+LILLIE TEST:  Budući da je p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji
+
+**Zaključak:**
+Budući da su naršene obje pretpostavke modela o homogenosti varijance i normalnosti reziduala, ovo nije dobar model jednostavne linearne regresije. Budući da je visina možda na neki drugi način visina "povezana" s kilažom, mogla bi koristiti kao jedna od varijabli u modelu višestruke regresije.
+
+\pagebreak
+
+### Predviđanje na temelju opsega prsa
+
+```{r warning=FALSE, fig.height=20, fig.width = 20}
+
+normality_homogenity(fit.chestcircumference)
+summary(fit.chestcircumference)
+
+```
+1. Reziduali se čine jednoliko raspršeni, ali teško je na ovom grafu suditi o normalnosti reziduala.
+2. Reziduali se čine jednoliko rasprseni. Graf ne upućuje na heterogenost varijance.
+3. Čini se da su reziduali raspodijeljeni simetričnom normalnom distribucijom.
+4. Čini se da su reziduali modela raspodijeljeni simetričnom normalnom distribucijom.
+5. Oblik q-q plota ukazuje na simetričnu normalnu distribuciju s debelim repovima.
+KS TEST:  Budući da je  p-value = 0.05388, distribucija reziduala modela odgovara normalnoj distribuciji.
+LILLIE TEST:  Prema ovom testu, budući da je p-value = 0.0003009, distribucija reziduala modela **NE** odgovara normalnoj distribuciji.
+
+**8. Ocjena kvalitete modela i statističko zaključivanje na modelu:**
+
+Koeficijenti:
+1. Intercept -> Pr(>|t|) je <2e-16 
+2. Slope -----> Pr(>|t|) je <2e-16 
+--> mala p vrijednost ukazuje da je mala vjerojatnost da opseg prsa i kilaža nisu "povezane" varijable -> 3 zvjezdice ukazuju da je p vrijednost statistički značajna.
+
+Multiple R-squared: 0.8382 (poprima vrijednosti između 0 i 1) - mjera koliko je dobro model prilagođen našim podatcima.
+--> mjera linearne povezanosti opsega prsa i kilaže.
+83.82% varijance u modelu moguće je objasniti pomoću opsega prsa vojnika.
+
+F-statistic: p-value < 2.2e-16 -> to znači da odbacujemo H0 (svi koeficijenti regresije su nula - model nema prediktivnu vrijednost) u korist H1: model ima prediktivnu vrijednost.
+
+**Zaključak:**
+Budući da nije narušena pretpostavka o homogenosti varijance, a Liliforceov test i KS - test daju različite zakljucke, uzimamo rezultat KS-testa koji upućuje da su reziduali raspodijeljeni normalnom distribucijom (ostali testovi provedeni na modelu ukazali su na normalnu distribuciju reziduala). Ovaj model smatramo ispravnim i kvalitetnim modelom linearne regresije. Opseg prsa može se koristiti za predviđanje kilaže.
+
+\pagebreak
+
+### Predviđanje na temelju opsega bedra
+
+```{r residuals - thighcircumference, fig.height=20, fig.width = 20, warning=FALSE}
+
+normality_homogenity(fit.thighcircumference);
+
+```
+1. Čini se da jos neka varijabla utječe na reziduale - vjerojatno spol jer je prvih ~2000 vojnika u podatcima ženskog spola.
+2. Graf prikazuje heterogenost varijance - reziduali se "šire" s povećanjem y (fitted values) - narušena je pretpostavka modela o homogenosti varijance.
+3. Čini se da reziduali **nisu** raspodijeljeni simetričnom normalnom distribucijom.
+4. Cini se da reziduali **nisu** modela raspodijeljeni simetričnom normalnom distribucijom.
+5. Oblik q-q plota ukazuje ne simetričnu normalnu distribuciju.
+KS TEST:  Budući da je  p-value = 0LILLIE TEST: 772e-16, distribucija reziduala **NE** odgovara normalnoj distribuciji.
+LILLIE TEST:  Prema ovom testu, budući da je p-value < 2.2e-16, distribucija reziduala **NE** odgovara normalnoj distribuciji.
+
+**Zaključak:**
+Budući da su narušene obje pretpostavke modela o homogenosti varijance i normalnosti reziduala, ovo nije dobar model linearne regresije. Možda je opseg bedra na neki način "povezan" s tezinom, mogao bi koristiti kao jedna od varijabli u višestrukoj regresiji. Treba provjeriti i utjecaj varijable Gender na kilažu.
+
+<!-- ```{} -->
+<!-- ### Predviđanje na temelju opsega bedra - žene  -->
+<!-- 1. Reziduali se čine jednoliko raspršeni, ali teško je na ovom grafu davati zaključak o normalnosti reziduala. -->
+<!-- 2. Reziduali se čine jednoliko raspršeni. Graf ne upućuje na heterogenost varijance. -->
+<!-- 3. Čini se da su reziduali raspodijeljeni simetričnom normalnom distribucijom . -->
+<!-- 4. Čini se da su reziduali modela raspodijeljeni simetričnom normalnom distribucijom. -->
+<!-- 5. Oblik q-q plota ukazuje na simetričnu normalnu distribuciju reziduala. -->
+<!-- KS TEST:  Budući da je  p-value = 0.1109, distribucija reziduala odgovara normalnoj distribuciji. -->
+<!-- LILLIE TEST:  Prema ovom testu, budući da je p-value = 0.001828, distribucija reziduala **NE** odgovara normalnoj distribuciji. -->
+
+<!-- **8. Ocjena kvalitete modela i statističko zaključivanje na modelu:** -->
+
+<!-- Koeficijenti: -->
+<!-- 1. Intercept -> Pr(>|t|) je <2e-16  -->
+<!-- 2. Slope -----> Pr(>|t|) je <2e-16  -->
+<!-- --> mala p vrijednost ukazuje da je mala vjerojatnost da opseg bedra (za zene) i kilaža nisu "povezane" varijable -> 3 zvjezdice ukazuju da je p vrijednost statistički značajna. -->
+
+<!-- Multiple R-squared: 0.7973 (poprima vrijednosti između 0 i 1) - mjera koliko je dobro model prilagođen našim podatcima. -->
+<!-- -> mjera linearne povezanosti opsega bedra (za žene) i kilaže -->
+<!-- 79.73% varijance u modelu moguće je objasniti pomoću opsega bedra vojnika (za žene) -->
+
+<!-- F-statistic: p-value < 2.2e-16 -> to znači da odbacujemo H0 (svi koeficijenti regresije su nula - model nema prediktivnu vrijednost) u korist H1: model ima prediktivnu vrijednost. -->
+
+<!-- **Zaključak:** -->
+<!-- Ks test i Lilliforceov test daju različite rezultate. Budući da nije prekrsena pretpostavka o homogenosti varijance i ostali testovi upućuju na normalnu ditribuciju reziduala, ovo je validan model jednostavne linearne regresije. Međutim ovo nije model koji vrijedi na početnom skupu podataka, već samo na ženskim vojnicima. Budući da je opseg bedra kod žena "povezan" s kilažom, mogao bi koristiti kao jedna od varijabli u visestrukoj regresiji u kombinaciji s varijablom Gender - ovo treba isprobati u višestrukoj regresiji.  -->
+<!-- ``` -->
+<!-- ```{r, echo=FALSE, results='hide', fig.show='hide',fig.height=20, fig.width = 20} -->
+
+<!--   selected.model1 = lm(weightkg~thighcircumference,data=female_soldiers) -->
+<!--   normality_homogenity(selected.model1) -->
+<!--   summary(selected.model1) -->
+
+<!-- ``` -->
+<!-- ```{asis opseg bedra muškarci, echo=FALSE} -->
+<!-- ### predvidanje na temelju opsega bedra - muskarci -->
+<!-- 1. Reziduali se čine jednoliko raspršeni, ali teško je na ovom grafu suditi o normalnosti reziduala. -->
+<!-- 2. Graf upućuje na heterogenost varijance. -->
+<!-- 3. Čini se da su reziduali raspodijeljeni simetričnom normalnom distribucijom . -->
+<!-- 4. Cini se da su reziduali modela raspodijeljeni simetričnom normalnom distribucijom. -->
+<!-- 5. Oblik q-q plota ukazuje na simetričnu normalnu distribuciju. -->
+<!-- KS TEST:  Budući da je  p-value = 0.004319, distribucija reziduala **NE** odgovara normalnoj distribuciji. -->
+<!-- LILLIE TEST:  Prema ovom testu, budući da je p-value = 1.955e-07, distribucija reziduala **NE** odgovara normalnoj distribuciji. -->
+
+<!-- **Zaključak:** -->
+<!-- Budući da je narušena pretpostavka modela o normalnosti reziduala i homogenosti varijance, ovo nije dobar model linearne regresije. Budući da je opseg bedra kod muskaraca "povezan" s kilažom, mogao bi koristiti kao jedna od varijabli u višestrukoj regresiji. -->
+<!-- ``` -->
+<!-- ```{r, echo=FALSE, results='hide', fig.show='hide', fig.height=20, fig.width = 20} -->
+
+<!--   selected.model2 = lm(weightkg~thighcircumference,data=male_soldiers) -->
+<!--   normality_homogenity(selected.model2) -->
+
+<!-- ``` -->
+
+\pagebreak
+
+### Predviđanje na temelju opsega stražnjice
+
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+  normality_homogenity(fit.buttockcircumference) 
+
+```
+
+1. Reziduali su na neki način podijeljeni u dvije grupe - vjerojatno po spolu jer je je prvih 1986 vojnika u tablici ženskog spola.
+2. Graf prikazuje heterogenost varijance - reziduali se "šire" s povećanjem y (fitted values) - narušena je pretpostavka modela o homogenosti varijance.
+3. Čini se da su reziduali **nisu** raspodijeljeni normalnom distribucijom.
+4. Čini se da izlazi modela **nisu** raspodijeljeni normalnom distribucijom.
+5. Oblik q-q plota ne ukazuje na normalnu distribuciju.
+KS TEST:  Budući da je  p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji.
+LILLIE TEST:  Budući da je p-value < 2.2e-16, distribucija reziduala modela **NE** odgovara normalnoj distribuciji.
+
+**Zaključak:**
+Budući da su narušene obje pretpostavke modela o homogenosti varijance i normalnosti reziduala, ovo nije dobar model linearne regresije. Budući da je opseg stražnjice možda na neki drugi način "povezan" s kilažom, mogao bi koristiti kao jedna od varijabli u modelu višestruke regresije. Treba provjeriti i utjecaj varijable Gender na kilažu.
+
+
+<!-- # ```{asis opseg stražnjice - žene, echo=FALSE} -->
+<!-- # ### Predviđanje na temelju opsega stražnjice - žene -->
+<!-- # 1. Reziduali se cine jednoliko raspršeni. -->
+<!-- # 2. Graf prikazuje heterogenost varijance - reziduali se "šire" s povećanjem y (fitted values) - narušena je pretpostavka modela o homogenosti varijance. -->
+<!-- # 3. Čini se da su reziduali raspodijeljeni normalnom distribucijom. -->
+<!-- # 4. Čini se da su standardizirani reziduali modela raspodijeljeni normalnom distribucijom. -->
+<!-- # 5. Oblik q-q plota ukazuje na normalnu distribuciju. -->
+<!-- # KS TEST:  Budući da je  p-value = 0.1632, distribucija reziduala modela odgovara normalnoj distribuciji -->
+<!-- # LILLIE TEST:  Budući da je p-value = 0.005235, distribucija reziduala modela **NE** odgovara normalnoj distribuciji -->
+<!-- # 8. Ocjena kvalitete modela i statisticko zakljucivanje na modelu: -->
+<!-- # -->
+<!-- # **Zaključak:** -->
+<!-- # Budući da su narušene obje pretpostavke modela o homogenosti varijance i normalnosti reziduala, ovo nije dobar model linearne regresije. Budući da je opseg stražnjice (kod žena) "povezan" s kilažom, mogao bi koristiti kao jedna od varijabli u višestrukoj regresiji u kombinaciji s varijablom Gender. -->
+<!-- # -->
+<!-- # ``` -->
+<!-- # ```{r, echo=FALSE, results='hide', fig.show='hide', fig.height=20, fig.width = 20} -->
+<!-- # -->
+<!-- # selected.model1 = lm(weightkg~buttockcircumference,data=female_soldiers) -->
+<!-- # normality_homogenity(selected.model1) -->
+<!-- # -->
+<!-- # ``` -->
+<!-- # ```{asis opseg stražnjice - muškarci, echo=FALSE} -->
+<!-- # ### Predviđanje na temelju opsega stražnjice - muškarci -->
+<!-- # 1. Reziduali se cine jednoliko raspršeni. -->
+<!-- # 2. Graf prikazuje heterogenost varijance - reziduali se "šire" s povećanjem y (fitted values) - narušena je pretpostavka modela o homogenosti varijance. -->
+<!-- # 3. Čini se da su reziduali raspodijeljeni normalnom distribucijom. -->
+<!-- # 4. Čini se da su standardizirani reziduali raspodijeljeni normalnom distribucijom. -->
+<!-- # 5. Oblik q-q plota ukazuje na normalnu distribuciju. -->
+<!-- # KS TEST:  Budući da je  p-value = 0.01608, distribucija reziduala modela **NE** odgovara normalnoj distribuciji -->
+<!-- # LILLIE TEST:  Budući da je p-value = 8.85e-06, distribucija reziduala modela **NE** odgovara normalnoj distribuciji -->
+<!-- # -->
+<!-- # **Zakljucak:** -->
+<!-- # Budući da su narušene obje pretpostavke modela o homogenosti varijance i normalnosti reziduala, ovo nije dobar model linearne regresije. Budući da je opseg stražnjice (kod muškaraca) "povezan" s kilažom, mogao bi koristiti kao jedna od varijabli u višestrukoj regresiji u kombinaciji s varijablom Gender. -->
+<!-- # -->
+<!-- # -->
+<!-- # ``` -->
+<!-- # ```{r, echo=FALSE, results='hide', fig.show='hide', fig.height=20, fig.width = 20} -->
+<!-- #  -->
+<!-- #   selected.model2 = lm(weightkg~buttockcircumference,data=male_soldiers) -->
+<!-- #   normality_homogenity(selected.model2) -->
+<!-- #    -->
+<!-- # ``` -->
+
+
+
+## Jednostavna linearna regresija - zaključak
+
+Od 4 isprobana modela linearne regresije, samo je jedan zadovoljio kriterije jednostavne liearne regresije.
+Model predviđanja kilaže na temelju opsega prsa zadovoljio je uvjete homogenosti varijance i normalnosti reziduala i pokazao se kao kvalitetan model koji objašnjava ~84% varijance prisutne u modelu.
+
+
+## Višestruka regresija
+
+Kod modela visestruke regresije trebamo provjeriti tri pretpostavke: 
+1. homogenost varijance
+2. normalnost reziduala
+3. nezavisnost varijabli (regresora)
+
+Regresija s jako koreliranim ulaznim varijablama će uglavnom dati neke rezultate, ali na temelju njih ne možemo donositi nikakve zaključke. Potrebno je odabrati podskup varijabli za koje smatramo da objašnjavaju različite efekte u podatcima i nisu međusobno (previše) korelirane.
+
+## Višestruka regresija s jako koreliranim varijablama
+
+Zbog visoko koreliranih parova varijabli moglo bi doći do pogrešne interpretacije rezultata.
+Na primjer, kao rezultat za prvi model vrijednost ~R^2~ statistike je 0.6397 - to znači je objašnjeno 63.97% varijance u modelu na čemu bi mogli zaključiti da je model dobar.
+Budući da su regresori jako korelirani - (0.94), na temelju modela takvog modela ne smiju se donositi zaključci. 
+Kod jako koreliranih regresora teško je procjeniti kako svaka od varijabla *nezavisno* utjece na kilažu ako su same *nezavisne* varijable zapravo zavisne. Takav model nije validan iako statistički testovi ukazuju na kvalitetan i ispravan model.
+
+```{r visestruka regresija s jako koreliranim varijablama}
+
+fit.circumferences1 = lm(weightkg ~ thighcircumference + buttockcircumference, ANSUR) 
+summary(fit.circumferences1)
+
+cor(ANSUR$thighcircumference,ANSUR$buttockcircumference)
+
+fit.circumferences2 = lm(weightkg ~ buttockdepth + buttockcircumference, ANSUR)
+summary(fit.circumferences2)
+
+cor(ANSUR$buttockdepth,ANSUR$buttockcircumference)
+
+```
+
+## Kategorijske nezavisne varijable
+
+Kategorijske varijable mogu se uključiti kao regresori u analizu.
+Prvo je potrebno provjeriti:
+  1. radi li se o varijabli na nominalnoj ili ordinalnoj skali,
+  2. ima li varijabla linearan efekt na izlaznu varijablu,
+  3. predstavlja li određena kategorijska varijabla nešto što je određenom metričkom varijablom već predstavljeno.
+  
+1. Varijabla Gender je varijabla na nominalnoj skali, ali nema više od dvije kategorije pa se može koristiti u modelu.
+2. Iz boxplot-a se vidi da varijabla Gender ima utjecaj na kilažu - muškarci imaju generalno veću kilažu.
+3. Kategorijska varijabla ne predstavlja nešto što je već određeno metrijskom varijablom.
+```{r kategorijske ulazne varijable - sirove}
+
+boxplot(weightkg~Gender,data=ANSUR) #kvadratni dijagram se moze koristiti za graficku provjeru linearnosti efekta kategorijske varijable na neku izlaznu varijablu
+
+```
+
+## Traženje nezavisnih varijabla za model višestruke regresije
+
+cor < 0.3 -> varijable malo korelirane.
+0.3 <= cor <= 0.7 -> varijable srednje korelirane.
+cor > 0.7 -> varijable jako korelirane - takve ne koristimo u višestrukoj linearnoj regresiji.
+
+visina i opseg bedra nisu jako korelirane.
+visina i opseg stražnjice nisu jako korelirane.
+opseg bedra i spol nisu jako korelirane.
+opseg stražnjice i spol nisu jako korelirane.
+
+```{r cor}
+
+# korelacijski koeficijenti parova regresora
+table = cbind(ANSUR.d$stature, ANSUR.d$thighcircumference, 
+              ANSUR.d$chestcircumference, ANSUR.d$buttockcircumference, ANSUR.d$Gender_Female)
+
+colnames(table) = c("Stature", "Thigh circumference", "Chest circumference", "Buttock circumference", "Gender")
+cor(table)
+
+
+```
+## Primjena modela višestruke regresije
+```{r visestruka regresija, fig.height = 4, fig.width = 7, warning=FALSE}
+
+fit.multi.1 = lm(weightkg ~ stature + thighcircumference, ANSUR)
+plot(fit.multi.1$fitted.values,fit.multi.1$residuals) 
+
+fit.multi.2 = lm(weightkg ~ stature + buttockcircumference, ANSUR)
+plot(fit.multi.2$fitted.values,fit.multi.2$residuals) 
+
+fit.multi.3 = lm(weightkg ~ thighcircumference + Gender, ANSUR)
+plot(fit.multi.3$fitted.values,fit.multi.3$residuals) 
+
+fit.multi.4 = lm(weightkg ~ buttockcircumference + Gender, ANSUR)
+plot(fit.multi.4$fitted.values,fit.multi.4$residuals) 
+
+fit.multi.5 = lm(weightkg ~ stature + buttockcircumference + Gender, ANSUR)
+plot(fit.multi.5$fitted.values,fit.multi.5$residuals) 
+
+fit.multi.6 = lm(weightkg ~ buttockcircumference + chestcircumference + Gender, ANSUR)
+plot(fit.multi.6$fitted.values,fit.multi.6$residuals) 
+
+fit.multi.7 = lm(weightkg ~ chestcircumference + thighcircumference + Gender, ANSUR)
+plot(fit.multi.7$fitted.values,fit.multi.7$residuals) 
+
+
+```
+Grafovi reziduala za isprobane modele ukazuju na nehomogenost varijance. U većini njih vidimo da prate kvadratnu funkciju - to bi moglo značiti da neka od korištenih varijabli treba biti "transformirana" ili treba dodati još regresora.
+
+Odlučeno je da će se transformacija podataka obaviti za varijablu chestcircumference jer njen scatter plot pokazuje (blagu?) zakrivljenost koja bi mogla ukazati na kvadratnu ovisnost opsega prsa i kilaže.
+
+## Transformacije podataka, dodavanje interkacijskih clanova
+```{r transformacija, warning=FALSE}
+
+  fit.chestcircumference.sq = lm(weightkg ~ chestcircumference + I(chestcircumference^2), ANSUR)
+
+  #jednostavan nacin za graficki prikazati nelinearne krivulje
+  f = function(x, coeffs)
+    return(coeffs[[1]] + coeffs[[2]] * x + coeffs[[3]] * x^2)
+  plot(ANSUR$chestcircumference,ANSUR$weightkg) 
+  curve(f(x, fit.chestcircumference.sq$coefficients), add = TRUE, col = "red")
+
+```
+
+\pagebreak
+
+## Normalnost reziduala, homogenost varijance, ocjena kvalitete modela
+Odabrani i izmjenjeni su modeli  fit.multi.6 i fit.multi.7 na način da je varijabla chestcircumference transformirana kao u prethodnom primjeru.
+Ta varijabla u navedenim primjerima omogućava homogenost reziduala.
+
+
+### Predviđanje kilaže na temelju opsega stražnjice, opsega prsa, kvadriranog opsega prsa i spola
+1. Reziduali se čine jednoliko raspršeni, ali teško je na ovom grafu suditi o normalnosti reziduala.
+2. Reziduali se čine jednoliko rasprseni. Graf ne upućuje na heterogenost varijance.
+3. Čini se da su reziduali raspodijeljeni simetričnom normalnom distribucijom.
+4. Čini se da su reziduali modela raspodijeljeni simetričnom normalnom distribucijom.
+5. Oblik q-q plota ukazuje na simetričnu normalnu distribuciju s debelim repovima.
+KS TEST:  Budući da je  p-value =  0.0522, distribucija reziduala modela odgovara normalnoj distribuciji.
+LILLIE TEST:  Prema ovom testu, budući da je p-value = 0.0002793, distribucija reziduala modela **NE** odgovara normalnoj distribuciji.
+
+**8. Ocjena kvalitete modela i statističko zaključivanje na modelu:**
+
+Koeficijenti:
+p  < 2e-16 za sve koeficijente.
+--> mala p vrijednost ukazuje da je mala vjerojatnost da opseg prsa i kilaža nisu "povezane" varijable -> 3 zvjezdice ukazuju da je p vrijednost statistički značajna.
+
+Multiple R-squared: 0.9398 (poprima vrijednosti između 0 i 1) - mjera koliko je dobro model prilagođen našim podatcima.
+--> mjera linearne povezanosti kilaže i opsega prsa, opsega stražnjice, spola
+93.98% varijance u modelu moguće je objasniti pomoću opsega prsa (kao transformiran član),opsega stražnjice, spola.
+
+F-statistic: p-value < 2.2e-16 -> to znači da odbacujemo H0 (svi koeficijenti regresije su nula - model nema prediktivnu vrijednost) u korist H1: model ima prediktivnu vrijednost.
+
+**Zaključak:**
+Budući da nije narušena pretpostavka o homogenosti varijance, a Liliforceov test i KS - test daju različite zakljucke, uzimamo rezultat KS-testa koji upućuje da su reziduali raspodijeljeni normalnom distribucijom (ostali testovi provedeni na modelu ukazali su na normalnu distribuciju reziduala). Ovaj model smatramo ispravnim i kvalitetnim modelom višestruke linearne regresije. Opseg prsa, opseg stražnjice i spol mogu se koristiti za predviđanje kilaže.
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+  fit.multi.8 = lm(weightkg ~ buttockcircumference  + chestcircumference + I(chestcircumference^2) + Gender, ANSUR)
+  normality_homogenity(fit.multi.8)
+  summary(fit.multi.8)
+  
+```
+
+### Predviđanje kilaže na temelju opsega bedra, opsega prsa, kvadriranog opsega prsa i spola
+1. Reziduali se čine jednoliko raspršeni, ali teško je na ovom grafu suditi o normalnosti reziduala.
+2. Reziduali se čine jednoliko rasprseni. Graf ne upućuje na heterogenost varijance.
+3. Čini se da su reziduali raspodijeljeni simetričnom normalnom distribucijom.
+4. Čini se da su reziduali modela raspodijeljeni simetričnom normalnom distribucijom.
+5. Oblik q-q plota ukazuje na simetričnu normalnu distribuciju s debelim repovima.
+
+KS-TEST: Budući da je  p-value =  0.064, distribucija reziduala modela odgovara normalnoj distribuciji.
+LILLIE TEST: Prema ovom testu, budući da je p-value = 0.0004962, distribucija reziduala modela **NE** odgovara normalnoj distribuciji.
+
+**8. Ocjena kvalitete modela i statističko zaključivanje na modelu:**
+
+Koeficijenti:
+p < 2e-16 za sve koeficijente.
+--> mala p vrijednost ukazuje da je mala vjerojatnost da navedene varijable i kilaža nisu "povezane" varijable -> 3 zvjezdice ukazuju da je p vrijednost statistički značajna.
+
+Multiple R-squared: 0.9333 (poprima vrijednosti između 0 i 1) - mjera koliko je dobro model prilagođen našim podatcima.
+--> mjera linearne povezanosti kilaže i opsega prsa, opsega bedra, spola
+93.33% varijance u modelu moguće je objasniti pomoću opsega prsa (kao transformiran član), opsega bedra, spola.
+
+F-statistic: p-value < 2.2e-16 -> to znači da odbacujemo H0 (svi koeficijenti regresije su nula - model nema prediktivnu vrijednost) u korist H1: model ima prediktivnu vrijednost.
+
+**Zaključak:**
+Budući da nije narušena pretpostavka o homogenosti varijance, a Liliforceov test i KS - test daju različite zakljucke, uzimamo rezultat KS-testa koji upućuje da su reziduali raspodijeljeni normalnom distribucijom (ostali testovi provedeni na modelu ukazali su na normalnu distribuciju reziduala). Ovaj model smatramo ispravnim i kvalitetnim modelom višestruke linearne regresije. Opseg prsa, opseg bedra i spol mogu se koristiti za predviđanje kilaže.
+```{r, warning=FALSE, fig.height=20, fig.width = 20}
+
+  fit.multi.9 = lm(weightkg ~ chestcircumference + I(chestcircumference^2) + thighcircumference + Gender , ANSUR)
+  normality_homogenity(fit.multi.9)
+  summary(fit.multi.9)
+
+```
+
+## Višestruka linearna regresija (zaključak)
+
+
+
+
+
+Pronađena su dva modela višestruke linearne regresije koje zadovoljavaju sve pretpostavke. 
+Jedan model predviđa kilažu na temelju opsega stražnjice, opsega prsa (transformiran član) i spola, a drugi predviđa kilažu na temelju opsega bedra, opsega prsa (transformiran član) i spola.
+
+
+
+
+
+Za višestruku regresiju predviđanja kilaže pronađena su dva ispravna modela: jedan u kojem se na temelju opsega stražnjice, transformiranog člana opsega prsa i spola predviđa kilaža, a drugi u kojem se na temelju opsega bedra, transformiranog člana opsega prsa i spola predviđa kilaža. Zadovoljavaju sve zahtjeve višestruke linearne regresije - homogenost varijance, normalnost reziduala i neovisnost regresora. 
+
+\pagebreak
+
+
+# Određivanje veličina kaciga za vojsku
+
+
+
+## Funkcija za stvaranje podskupova
+```{r}
+
+  razvrstaj<-function(x,y,z,w){
+    podskup=subset(ANSUR, ANSUR$headcircumference >= x  & ANSUR$headcircumference < y & ANSUR$headlength >= z & ANSUR$headlength < w & ANSUR$headbreadth<162)
+    
+    return (podskup)
+}
+
+```
+
+Veličine kaciga određene su na temelju službenih mjera: "Advanced Combat Helmet sizing". To su kacige koje se trenutno koriste u američkoj vojsci.
+```{r}
+
+  small=razvrstaj(0,538,0,184);
+  
+  medium=razvrstaj(538,573,184,198);
+  
+  medium1=razvrstaj(538,573,0,184);
+  
+  medium2=razvrstaj(0,538,184,198);
+  
+  large=razvrstaj(573,597,198,210);
+  
+  large1=razvrstaj(538,573,198,210);
+  
+  large2=razvrstaj(573,597,184,198);
+  
+  large3=razvrstaj(0,538,198,210);
+  
+  large4=razvrstaj(573,597,0,184);
+  
+  extra_large=razvrstaj(597,Inf,210,Inf)
+  
+  extra_large1=razvrstaj(573,597,210,Inf);
+  
+  extra_large2=razvrstaj(597,Inf,198,210);
+  
+  extra_large3=razvrstaj(538,573,210,Inf);
+  
+  extra_large4=razvrstaj(597,Inf,184,198);
+  
+  extra_large5=razvrstaj(0,538,210,Inf);
+  
+  extra_large6=razvrstaj(597,Inf,0,184);
+  
+  extra_large7=subset(ANSUR, ANSUR$headbreadth >= 162)
+  
+  
+  s=nrow(small)
+  print(paste("Broj kaciga veličine S:", s))
+  
+  m=sum(nrow(medium),nrow(medium1),nrow(medium2))
+  print(paste("Broj kaciga veličine M:", m))
+  
+  l=sum(nrow(large),nrow(large1),nrow(large2),nrow(large3),nrow(large4))
+  print(paste("Broj kaciga veličine L:", l))
+  
+  xl=sum(nrow(extra_large),nrow(extra_large1),nrow(extra_large2),nrow(extra_large3),nrow(extra_large4),nrow(extra_large5),nrow(extra_large6),nrow(extra_large7))
+  print(paste("Broj kaciga veličine XL:", xl))
+
+```
+\pagebreak
+
+# Imaju li neki kampovi statistički značajno različite antropometrijske mjere od drugih?
+U ovom dijelu istražujemo imaju li neki kampovi statistički značajno različite antropometrijske mjere od drugih.
+
+Promatrat ćemo neke od sljedećih antropometrijskih mjera:
+
+```{r}
+# imena stupaca koji su antropometrijske mjere
+names(ANSUR[-c(1,95,96,97,98,99,100,101,102,103,104,105,108)]) 
+```
+
+za sljedeće kampove:
+
+```{r}
+#Sva imena kampova:
+kampovi <- ANSUR[,c(97)]
+unique(kampovi) 
+```
+
+Promatramo dimenzije svakog kampa:
+
+```{r}
+cat('Broj vojnika po kampovima:\n')
+
+hood <- subset(ANSUR, Installation == "Fort Hood")
+cat('Fort Hood:', nrow(hood), '\n')
+
+bliss <- subset(ANSUR, Installation == "Fort Bliss")
+cat('Fort Bliss:', nrow(bliss), '\n')
+
+atterbury <- subset(ANSUR, Installation == "Camp Atterbury")
+cat('Fort Atterbury:', nrow(atterbury), '\n')
+
+drum <- subset(ANSUR, Installation == "Fort Drum")
+cat('Fort Drum:', nrow(drum), '\n')
+
+mccoy <- subset(ANSUR, Installation == "Fort McCoy")
+cat('Fort McCoy:', nrow(mccoy), '\n')
+
+lee <- subset(ANSUR, Installation == "Fort Lee")
+cat('Fort Lee:', nrow(lee), '\n')
+
+stewart <- subset(ANSUR, Installation == "Fort Stewart")
+cat('Fort Stewart:', nrow(stewart), '\n')
+
+bragg <- subset(ANSUR, Installation == "Fort Bragg")
+cat('Fort Bragg:', nrow(bragg), '\n')
+
+gordon <- subset(ANSUR, Installation == "Fort Gordon")
+cat('Fort Gordon:', nrow(gordon), '\n')
+
+huachuca <- subset(ANSUR, Installation == "Fort Huachuca")
+cat('Fort Huachuca:', nrow(huachuca), '\n')
+
+shelby <- subset(ANSUR, Installation == "Camp Shelby")
+cat('Fort Shelby:', nrow(shelby), '\n')
+
+rucker <- subset(ANSUR, Installation == "Fort Rucker")
+cat('Fort Rucker:', nrow(rucker), '\n')
+```
+
+S obzirom da kamp Fort Rucker ima samo jednog vojnika, njega cemo zanemariti u ovoj analizi.
+
+```{r}
+ANSUR11 <- subset(ANSUR, Installation != 'Fort Rucker')
+```
+
+Ostalo nam je 11 kampova koje promatramo kao populacije, a uzorci iz populacija bit ce nam svi vojnici iz pojedinih kampova.
+S obzirom da se ovdje bavimo statističkim zaključivanjem na više od dva uzorka, koristit cemo ANOVA test.
+
+ANOVA (ANalysis Of VAriance) je metoda kojom testiramo sredine više populacija. U analizi varijance pretpostavlja se da je ukupna varijabilnost u podatcima posljedica varijabilnosti podataka unutar svakog pojedine grupe (populacije) i varijabilnosti između različitih grupa. Varijabilnost unutar pojedinog uzorka je rezultat slučajnosti, a ukoliko postoje razlike u srednimana populacija, one će biti odražene u varijabilnosti među grupama. Jedan od glavnih ciljeva analize varijance je ustanoviti jesu li upravo te razlike između grupa samo posljedica slučajnosti ili je statistički značajna.
+
+Pretpostavke ANOVA-e su:
+- nezavisnost pojedinih podataka u uzorcima,
+- normalna razdioba podataka,
+- homogenost varijanci među populacijama.
+
+Provjeru normalnosti podataka radit cemo preko histograma te preko q-q plotova, a testiranje homogenosti varijance uzoraka Bartletovim testom. U nastvku je primjer analize za visine te tezine vojnika:
+
+##Visina vojnika po kampovima
+
+Provjera normalnosti:
+```{r, fig.height = 7, fig.width=20}
+
+hist(hood$Heightin, 
+     breaks=seq(min(hood$Heightin)-1,max(hood$Heightin)+1,3),
+     main='Histogram of heights of Fort Hood soldiers',
+     xlab='Height in inch')
+
+hist(bliss$Heightin, 
+     breaks=seq(min(bliss$Heightin)-1,max(bliss$Heightin)+1,3),
+     main='Histogram of heights of Fort Bliss soldiers',
+     xlab='Height in inch')
+
+hist(atterbury$Heightin, 
+     breaks=seq(min(atterbury$Heightin)-1.5,max(atterbury$Heightin)+1.5,3),
+     main='Histogram of heights of Camp Atterbury soldiers',
+     xlab='Height in inch')
+
+hist(drum$Heightin, 
+     breaks=seq(min(drum$Heightin)-1.5,max(drum$Heightin)+1.5,3),
+     main='Histogram of heights of Fort Drum soldiers',
+     xlab='Height in inch')
+
+hist(mccoy$Heightin, 
+     breaks=seq(min(mccoy$Heightin)-1.5,max(mccoy$Heightin)+1.5,3),
+     main='Histogram of heights of Fort McCoy soldiers',
+     xlab='Height in inch')
+
+hist(lee$Heightin, 
+     breaks=seq(min(lee$Heightin)-1.5,max(lee$Heightin)+1.5,3),
+     main='Histogram of heights of Fort Lee soldiers',
+     xlab='Height in inch')
+
+hist(stewart$Heightin, 
+     breaks=seq(min(stewart$Heightin)-1.5,max(stewart$Heightin)+1.5,3),
+     main='Histogram of heights of Fort Stewart soldiers',
+     xlab='Height in inch')
+
+hist(bragg$Heightin, 
+     breaks=seq(min(bragg$Heightin)-1.5,max(bragg$Heightin)+1.5,3),
+     main='Histogram of heights of Fort Bragg soldiers',
+     xlab='Height in inch')
+
+hist(gordon$Heightin, 
+     breaks=seq(min(gordon$Heightin)-1,max(gordon$Heightin)+1,3),
+     main='Histogram of heights of Fort Gordon soldiers',
+     xlab='Height in inch')
+
+hist(huachuca$Heightin, 
+     breaks=seq(min(huachuca$Heightin)-1.5,max(huachuca$Heightin)+1.5,3),
+     main='Histogram of heights of Fort Huachuca soldiers',
+     xlab='Height in inch')
+
+hist(shelby$Heightin, 
+     breaks=seq(min(shelby$Heightin)-1.5,max(shelby$Heightin)+1.5,3),
+     main='Histogram of heights of Camp Shelby soldiers',
+     xlab='Height in inch')
+```
+Razdiobe izgledaju normalno.
+
+```{r}
+
+par(mfrow= c(1,2))
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Hood'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Hood'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Bliss'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Bliss'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Camp Atterbury'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Camp Atterbury'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Drum'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Drum'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort McCoy'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort McCoy'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Lee'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Lee'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Stewart'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Stewart'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Bragg'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Bragg'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Gordon'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Gordon'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Huachuca'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Huachuca'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Camp Shelby'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Camp Shelby'], col = "steelblue", lwd = 2)
+
+```
+
+Provjera homogenosti varijance:
+
+testiramo tezu H0: sve varijance su jednake
+dok alternativa hipoteza H1 opovrgava H0.
+
+```{r}
+
+bartlett.test(ANSUR11$Heightin ~ ANSUR11$Installation)
+
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort Hood']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort Bliss']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Camp Atterbury']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort Drum']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort McCoy']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort Lee']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort Stewart']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort Bragg']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort Gordon']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Fort Huachuca']))
+var((ANSUR11$Heightin[ANSUR11$Installation=='Camp Shelby']))
+
+```
+
+Provjerimo postoje li razlike u visinama za različite kampove.
+
+```{r test razlike u prihodima}
+
+# Graficki prikaz podataka
+boxplot(ANSUR11$Heightin ~ ANSUR11$Installation)
+
+# Test
+a = aov(ANSUR11$Heightin ~ ANSUR11$Installation)
+summary(a)
+
+```
+
+Grafički prikaz sugerira da postoji jasna razlika u visinama vojnika među kampova, što potvrđuje i ANOVA.
+
+U nastavku cemo odraditi isti test za težinu:
+
+
+##Tezina vojnika po kampovima
+
+Provjera normalnosti:
+```{r, fig.height = 7, fig.width=20}
+
+
+hist(hood$weightkg, 
+     breaks=seq(min(hood$weightkg)-1.5,max(hood$weightkg)+1.5,3),
+     main='Histogram of weights of Fort Hood soldiers',
+     xlab='Height in inch')
+
+hist(bliss$weightkg, 
+     breaks=seq(min(bliss$weightkg)-1.5,max(bliss$weightkg)+1.5,3),
+     main='Histogram of weights of Fort Bliss soldiers',
+     xlab='Height in inch')
+
+hist(atterbury$weightkg, 
+     breaks=seq(min(atterbury$weightkg)-1.5,max(atterbury$weightkg)+1.5,3),
+     main='Histogram of weights of Camp Atterbury soldiers',
+     xlab='Height in inch')
+
+hist(drum$weightkg, 
+     breaks=seq(min(drum$weightkg)-1.5,max(drum$weightkg)+1.5,3),
+     main='Histogram of weights of Fort Drum soldiers',
+     xlab='Height in inch')
+
+hist(mccoy$weightkg, 
+     breaks=seq(min(mccoy$weightkg)-1.5,max(mccoy$weightkg)+1.5,3),
+     main='Histogram of weights of Fort McCoy soldiers',
+     xlab='Height in inch')
+
+hist(lee$weightkg, 
+     breaks=seq(min(lee$weightkg)-1.5,max(lee$weightkg)+1.5,3),
+     main='Histogram of weights of Fort Lee soldiers',
+     xlab='Height in inch')
+
+hist(stewart$weightkg, 
+     breaks=seq(min(stewart$weightkg)-1,max(stewart$weightkg)+1,3),
+     main='Histogram of weights of Fort Stewart soldiers',
+     xlab='Height in inch')
+
+hist(bragg$weightkg, 
+     breaks=seq(min(bragg$weightkg)-1.5,max(bragg$weightkg)+1.5,3),
+     main='Histogram of weights of Fort Bragg soldiers',
+     xlab='Height in inch')
+
+hist(gordon$weightkg, 
+     breaks=seq(min(gordon$weightkg)-1.5,max(gordon$weightkg)+1.5,3),
+     main='Histogram of weights of Fort Gordon soldiers',
+     xlab='Height in inch')
+
+hist(huachuca$weightkg, 
+     breaks=seq(min(huachuca$weightkg)-1,max(huachuca$weightkg)+1,3),
+     main='Histogram of weights of Fort Huachuca soldiers',
+     xlab='Height in inch')
+
+hist(shelby$weightkg, 
+     breaks=seq(min(shelby$weightkg)-1.5,max(shelby$weightkg)+1.5,3),
+     main='Histogram of weights of Camp Shelby soldiers',
+     xlab='Height in inch')
+```
+
+```{r}
+
+par(mfrow= c(1,2))
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Hood'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Hood'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Bliss'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Bliss'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Camp Atterbury'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Camp Atterbury'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Drum'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Drum'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort McCoy'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort McCoy'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Lee'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Lee'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Stewart'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Stewart'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Bragg'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Bragg'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Gordon'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Gordon'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Fort Huachuca'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Fort Huachuca'], col = "steelblue", lwd = 2)
+
+qqnorm(ANSUR11$Heightin[ANSUR11$Installation=='Camp Shelby'], pch = 1, frame = FALSE)
+qqline(ANSUR11$Heightin[ANSUR11$Installation=='Camp Shelby'], col = "steelblue", lwd = 2)
+
+```
+
+Provjera homogenosti varijance:
+
+testiramo hipotezu H0: sve varijance su jednake
+dok alternativa hipoteza H1 opovrgava H0.
+
+```{r}
+bartlett.test(ANSUR11$Heightin ~ ANSUR11$Installation)
+
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort Hood']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort Bliss']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Camp Atterbury']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort Drum']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort McCoy']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort Lee']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort Stewart']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort Bragg']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort Gordon']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Fort Huachuca']))
+var((ANSUR11$weightkg[ANSUR11$Installation=='Camp Shelby']))
+
+```
+
+Provjerimo postoje li razlike u težinama za različite kampove.
+
+```{r}
+
+# Graficki prikaz podataka
+boxplot(ANSUR11$weightkg ~ ANSUR11$Installation)
+
+# Test
+a = aov(ANSUR11$weightkg ~ ANSUR11$Installation)
+summary(a)
+
+```
+Grafički prikaz sugerira da postoji jasna razlika u srednjim težinama vojnika među kampova, što potvrđuje i ANOVA.
+
+
+# Srednja vrijednost raspona ruku kod žena u pojedinim kampovima
+
+Želimo znati jesu li srednje vrijednosti raspona ruku kod žena u pojedinim kampovima jednake.
+
+Pojedini podatci u uzrocima su nezavisni jer svaki redak u početno učitanim podatcima predstavlja različitu osobu - jedna osoba ne evidetira se dvaput u kampu.
+Grupe su određene samo na ženskim vojnicima.
+Provjera normalnosti mora se napraviti nad svim grupama - grupe čine podatci o rasponu ruku za pojedini kamp.
+
+Normalnost je prvo provjerena za sve evidentirane raspone ruku.
+
+```{r, warning=FALSE}
+ks.test(scale(female_soldiers$span), 'pnorm')
+```
+
+Razmatramo varijablu "Installation" (pripadnost vojnom kampu) kao varijablu koja određuje grupe (populacije) i raspon ruku kao
+zavisnu varijablu.
+
+Postoji 11 vojnih kampova:
+
+```{r, warning=FALSE}
+
+instalations <- unique(female_soldiers$Installation)
+
+y <- data.frame(instalations)
+rownames(y) <- paste0("[", 1:11, "]")
+
+print(y)
+
+
+```
+
+
+Za svaki od kampova potrebno je provjeriti jesu li podatci o rasponu ruku normalno distribuirani.
+Provjera je napravljena pomoću Kolmogorov-Smirnovljevog testa za normalnu distribuciju.
+
+```{r, warning=FALSE}
+
+
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort Hood']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort Bliss']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Camp Atterbury']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort Drum']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort McCoy']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort Lee']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort Stewart']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort Bragg']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort Gordon']), 'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Fort Huachuca']),'pnorm')
+ks.test(scale(female_soldiers$span[female_soldiers$Installation=='Camp Shelby']), 'pnorm')
+
+
+```
+``` {r, echo=FALSE, results='hide', fig.show='hide'}
+hist(scale(female_soldiers$span))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort Hood']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort Bliss']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Camp Atterbury']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort Drum']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort McCoy']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort Lee']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort Stewart']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort Bragg']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort Gordon']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Fort Huachuca']))
+hist(scale(female_soldiers$span[female_soldiers$Installation=='Camp Shelby']))
+
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Fort Hood']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Fort Bliss']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Camp Atterbury']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Fort McCoy']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Fort Lee']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Fort Stewart']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Fort Bragg']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Fort Gordon']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Fort Huachuca']))
+nrow(scale(female_soldiers$span[female_soldiers$Installation=='Camp Shelby']))
+
+```
+
+Za sve grupe vrijedi normalna distribucija podataka jer je u svima p vrijednost veća od 0.5.
+
+Zadovoljene su pretpostavke ANOVE o nezavisnosti podataka i normalnosti razdiobe podataka, sljedeće treba provjeriti homogenost varijanci svih grupa.
+
+``` {r}
+
+bartlett.test(female_soldiers$span ~ female_soldiers$Installation)
+
+var(female_soldiers$span[female_soldiers$Installation=='Fort Hood'])
+var(female_soldiers$span[female_soldiers$Installation=='Fort Bliss'])
+var(female_soldiers$span[female_soldiers$Installation=='Camp Atterbury'])
+var(female_soldiers$span[female_soldiers$Installation=='Fort Drum'])
+var(female_soldiers$span[female_soldiers$Installation=='Fort McCoy'])
+var(female_soldiers$span[female_soldiers$Installation=='Fort Lee'])
+var(female_soldiers$span[female_soldiers$Installation=='Fort Stewart'])
+var(female_soldiers$span[female_soldiers$Installation=='Fort Bragg'])
+var(female_soldiers$span[female_soldiers$Installation=='Fort Gordon'])
+var(female_soldiers$span[female_soldiers$Installation=='Fort Huachuca'])
+var(female_soldiers$span[female_soldiers$Installation=='Camp Shelby'])
+
+```
+Bartletov test za homogenost varijanci pokazuje da varijance raspona ruku za pojedine kampove nisu jednake jer je p vrijednost manja od 0.05.
+
+Srednje vrijednosti raspona ruku dobro je prikazati pomoću boxplot-a.
+``` {r, fig.width = 17, fig.height = 15}
+
+boxplot(female_soldiers$span ~ female_soldiers$Installation, main = "Span for given Installation value", ylab = "Span", xlab = "Installation", cex.lab = 1.5, cex.main = 2, cex.axis = 1)
+
+```
+Vidimo da neke od grupa odstupaju od srednjih vrijednosti raspona ruku drugih grupa.
+ 
+Sad još treba provjeriti koje rezultate daje ANOVA.
+``` {r, fig.height = 10}
+
+a = aov(female_soldiers$span ~ female_soldiers$Installation)
+summary(a)
+
+```
+Rezultat ANOVE potvrđuje rezultate Bartlettovog testa - p vrijednost je 3.6e-11 što znači da odbacujemo hipotezu H0: srednje vrijednosti raspona ruku za pojedine kampove su jednake.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

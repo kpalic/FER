@@ -1,0 +1,645 @@
+---
+title: "7 Korisnički definirane funkcije"
+author: ""
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+---
+
+
+```{r include=FALSE}
+knitr::opts_chunk$set(results = 'hold')
+```
+
+
+
+## Definicija funkcije u jeziku R 
+
+U općenitom slučaju, definicija nove funkcije izgleda ovako:
+
+```{r,eval = F}
+ime_funkcije <- function(ulazni argumenti) {
+    tijelo funkcije
+    return izjava
+}
+```
+
+Uočimo da kod definicije funkcije koristimo operator `<-`. Ovo nije slučajno - definicija funkcije nije ništa drugo nego stvaranje objekta klase `function` kojeg onda pridružujemo određenoj varijabli; ime varijable zapravo je "naziv" funkcije.
+
+
+
+## Zadatak 7.1 - prva korisnički definirana funkcija
+
+
+```{r}
+# stvorite funkciju `myAbs` koja će imitirati
+# rad R-ove funkcije `abs` function (ali ju neće direktno pozivati!)
+
+myAbs <- function(broj) {
+  if (broj < 0) {
+    return (broj * -1)
+  }
+  else {
+    return (broj)
+  }
+}
+
+myAbs2 <- function(x) {
+  ifelse(x < 0, -x, x)
+}
+myAbs(-3)
+myAbs2(-3)
+```
+
+
+
+
+
+## Pisanje robustnih funkcija
+
+Konačno, ukoliko želimo povećati robusnost funkcije na način da ćemo odbiti izvođenje logike unutar funkcije ako nisu zadovoljeni određeni uvjeti, za to možemo koristiti funkciju `stopifnot(<logički izraz>)`. Ova funkcija izračunava zadani logički izraz i prekida funkciju ako navedeni uvjet *nije istinit*.
+
+## Zadatak 7.2 - korištenje `stopifnot` funkcije
+
+
+```{r}
+# napišite funkciju `veci` koja prima dva numerička vektora iste duljine 
+# i vraća vektor koji sadrži veći od dva elementa na istim mjestima
+# ukoliko jedan ili oba vektora nisu numerički ili nisu iste duljine, 
+# funkcija mora izbaciti grešku
+# u funkciji nemojte koristiti petlje
+
+# pozovite funkciju `veci` nad kombinacijama vektora
+# c(T, F, T) i c(1, 2, 3)
+# c(1, 2, 3, 4) i c(5, 6, 7)
+# c(1, 2, 3) i c(0, 4, 2)
+
+# (preporuka - drugi dio zadatka isprobati direktno u konzoli!)
+
+veci <- function (v1, v2) {
+  a <- c()
+  stopifnot((is.numeric(v1) & is.numeric(v2)) | length(v1) != length(v2))
+  for (i in 1:length(v1)) {
+    if (v1[i] > v2[i]) {
+      a <- c(a, v1[i])
+    }
+    else {
+      a <- c(a, v2[i])
+    }
+  }
+  return (a)
+}
+
+x1 <- c(1,2,3)
+x2 <- c(0,4,2)
+veci(x1, x2)
+
+
+```
+
+
+
+
+
+## Zadatak 7.3 - parametri funkcije
+
+```{r, eval = F}
+ispisiABC <- function(a, b, c) {
+   print(paste("A:", a, "B:", b, "C:", c))   
+}
+
+# razmislite - što ispisuje sljedeći poziv funkcije? 
+ispisiABC(1, a = 2, 3)
+```
+
+
+
+## Zadatak 7.4 - funkcija sa proizvoljnim brojem parametara
+
+```{r}
+ispisiParametre <- function(...) {
+   parametri <- list(...)
+   for (p in parametri) print(p)
+}
+
+# pozovite gornju funkciju sa proizvoljnim parametrima
+
+ispisiParametre(1,2,3,4,5)
+```
+
+## Zadatak 7.4 - funkcija sa proizvoljnim brojem parametara
+
+```{r}
+ispisiParametre(c(1, 2, 3), 5, T, data.frame(x = 1:2, y = c(T, F)))
+```
+
+
+
+
+## Primjer 7.1 - princip "copy-on-modify"
+
+```{r}
+# stvaramo podatkovni okvir `df`
+df <- data.frame(id = 1:5, name = LETTERS[1:5])
+
+# funkcija pokušava promijeniti prvi element drugog stupca
+# u glavni program se ne vraća ništa
+# (operator pridruživanja nema povratnu vrijednost!)
+f <- function(x) {
+    x$name[1] <- "izmjena!"
+}
+# originalni podatkovni okvir ostaje nepromijenjen!
+f(df)
+df
+
+
+```
+
+
+
+## Primjer 7.2 - princip "copy-on-modify" (2)
+
+```{r}
+# stvaramo podatkovni okvir `df`
+df <- data.frame(id = 1:5, name = LETTERS[1:5])
+
+# pokušaj drugi - funkcija nema ulaznih parametara
+# referencom na varijablu iz globalne okoline
+# pokušavamo provesti izmjenu
+f <- function() {
+    df$name[1] <- "izmjena!"
+}
+
+# originalni podatkovni okvir ostaje nepromijenjen!
+f()
+df
+
+
+```
+
+
+
+## Primjer 7.3 - princip "copy-on-modify" (3)
+
+
+```{r}
+# stvaramo podatkovni okvir `df`
+# i "zamotavamo" ga u okolinu `e`
+e <- new.env()
+parent.env(e) <- emptyenv()
+e$df <- data.frame(id = 1:5, name = LETTERS[1:5])
+
+# funkcija prima referencu na okolinu
+# i mijenja varijablu unutar nje
+f <- function(e) {
+    e$df$name[1] <- "izmjena!"
+}
+
+# promjena je konačno vidljiva
+f(e)
+e$df
+
+```
+
+## Operator `<<-`
+
+Jednostavniji način rješavanja gornjeg zadatka bio bi korištenjem operatora `<<-`. Ovo je tzv. "operator dodjele vanjskom opsegu" (engl. *scoping assignment operator*), a njegova funkcija upravo jest mogućnost izmjene varijable zadanog imena koja se ne nalazi u opsegu funkcije bveć "negdje" na stazi pretrage. R će tražiti sekvencijalno po stazi pretrage i promijeniti prvu pojavu navedene varijable. Ukoliko varijabla tog naziva ne postoji nigdje u stazi pretrage, R će stvoriti novu varijablu **u prvoj okolini iznad okoline funkcije**.
+
+## Primjer 7.4 - operator  `<<-`
+
+```{r}
+# operator `<<-`
+f <- function(x) {
+    x <<- 7
+    x <- 6
+ 
+}
+
+x <- 5
+f(x)
+x
+```
+
+Ovaj operator je potencijalno nepredvidiv tako da ćemo veću robusnost ipak postići korištenjem funkcije `assign` ili operatora `$` uz referencu na okolinu gdje se nalazi varijabla koju želimo mijenjati.
+
+## Primjer 7.5 - operator  `<<-` (2)
+
+```{r}
+# stvaramo podatkovni okvir `df`
+df <- data.frame(id = 1:5, name = LETTERS[1:5])
+
+f <- function() {
+    df$name[1] <<- "change!"
+}
+
+f()
+df
+```
+
+
+
+## Primjer 7.6 - preimenovanje funkcije
+
+```{r, eval = F}
+zbroji <- sum
+
+zbroji(1:10)  # isto kao sum(1:10)
+
+```
+
+## Funkcija koja vraća funkciju
+
+Funkcija može uredno vraćati i neku drugu funkciju.
+
+```{r}
+stvoriteljFje <- function() {
+    f <- function(x) x + 1
+    return(f)   # ili samo f
+}
+
+novaFja <- stvoriteljFje() # dobili smo funkciju "dodavanja jedinice"
+novaFja(5)  
+```
+
+Funkcija je jednostavno stvorila novu funkciju i vratila ju pozivajućem programu kao što bi učinila sa bilo kojim drugim objektom. Povratnu vrijednost spremili smo u varijablu koja je sad "pozivljiva" - ako joj dodamo zagrade i parametre ona će se izvršiti na način na koji je definirana unutar funkcije koja ju je stvorila.
+
+## Funkcija koja vraća funkciju (2)
+
+Uočite da smo mogli iskoristiti činjenicu da funkcija vraća rezultat zadnjeg izraza i funkciju definirati i kraće:
+
+```{r}
+#kraća definicija
+stvoriteljFje <- function() {
+    function(x) x + 1
+}
+```
+
+Pokušajte samostalno napraviti generator funkcija koji vraća funkcije za množenje sa unaprijed postavljenim parametrom.
+
+
+## Zadatak 7.6 - generator funkcija
+
+```{r}
+# stvorite funkciju `tvornicaMnozenja` koja stvara funkcije množenja primljenog broja 
+# sa nekom predefiniranom konstantom
+
+tvornicaMnozenja <- function (x) {
+  function(a) {
+    a*x
+  }
+}
+
+# uz pomoć gornje funkcije napravite funkciju `puta2` koja udvostručuje primljeni broj
+puta2 <- tvornicaMnozenja(2)
+# pozovite funkciju `puta2` s parametrom 3 i ispišite rezultat
+puta2(5)
+```
+
+Funkcija `tvornicaMnozenja` zapravo stvara "porodicu" funkcija koje sve pružaju mogućnost množenja sa odabranim brojem - tj. parametrom kojeg odabire sam programer. Ovakav način upravljanja funkcijama je možda inicijalno zbunjujući, no korištenjem istoga u praksi (što ćemo prikazati već u idućem poglavlju) lako se uočava dodatna fleksibilnost i učinkovitost ovakvog pristupa.
+
+## Anonimne funkcije
+
+Ako definiramo funkciju, a ne pridružimo ju nekoj varijabli, onda smo stvorili tzv. "anonimnu funkciju".
+
+```{r, eval = F}
+# anonimna funkcija
+function(x) x * x 
+```
+
+## Funkcija = "izvršivi" objekt
+
+Za kraj ovog dijela ponovimo najbitnije stvari - u R-u je funkcija objekt kao i svaki drugi, jedina specifičnost jest da se radi o objektu koji je "izvršiv", tj. koji uz korištenje sintakse za poziv funkcije obavlja neki posao i vraća neku vrijednost. Čak i anonimnu funkciju možemo bez problema izvršiti (iako samo jednom, budući da nemamo referencu za njezino ponovno zvanje).
+
+```{r}
+# anonimna funkcija s pozivom
+(function(x) x + 1)(2)
+```
+
+
+
+## Što su `apply` funkcije?
+
+- funkcije iz porodice `apply` specifično su dizajnirane za provođenje repetitivnih zadataka nad skupovima podataka
+     - kao takve zamjenjuju programsku logiku koja bi se u nekom drugom jeziku realizirala programskom petljom
+- ove funkcije prate paradigmu funkcionalnog programiranja
+     - svaka funkcija iz ove porodice (između ostalog) prima referencu na neku drugu funkciju kao ulazni parametar
+
+## Članovi `apply` porodice
+
+Naziv porodice potiče od činjenice da funkcije iz nje imaju sufiks "*apply*". Neke funkcije iz ove porodice su:
+
+- `apply`
+- `lapply`
+- `sapply`
+- `vapply`
+- `tapply`, `mapply`, `rapply`...
+
+Sve ove funkcije rade na sličan način - kao ulazne argumente primaju skup podataka, funkciju koju želimo primijeniti na elemente tog skupa te opcionalne dodatne parametre, a kao izlaz daju skup rezultata funkcije, najčešće "upakirane" u prigodni format. Razlika se uglavnom svodi na tipove ulaznih i izlaznih argumenata, te konkretne detalje oko provedbe same funkcije i/ili pripreme rezultata.
+
+
+## Funkcija `apply`
+
+Funkcija `apply` jedina je koja doslovno dijeli ime sa porodicom ovih funkcija. Namijenjena je **radu s matricama** (zapravo sa poljima, ali budući da se relativno rijetko radi sa strukturama koje imaju više od dvije dimenzije, ovdje ćemo se usredotočiti samo na matrice).
+
+Sintaksa naredbe je sljedeća:
+
+```{r, eval = F}
+rezultat <- apply( <matrica>, <redovi (1) ili stupci (2)>, <funkcija> )
+```
+
+(ili, riječima)
+
+- odaberemo matricu
+- odlučimo se da li ju "režemo" po retcima ili stupcima
+- primjenjujemo odabranu funkciju na svaki redak (ili stupac) 
+
+Ovisno o tome što funkcija radi, kao rezultat dobivamo matricu ili (što je češći slučaj) vektor.
+
+
+## Zadatak 7.7 - funkcija `apply`
+
+
+```{r}
+m <- matrix(1:9, nrow = 3, ncol = 3, byrow = TRUE)
+
+# ispišite matricu `m`
+m
+
+# uz pomoć funkcije `apply` izračunajte 
+# i ispišite zbrojeve stupaca matrice `m` 
+zbroj <- apply(m, 2, sum)
+zbroj
+
+# uz pomoć funkcije `apply` izračunajte 
+# i ispišite umnoške redaka matrice `m` 
+apply(m, 1, sum)
+```
+
+
+## Funkcija `apply` i anonimne funkcije
+
+Ukoliko želimo nad retcima / stupcima provesti neki specifičan zadatak, za to vrlo često koristimo anonimnu funkciju, npr:
+
+```{r, eval = F}
+apply(m, 1, function(x) x[1])   # izvlačimo prvi element svakog retka
+```
+
+(uočite da se ovdje radi o vrlo umjetnom primjeru budući da izvlačenje "prvog elemenata svakog retka" radimo jednostavno uz pomoć indeksnog operatora i traženjem prvog stupca)
+
+## Zadatak 7.8 - funkcija `apply` i anonimne funkcije
+
+
+```{r}
+# uz pomoć funkcije `apply` za svaki redak matrice `m` 
+# izračunajte prirodni logaritam sume elemenata
+# zaokružen na 2 decimale  (funkcija `round`!)
+apply(m, 1, function(x) round(log(sum(x)), 2))
+```
+
+## Funkcija `apply` - implicitna programska petlja
+
+Ponovimo - funkcija `apply` (i srodne funkcije) implicitno **"rastavljaju" ulaznu podatkovnu strukturu na elemente**. U primjerima koje smo vidjeli ti elementi - retci ili stupci - su zapravo bili numerički vektori. Argument `x` kojeg prima anonimna funkcija je upravo taj vektor, ili bolje reći **svaki od tih vektora** koji joj se prosljeđuju jedan po jedan. **Rezultati funkcije se "pamte" i "pakiraju"** u konačni rezultat.
+
+Pokušajmo isprogramirati zadnji primjer bez korištenja funkcije `apply`.
+
+
+
+## Zadatak 7.9 - petlja kao alternativa funkciji `apply`
+
+
+```{r}
+# uz pomoć programske petlje za svaki redak matrice `m` 
+# izračunajte prirodni logaritam sume elemenata
+# zaokružen na 2 decimale  (funkcija `round`!)
+a <- c()
+for (i in 1:nrow(m)) {
+  sum <- 0
+  for (j in 1:ncol(m)) {
+    sum <- sum + m[i,j]
+  }
+  a <- c(a, log(sum))
+}
+
+round(a, 2)
+```
+
+
+## Dodatni parametri funkcije-argumenta
+
+Što ako `apply` funkciji želimo proslijediti više parametara? Npr. recimo da umjesto funkcije koja izvlači prvi element retka želimo funkciju sa dva parametra - prvi je vektor-dio strukture nad kojom "iteriramo", a drugi cijeli broj koji označava koji broj treba izvući. Odgovor je jednostavan - dodatne parametre jednostavno navedemo na kraju poziva funkcije.
+
+```{r, eval = F}
+# apply funkcija i ulazna funkcija sa više parametara
+apply(m, 1, function(x,y) x[y], 2)  # izvlačimo drugi element svakog retka
+```
+
+## Moramo li uvijek koristiti funkciju `apply`?
+
+Dosta popularnih operacija kao što su zbrajanje elemenata redaka ili stupaca, računanje prosjeka elemenata redaka i stupaca i sl. već je implementirano kroz funkcije kao što su `rowSums`, `colSums`, `rowMeans`, `colMeans` i sl. One su jednostavnije za uporabu, no specijalizirane - za dodatnu fleksibilnost najčešće je `apply` najpogodnija opcija.
+
+
+
+## Funkcija `lapply`
+
+Ime funkcije `lapply` dolazi od "*list apply*" - tj. **"`apply` funkcija koja radi sa listama**". Jednostavno - radi se o funkciji koja će kao ulazni argument primiti listu i neku funkciju, primijeniti funkciju na svaki pojedini element liste i rezultat vratiti opet u obliku liste.
+
+
+
+## Zadatak 7.10 - funkcija `lapply`
+
+
+```{r}
+l <- list(a = 1:3, b = rep(c(T, F), 10), c = LETTERS)
+
+# pomoću funkcije `lapply` izračunajte duljinu (broj elemenata) 
+# svakog elementa liste `l`
+lapply(l, length)
+```
+
+
+## Funkcija `lapply` i anonimne funkcije
+
+Isto kao kod funkcije `apply`, kod funkcije `lapply` često kao parametar koristimo anonimne funkcije. Sljedeći zadatak nema posebnu praktičnu uporabu, ali će nam pomoći da shvatimo funkcioniranje funkcije `lapply` te usvojimo činjenicu kako anonimne funkcije ne moraju nužno biti kratke i jednostavne.
+
+
+
+## Zadatak 7.11 - funkcija `lapply` i anonimne funkcije
+
+
+```{r}
+# obradite elemente liste `l` na sljedeći način:
+
+# - izračunajte srednju vrijednost ako se radi o numeričkom vektoru
+# - prebrojite vrijednosti TRUE ako se radi o logičkom vektoru
+# - ispišite duljinu vektora za sve ostale slučajeve
+
+# koristite funkciju `lapply` i anonimnu funkciju
+
+# ne zaboravite da i anonimna funkcija može koristiti blokove!
+
+
+lapply(l, function(x) {
+  if (is.logical(x)) {
+    sum(x)
+  } else if (is.numeric(x)) {
+    mean(x)
+  } else {
+    length(x)
+  }
+}) 
+
+```
+
+
+## Rezultat funkcije `lapply`=> lista!
+
+Funkcija `lapply` je u suštini dosta jednostavna za korištenje i baš zbog te činjenice vrlo popularna. No nakon što ju koristimo jedno vrijeme može nas zasmetati činjenica da ona uvijek kao rezultat vraća listu, iako bi nam nekad više odgovarala neka druga podatkovna struktura, kao npr. vektor, pogotovo ako rezultantna lista ima kao elemente jednostavne brojeve. Upravo iz ovog razloga nudi funkciju `unlist` za "pojednostavljivanje" liste u vektor ako ona sadrži jednostavne elemente.
+
+
+
+## Zadatak 7.12 - funkcija `unlist`
+
+
+```{r}
+
+l <- list(a = 1:10, b = 10:20, c = 100:200)
+
+
+# izračunajte srednje vrijednosti elemenata liste `l`
+# rezultate ispišite kao numerički vektor
+# koristite lapply i unlist
+
+x <- lapply(l, mean)
+unlist(x)
+```
+
+
+## Može li rezultat biti matrica?
+
+Prikazana kombinacija `lapply` i `unlist` će nam kao rezultat dati jednodimenzionalni vektor, što nam u velikom broju slučajeva odgovara. No ponekad bi nam više odgovarala neka druga podatkovna struktura - npr. matrica. U ovom slučaju potreban nam je i dodatni korak preoblikovanja jednodimenzionalnog vektora u matricu uz pomoć funkcije `matrix`, pri čemu moramo eksplicitno zadati broj redaka i stupaca. 
+
+## Funkcija `sapply`
+
+Može se postaviti pitanje - zašto funkcija `lapply` ne bi mogla "pogledati" rezultat kojeg je dobila i sama odrediti optimalnu podatkovnu strukturu za oblikovanje rezultata (vektor, matrica ili lista)? Upravo je to ideja iza funkcije `sapply`, ili "*simplified list apply*". Ova funkcija prvo interno obavlja `lapply`, a potom se rezultat pojednostavljuje na vektor, matricu ili polje, ovisno o karakteristikama dobivenih rezultata.
+
+
+
+## Zadatak 7.13 - funkcija `sapply`
+
+
+```{r}
+
+l <- list(a = 1:10, b = 10:20, c = 100:200)
+help(sapply)
+
+# izračunajte medijane elemenata liste `l` 
+# i rezultate ispišite kao numerički vektor
+# koristite funkciju `sapply`
+sapply(l, median)
+
+# izvucite prvi i zadnji element svakog od elemenata liste `l`
+# koristite `sapply` i anonimnu funkciju
+sapply(l, function(x) {
+  a <- c(x[1], x[length(x)])
+  return (a)
+})
+```
+
+
+
+
+## Zadatak 7.14 - funkcija `vapply`
+
+
+```{r, eval = F}
+podaci <- list(brojevi <- c(1:5), 
+               imena <- c("Ivo", "Pero", "Ana"), 
+               abeceda <- LETTERS)
+
+
+# razmislite koji će od sljedećih poziva biti uspješan, 
+# a koji će izbaciti grešku
+# rezultate provjerite na konzoli
+
+vapply(podaci, length, FUN.VALUE = numeric(1))
+vapply(podaci, function(x) as.character(c(x[1], x[2])), FUN.VALUE = character(2))
+vapply(podaci, function(x) as.logical(x), FUN.VALUE = character(1))
+
+```
+
+
+
+## Zadatak 7.15 - funkcija `lapply` i podatkovni okviri
+
+
+```{r}
+df <- data.frame( a = 1:10, b = seq(100, 550, 50), 
+                  c = LETTERS[1:10], d = rep(c(T,F), 5), 
+                  e = -10:-1)
+
+# normalizirajte numeričke stupce uz pomoć funkcije `lapply`
+# ostale stupce nemojte mijenjati
+# normalizirane vrijednosti zaokružite na tri decimale
+# rezultat pohranite u varijablu df
+
+df[] <- lapply(df, function(x) {
+  if (is.numeric(x)) {
+    round((x - mean(x)) / sd(x), 3)
+  } else {
+    x
+  }
+})
+
+# ispišite df
+df
+sapply(df, class)
+```
+
+
+
+## `sapply` + `class`
+
+Još jedan često korišteni trik u radu sa podatkovnim okvirima i funkcijama iz porodice `apply` jest sljedeća naredba:
+
+```{r, eval = F}
+sapply(df, class)   
+```
+
+Ova naredba nam zapravo daje odgovor na pitanje - kojeg su tipa stupci navedenog podatkovnog okvira? Iako postoje i drugi načini da dođemo do ove informacije, ovaj način popularan je kako zbog kompaktnosti rezultata, tako i neovisnosti o dodatnim paketima.
+
+***
+
+## Zadaci za vježbu {-}
+
+1. R ima funkciju `which` koja pretvara logički vektor u numerički sa rednim brojevima elemenata koji su `TRUE` (tako `c(T, F, F, F, F, T, F, T)` postaje `c(1, 6, 8)`). Implementirajte vlastitu inačicu ove funkcije.
+
+2. Uzmimo numerički vektor x duljine n. U statistici standardiziranim momentom k-tog reda zovemo vrijednost:
+
+$$\frac{1}{n}\sum_{i=1}^n{(x_i - \bar{x})}^{k+1}$$
+
+Stvorite generator funkcija `moment(k)` koji će stvarati funkcije za računanje standardiziranog centralnog momenta k-tog reda. Stvorite funkcije `nulti_moment(x)` i `prvi_moment(x)` sa vrijednosti parametra `k` redom `0` i `1`. Testirajte funkcije na vektoru `1:1000`. Usporedite rezultate koje daje funkcija `sd` (standardna devijacija) nad vektorom `1:1000` i korijen rezultata funkcije `prvi_moment` nad istim vektorom.
+
+3. Uzmimo matricu `m` stvorenu sljedećom naredbom:
+
+```{r}
+m <- rbind(1:5, seq(2, 10, 2), rep(3, 5), 3:7, seq(100, 500, 100))
+```
+
+
+Uz pomoć funkcije `apply` i nove anonimne funkcije stvorite vektor koji će sadržavati prvi parni element svakog retka, ili nulu ako pripadajući redak nema parnih elemenata.
+
+4. Sljedeće naredbe stvoriti će listu od 100 elemenata gdje će svaki element biti numerički vektor nasumične duljine od 1 do 10.
+
+```{r}
+set.seed(1234)
+lista <- replicate(100, sample(1:10, sample(1:10, 1)))
+
+```
+
+
+Uz pomoć funkcija `lapply` / `sapply ` (i dodatnih naredbi ako je potrebno) stvorite:
+
+- numerički vektor `v` sa duljinama elemenata liste
+- listu `l` sa normaliziranim numeričkim vektorima originalne liste
+- numerički vektor `ind4` sa indeksima svih elemenata liste koji sadrže broj 4
+- podatkovni okvir `df5` koji kao stupce sadrži sve elemente liste duljine 5

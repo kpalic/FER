@@ -1,0 +1,302 @@
+
+---
+title: "5 Uvjetne naredbe i petlje"
+author: "Damir Pintar"
+date: "r Sys.Date()"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(results = 'hold')
+```
+
+***
+
+## Naredbe kontrole toka
+
+Pod naredbama kontrole toka smatramo uglavnom konstrukte za uvjetno izvođenje naredbi i/ili tzv. "programske petlje" gdje se segment programa kontinuirano izvodi sve do (opcionalnog) ispunjavana određenih uvjeta koji će rezultirati "izlaskom" iz petlje i nastavljanjem programa.
+
+
+***
+
+## Uvjetno izvođenje naredbi
+
+Uvjetno izvođenje naredbi već smo upoznali. Radi se o konstruktu `if (uvjet) { blok } else { blok }` pri čemu se vitičaste zagrade mogu izbaciti ako imamo samo jednu uvjetnu naredbu. Ovdje je možda zgodno napomenuti kako izbjeći jednu relativno čestu početničku grešku kod pisanja `if` naredbe. Pokušajte ju samostalno uočiti i ispraviti u sljedećem primjeru.
+
+***
+
+## Zadatak 5.1 - naredba `if`
+
+```{r}
+
+# izvršite sljedeću naredbu uvjetnog izvođenja
+if (2 > 1) print("Uspjeh!")
+
+
+# pronađite grešku u sljedećoj `if-else` naredbi i ispravite ju
+if (1 > 2) print("Uspjeh!") else print("Neuspjeh!")
+```
+
+***
+
+## Ternarni operator
+
+Poznavateljima jezika C ili Java biti će poznat pojam tzv. "ternarnog operatora" koji zapravo predstavlja kompaktnu verziju *if-else* bloka:
+
+```{r, eval = F}
+x = (a < b) ? c : d       # nije primjer iz jezika R!
+```
+
+
+Ulogu ovog operatora u R-u obavlja funkcija `ifelse`.
+
+***
+
+## Zadatak 5.2 -funkcija `ifelse`
+
+```{r}
+a <- 1:3
+b <- c(0, 2, 4)
+
+# kako izgleda vektor `x` nakon izvršavanja sljedeće naredbe?
+# razmislite o odgovoru a potom provjerite ispravnost rješenja
+
+x <- ifelse(a < b, 2, 5)
+# 5,5,2
+x
+```
+
+
+***
+
+
+## Programske petlje
+
+U programskom jeziku R imamo tri tipa petlji:
+
+- `repeat` - beskonačna petlja
+- `while` - petlja s provjerom uvjeta na početku
+- `for` - iteratorska petlja ("petlja s poznatim brojem ponavljanja")
+
+***
+
+### Petlja `repeat`
+
+Petlja `repeat` je najjednostavnija petlja. Ona ima sljedeću sintaksu:
+
+`repeat {blok}`
+
+Ovdje se radi o "beskonačnoj" petlji gdje se nakon završetka bloka on ponovo izvršava i tako unedogled. Jedini način izlaska iz ovakve petlje jest korištenje naredbe `break`. Pored ove naredbe imamo i naredbu `next` koja će preskočiti ostatak bloka, ali neće izaći iz petlje već će nastaviti izvršavati blok.
+
+***
+
+### Zadatak 5.3 - petlja `repeat`
+
+
+```{r}
+# prije izvršavanja sljedećeg bloka odgovorite na pitanja:
+# - hoće li se petlja izvršavati beskonačno?
+# Odgovor : NE
+# - što će se ispisati na zaslonu?
+# Odgovor : 3,5,7,9,11
+
+i <- 1
+repeat {
+    i <- i + 1
+    if (i %% 2 == 0) next
+    print(i)
+    if (i > 10) break
+}
+
+
+```
+
+***
+
+### Petlja `while`
+
+Petlja `while` predstavlja "najčišći" oblik programske petlje čija sintaksa doslovno glasi "dok je uvjet ispunjen, ponavljaj navedeni kod":
+
+`while (uvjet) {blok}`
+
+***
+
+
+
+### Zadatak 5.4 - Petlja `while`
+
+
+```{r}
+# dodajte uvjet petlje tako da se ona izvrši
+# točno 7 puta
+
+i <- 1
+
+while(i < 8) {
+  print(i)
+  i <- i+1
+}
+
+
+```
+
+
+## Zadatak 5.5 - Petlja `while` (2)
+
+```{r}
+n <- 1234
+nbin <- numeric(0)
+# napunite vektor `nbin` znamenkama `n` pretvorenog u binarni oblik
+# primjer: ako je `n` bio 12, `nbin` bi trebao biti c(1,1,0,0)
+# koristite se petljom `while` 
+# naputak: proučite kako radi funkcija `rev` koja se u ovom zadatku može pokazati korisnom
+
+i <- 1
+while (n != 0) {
+  if(n %% 2 == 1){
+    nbin[i] <- 1
+  }
+  else {
+    nbin[i] <- 0
+  }
+  n <- n %/% 2
+  i <- i + 1
+  
+}
+rev(nbin)
+# ispišite `nbin` na zaslon
+
+```
+
+
+
+***
+
+### Petlja `for`
+
+Petlja `for` ili "iteratorska petlja" služi za lako "šetanje" po nekoj programskoj strukturi (najčešće vektoru), uzimajući element po element i nešto radeći s njim. Ona koristi ključnu riječ `for`, ime nove (iteratorske) varijable,  ključnu riječ `in` te vektor čije vrijednosti se uzimaju jedna po jedna i koriste unutar petlje (uočite da navedeni `in` nije isto što i operator `%in%` koji provjerava da li se neki element nalazi u nekom skupu!). Sintaksa ove petlje je sljedeća:
+
+`for (i in v) {radi nešto sa i}`
+
+Uočimo da ovdje varijabla `i` nije "brojač" - u svakoj iteraciji petlje ona postaje vrijednost elementa do kojeg smo došli. Ukoliko baš želimo iterirati po indeksima, a ne po samim elementima, onda možemo koristiti konstrukt `for (i in 1:length(a))`.
+
+
+***
+
+
+### Zadatak 5.6 - petlja `for` 
+
+
+```{r}
+a <- seq(-10, 10, 4)
+
+# ispišite elemente vektora `a` jedan po jedan 
+# uz pomoć petlje `for`
+# pristupajte elementima direktno
+
+for (i in a) {
+  print(i)
+}
+
+# ponovite isto ali iterirajte po indeksima
+for (i in 1:length(a)) {
+  print(a[i])
+}
+
+```
+
+
+Uočite da je drugi način bolji ako želite mijenjati elemente vektora ili imati informaciju na kojem mjestu unutar originalnog vektora se trenutno nalazite.
+
+
+## Zadatak 5.7 - petlja `for` (2)
+
+```{r}
+# pročitajte podatke iz datoteke "people.csv" u podatkovni okvir `people`
+# potom uz pomoć petlje `for` za svaki numerički stupac
+# ispišite njegov naziv i aritmetičku sredinu njegovih vrijednosti (funkcija `mean`)
+
+people <- read.csv("people.csv")
+for (i in 1:length(people)) {
+  if(is.numeric(people[[i]])) {
+    print(names(people[i]))
+    print(mean(people[[i]]))
+  }
+}
+
+```
+
+
+***
+
+
+### Programske petlje i jezik R
+
+Na primjer, sljedeći primjer je sintaksno potpuno ispravan:
+
+```{r}
+# primjer nepotrebnog korištenja petlje
+a <- 1:5
+b <- 6:10
+c <- numeric()
+
+for (i in 1:length(a)) c[i] <- a[i] + b[i]
+
+```
+
+
+ali vjerojatno radi sporije i puno je nečitljiviji od:
+
+```{r}
+# R-ovska sintaksa
+a <- 1:5
+b <- 6:10
+
+c <- a + b
+```
+
+
+***
+
+
+
+
+## Zadaci za vježbu {-}
+
+1. Stvorite podatkovni okvir mjesto uz pomoć sljedeće naredbe:
+
+```{r}
+mjesto <- data.frame( pbr = c(10000, 51000, 21000, 31000, 2000),
+         nazivMjesta = c("Zagreb", "Rijeka", "Split", "Osijek", "Dubrovnik"),
+         prirez = c(18, 15, 10, 13, 10))
+```
+
+
+
+Dodajte ovom okviru stupac `prirezOpis` koji će biti ordinalna faktorska varijabla sa razinama `"mali"`, `"srednji"` i `"visok"` ovisno o tome da li je postotak prireza strogo manji od 12, između 12 i 15 ili strogo veći od 15. Koristite se naredbom `ifelse`.
+
+2. Zamijenite petlje u sljedećem bloku ekvivalentnim vektoriziranim operacijama (za drugu petlju proučite dokumentaciju funkcije `sum`).
+
+```{r, eval = F}
+a <- numeric()
+i <- 1
+
+while (i <= 100)  {
+  a <- c(a, i)
+  i <- i + 1
+}
+
+suma <- 0
+
+for (i in a) {
+  if (i %% 2 == 0) suma <- suma + i*i
+}
+
+print(suma)
+
+```
+
+

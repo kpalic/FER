@@ -1,0 +1,87 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="hr">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-2">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Algoritam Hooke-Jeeves postupka</title>
+</head>
+
+<body>
+
+<h3><font face="Courier New">Algoritam Hooke-Jeeves postupka</font></h3>
+<p><span lang="HR"><font face="Courier New"><b>x<sup>0</sup></b> - pocetna tocka<sup><b><br>
+</b></sup></font></span><font face="Courier New"><span lang="HR"><b>x<sup>B</sup></b>
+- bazna tocka<sup><b>&nbsp;<br>
+</b></sup></span><span lang="HR"><b>x<sup>P</sup></b> - pocetna tocka
+pretrazivanja<sup><b><br>
+</b></sup></span><span lang="HR"><b>x<sup>N</sup></b> - tocka dobivena
+pretrazivanjem</span></font></p>
+<div style="border:solid windowtext .5pt;padding:1.0pt 4.0pt 1.0pt 12.0pt">
+  <span lang="HR"><font face="Courier New">postavi <b>x<sup>0</sup></b>;</font></span><font face="Courier New"><b><span lang="HR"><br>
+  x<sup>P</sup></span></b><span lang="HR"> = <b>x<sup>B</sup></b> =<b> x<sup>0</sup></b>;</span></font><span lang="HR"><font face="Courier New"><br>
+  ponavljaj<br>
+  </font></span><font face="Courier New"><span lang="HR">{<span style="mso-tab-count:1">&nbsp;
+  </span><b>x<sup>N</sup></b> = istrazi(<b>x<sup>P</sup></b>, </span><span style="mso-char-type: symbol; mso-symbol-font-family: Symbol; mso-ascii-font-family: Courier New; mso-hansi-font-family: Courier New" lang="HR">D</span><span lang="HR">x);<span style="mso-tab-count:1">&nbsp;&nbsp;
+  </span>// definiran je potprogram<br>
+  <span style="mso-tab-count:1">&nbsp;&nbsp; </span>ako F(<b>x<sup>N</sup></b>)</span><span style="mso-ansi-language:EN-US">&lt;</span><span lang="HR">F(<b>x<sup>B</sup></b>)<span style="mso-tab-count:1">&nbsp;&nbsp;&nbsp;
+  </span>// prihvacamo baznu tocku</span></font><span lang="HR"><font face="Courier New"><span style="mso-tab-count:1"><br>
+  &nbsp;&nbsp; </span>{<span style="mso-tab-count:1">&nbsp; </span><b>x<sup>P</sup></b>
+  = 2<b>x<sup>N</sup> </b> - <b>x<sup>B</sup></b>;&nbsp; // definiramo novu
+  tocku pretrazivanja<br>
+  <span style="mso-tab-count:2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><b>x<sup>B</sup></b>
+  = <b>x<sup>N</sup></b>;<br>
+  </font></span><font face="Courier New"><b><span style="mso-tab-count:1" lang="HR">&nbsp;&nbsp;
+  </span></b><span lang="HR">}<br>
+  </span></font><span lang="HR"><font face="Courier New"><span style="mso-tab-count:1">&nbsp;&nbsp;
+  </span>inace<br>
+  </font></span><font face="Courier New"><span lang="HR"><span style="mso-tab-count:1">&nbsp;&nbsp;
+  </span>{<span style="mso-tab-count:1">&nbsp; </span>smanji </span><span style="mso-char-type: symbol; mso-symbol-font-family: Symbol; mso-ascii-font-family: Courier New; mso-hansi-font-family: Courier New" lang="HR">D</span><span lang="HR">x;<br>
+  </span></font><span lang="HR"><font face="Courier New"><span style="mso-tab-count:2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span><b>x<sup>P</sup></b> = <b>x<sup>B</sup></b>;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  // vracamo se na zadnju baznu tocku<br>
+  <span style="mso-tab-count:1">&nbsp;&nbsp; </span>}<br>
+  }<br>
+  dok nije zadovoljen uvjet zaustavljanja<br>
+  rjesenje = <b>x<sup>B</sup></b>;<br>
+  </font></span><br>
+  <span lang="HR"><font face="Courier New">procedura istrazi(<b>x<sup>P</sup></b>,
+  </font></span><font face="Courier New"><span style="mso-char-type: symbol; mso-symbol-font-family: Symbol; mso-ascii-font-family: Courier New; mso-hansi-font-family: Courier New" lang="HR">D</span><span lang="HR">x)<br>
+  </span></font><span lang="HR"><font face="Courier New">{<span style="mso-tab-count:1">&nbsp;
+  </span><b>x</b> = <b>x<sup>P</sup></b>;<br>
+  <span style="mso-tab-count:1">&nbsp;&nbsp; </span>za i=1 do <i>n<br>
+  </i></font></span><font face="Courier New"><span lang="HR"><span style="mso-tab-count:1">&nbsp;&nbsp;
+  </span>{<span style="mso-tab-count:1">&nbsp; </span>P = F(<b>x</b>);<br>
+  </span><span lang="en-us">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang="HR">x<sub>i</sub> = x<sub>i</sub>
+  + </span><span style="mso-char-type: symbol; mso-symbol-font-family: Symbol; mso-ascii-font-family: Courier New; mso-hansi-font-family: Courier New" lang="HR">D</span><span lang="HR">x;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  // povecamo za Dx<br>
+  </span></font><span lang="HR"><font face="Courier New"><span style="mso-tab-count:2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>N = F(<b>x</b>);<br>
+  </font></span><font face="Courier New"><span lang="HR"><span style="mso-tab-count:1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>ako N</span><span style="mso-ansi-language:
+EN-US">&gt;</span><span lang="HR">P<span style="mso-tab-count:1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>// ne valja pozitivni pomak<br>
+  <span style="mso-tab-count:2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>{<span style="mso-tab-count:1">&nbsp;
+  </span>x<sub>i</sub> = x<sub>i</sub> - 2</span><span style="mso-char-type: symbol; mso-symbol-font-family: Symbol; mso-ascii-font-family: Courier New; mso-hansi-font-family: Courier New" lang="HR">D</span><span lang="HR">x;&nbsp;
+  // smanjimo za Dx<br>
+  </span></font><span lang="HR"><font face="Courier New"><span style="mso-tab-count:2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span><span style="mso-tab-count:1">&nbsp;&nbsp; </span>N = F(<b>x</b>);<br>
+  </font></span><font face="Courier New"><span lang="HR"><span style="mso-tab-count:2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span><span style="mso-tab-count:1">&nbsp;&nbsp; </span>ako N</span><span style="mso-ansi-language:
+EN-US">&gt;</span><span lang="HR">P<span style="mso-tab-count:1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>// ne valja ni negativni<br>
+  <span style="mso-tab-count:3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span style="mso-tab-count:1">&nbsp;&nbsp;
+  </span>x<sub>i</sub> = x<sub>i</sub> + </span><span style="mso-char-type: symbol; mso-symbol-font-family: Symbol; mso-ascii-font-family: Courier New; mso-hansi-font-family: Courier New" lang="HR">D</span><span lang="HR">x;&nbsp;
+  // vratimo na staro<br>
+  </span></font><span lang="HR"><font face="Courier New"><span style="mso-tab-count:2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>}<br>
+  <span style="mso-tab-count:1">&nbsp;&nbsp; </span>}<br>
+  <span style="mso-tab-count:1">&nbsp;&nbsp; </span>vrati <b>x</b>;<br>
+  }<br>
+  </font></span>
+</div>
+
+</body>
+
+</html>

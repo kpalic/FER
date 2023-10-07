@@ -1,0 +1,8 @@
+Koristim scrypt funkciju za kriptiranje glavnog ključa sa "soli" koja je nasumično generirana.
+Nakon kriptiranja glavnog ključa koristim AES-GCM sa nasumično generiranim nonce-om kako bi šifrirao podatke.
+
+Svi sigurnosni zahtjevi su ispunjeni. U datoteci saltAndNonce.bin spremljeni su jednokratni sol i nonce, nikad ih
+ne koristim dva puta. Zahvaljujući tome niti jedan par url:šifra nece biti enkriptiran na isti način. 
+Napadač ne može pristupiti podatcima bez masterPassworda. 
+
+Napadač nema nikakve podatke o duljini lozinki ni o url-u niti o njihovim jednakostima.  

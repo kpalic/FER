@@ -1,0 +1,47 @@
+
+---
+title: "06_Palic_Kristo_DZ"
+author: ""
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+---
+
+
+Zadaci za vježbu
+
+
+1. Učitajte sljedeće pakete u radnu okolinu: magrittr, dplyr, tidyr, ggplot2. Ispišite stazu pretrage i provjerite gdje se nalaze učitani paketi.
+```{r}
+
+library(magrittr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+search()
+
+```
+2.Sljedeća naredba stvoriti će vektor od 20 nasumično odabranih prirodnih brojeva od 1 do 100. Uz pomoć podsjetnika i/ili službene dokumentacije pronađite ugrađene funkcije koje izvršavaju zadane zadatke.
+```{r}
+
+# učitavamo 20 prirodnih brojeva od 1 do 100, sa ponavljanjem
+set.seed(1234)
+a <- sample(1:100, 20, replace = T)
+
+#ispišite:
+
+#vektor a
+a
+
+#vrijednosti vektora a poredane obrnutim redoslijedom
+rev(a)
+#jedinstvene vrijednosti iz vektora a
+#vrijednosti vektora a poredane uzlazno
+sort(unique(a))
+```
+
+Spomenuli smo da su učitani paketi zapravo “okoline”. Ukoliko želimo dobiti direktnu referencu na njih, moramo se poslužiti funkcijom as.environment i imenom paketa. Pokušajte dobiti referencu na paket package:magrittr u obliku okoline te uz pomoć funkcije ls provjerite koje nazive ona sadrži u sebi.
+```{r}
+x <- as.environment("package:magrittr")
+ls(x)
+```

@@ -1,0 +1,39 @@
+---
+title: "Untitled"
+author: "Kristo Palic"
+date: "2023-01-26"
+output: html_document
+---
+
+```{r setup, include = F}
+library(MASS)
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+library(GGally)
+library(sn)
+library(gridExtra)
+library(Hmisc)
+library(broom)
+library(car)
+library(corrplot)
+
+knitr::opts_chunk$set(results = 'hold')
+```
+
+
+
+
+## Domaća zadaća
+
+1. Učitajte skup podataka `iris` u globalno okruženje.
+
+Nacrtajte raspršeni graf koji prikazuje odnos između duljine latice (*Petal*) i duljine čašnog lista (*Sepal*). Korištenjem geometrije za crtanje dijagonalnih referentnih linija (funkcija `geom_abline`) pokušajte pogoditi nagib i presjecište za liniju koja "najbolje odgovara". Nemojte varati korištenjem funkcije `geom_smooth`!
+
+Primjer: `... + geom_abline(slope = 1, intercept = -3)`
+
+Istrenirajte model linearne regresije s duljinom latice kao prediktorom i duljinom čašnog lista kao ciljnom varijablom. Usporedite dobivene parametre s onima koje ste sami procijenili.
+
+2. Ponovno nacrtajte raspršeni graf iz 1), ali obojite točke na temelju vrste cvijeta. Objasnite zašto jedan regresijski model možda nije najbolji izbor za predviđanje duljine latice na temelju duljine čašnog lista.
+
+3. Istrenirajte model postupne linearne regresije gdje je duljina čašnog lista ciljna varijabla, a sve druge varijable potencijalni prediktori (uključujući i varijablu vrste). Usporedite sažetke modela između modela iz 2) i konačnog postupnog modela. Koji model preferirate i zašto?

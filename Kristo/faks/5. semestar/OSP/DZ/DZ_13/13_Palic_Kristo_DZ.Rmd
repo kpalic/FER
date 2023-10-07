@@ -1,0 +1,63 @@
+---
+title: "13_Palic_Kristo_DZ"
+author: "Kristo Palic"
+date: "2023-01-26"
+output: html_document
+---
+
+```{r setup_razdiobe, include = F}
+library(tidyverse)
+library(sn)
+library(GGally)
+library(gridExtra)
+```
+## Domaća zadaća
+
+
+1. Ako pretpostavimo da je vjerojatnost dobivanja na ruletu 1/36, koja je vjerojatnost da ćete u 50 igranja dobiti barem 2 puta?
+```{r}
+pbinom(2, 50, 1/36)
+```
+
+2. Procijenite vjerojatnost dobivanja 4 asa u pokeru, pri čemu pretpostavljate da će igrač prvo nasumično vući 5 karata (od mogućih 52), a potom odbaciti sve karte koje nisu asevi i ponovo vući toliko karata. Vjerojatnost procijenite simulirajući ovaj uzorak ponašanja 100,000 puta i računajući postotak pozitivnih ishoda. 
+
+```{r}
+
+```
+
+
+NAPUTAK: smislite kako na praktičan način oblikovati objekt koji predstavlja špil karata (uzimajući u obzir da nam je relevantno samo da li je karta as ili ne). Potom napravite funkciju koja simulira gore opisano ponašanje igrača i vraća informaciju da li je postignut pozitivan ishod ili ne.
+
+3. Jedan od stožernih teorema statistike je "centralni granični teorem" koji (pojednostavljeno rečeno) kaže da će se sredine uzoraka određene veličine ponašati po normalnoj razdiobi u kojoj je sredina jednaka sredini originalne razdiobe populacije a varijanca jednaka varijanci populacije podijeljenoj sa veličinom uzorka.
+
+Simulacijom dokažite ovu tvrdnju. Ponovite 1000 puta eksperiment nasumičnog uzorkovanja 100 mjera iz normalne razdiobe sa sredinom 50 i standardnom devijacijom 10 (rezultate pohranite u matricu 1000 x 100, svaki redak predstavlja jedno provedeno uzorkovanje). Potom na istom grafu nacrtajte histogram svih 10,000 mjera i histogram aritmetičkih sredina svakog pojedinog uzorkovanja (tj. histogram 1000 dobivenih sredina svakog uzorkovanja).
+
+```{r}
+# Podešavanje seed-a za reproduciranje rezultata
+set.seed(123)
+
+# Parametri normalne razdiobe
+mu <- 50
+sigma <- 10
+
+# Veličina uzorka
+n <- 100
+
+# Broj uzorkovanja
+m <- 1000
+
+# Matrica za pohranu rezultata svakog uzorkovanja
+sampling <- matrix(rnorm(n*m, mean = mu, sd = sigma), nrow = m, ncol = n)
+
+# Aritmetičke sredine svakog uzorkovanja
+sample_mean <- rowMeans(sampling)
+
+# Prikaz histograma svih 10,000 mjera
+hist(sampling, main = "Histogram svih 10,000 mjera")
+
+# Prikaz histograma aritmetičkih sredina svakog uzorkovanja
+hist(sample_mean, main = "Histogram aritmetičkih sredina svakog uzorkovanja")
+
+```
+
+

@@ -1,0 +1,28 @@
+Algoritam zlatnog reza
+
+ulazne velicine:
+- a, b: pocetne granice unimodalnog intervala
+- e: preciznost
+
+Zlatni_rez(a, b, e)
+{	c = b - k * (b - a);
+	d = a + k * (b - a);
+	fc = f(c);
+	fd = f(d);
+	dokje((b - a) > e) {
+		ako(fc < fd) {
+			b = d;
+			d = c;
+			c = b - k * (b - a);
+			fd = fc;
+			fc = f(c);
+		} inace {
+			a = c;
+			c = d;
+			d = a + k * (b - a);
+			fc = fd;
+			fd = f(d);
+		}
+	}
+	vrati (a + b)/2; // ili nove vrijednosti a i b
+}

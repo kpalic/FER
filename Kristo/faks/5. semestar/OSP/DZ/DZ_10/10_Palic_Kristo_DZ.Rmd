@@ -1,0 +1,63 @@
+---
+title: "10_Palic_Kristo_DZ"
+author: "Kristo Palic"
+date: "2022-12-10"
+output: html_document
+---
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(results = 'hold')
+```
+
+## Domaća zadaća {-}
+
+Sljedeći zadaci odnose se na podatkovni skup pohranjen u CSV datoteci `crimeSample.csv` a koji predstavlja uzorak iz evidencije kriminalnih incidenata u gradu Philadelphiji (originalni podatkovni skup može se naći na <a href = "https://www.opendataphilly.org/dataset/crime-incidents">ovoj poveznici</a>). Originalni skup stupaca je reduciran a iz skupa svih obzervacija slučajnim odabirom uzorkovano je 1000 incidenata.
+```{r}
+
+crimes <- read.csv("crimeSample.txt")
+```
+
+Prije rješavanja zadataka učitajte podatke u podatkovni okvir crimes i upoznajte se s podatkovnim skupom (`str`, `head`, itd.)
+
+1. Pretvorite stupac sa vremenskom oznakom iz znakovnog tipa u `POSIXct` tip.
+```{r}
+crimes$Dispatch_Date_Time <- as.POSIXct(crimes$Dispatch_Date_Time)
+head(crimes)
+```
+
+2. Podatkovnom okviru dodajte sljedeće stupce: `Year`, `Month`, `Hour`. Stupce popunite odgovarajućim informacijama iz vremenske oznake. Odgovorite na pitanje: u kojem mjesecu se događa najviše zločina? Koji sat u danu je prema podacima "najopasniji"?
+```{r}
+Year <- format(crimes$Dispatch_Date_Time, "%Y")
+Month <- format(crimes$Dispatch_Date_Time, "%m")
+Hour <- format(crimes$Dispatch_Date_Time, "%H")
+crimes <- cbind(crimes, Year, Month, Hour)
+head(crimes)
+
+table(Month) %>% sort(decreasing = TRUE) -> deadliestMonth
+deadliestMonth
+#najviše zločina se događa u svibnju
+
+
+table(Hour) %>% sort(decreasing = TRUE) -> deadliestHour 
+deadliestHour
+#najopasnije je između 23h i ponoći
+```
+
+3. Odgovorite na pitanje: koliki je postotak incidenata gdje opis incidenta sadrži riječ `"burglary"` ili `"robbery"`? (savjet: pretvorite cijeli stupac sa opisom zločina u mala slova uz pomoć funkcije `tolower()`).
+```{r}
+
+crimes$Text_General_Code %>% unlist %>% tolower %>% str_count("(.*)robbery(.*) | (.*)burglary(.*)") %>% sum -> thiefs
+omjer <-  str_c(thiefs / length(crimes$Text_General_Code) * 100, " %")
+omjer 
+
+```
+
+4. Ispišite na zaslon sve jedinstvene četveroznamenkaste brojeve koje možete naći u nazivima ulica u kojima je evidentiran kriminalni incident.
+
+```{r}
+crimes$Location_Block %>% str_match_all("\\s*\\d{4}\\s") %>% unlist %>% str_trim %>% unique
+```
+
+

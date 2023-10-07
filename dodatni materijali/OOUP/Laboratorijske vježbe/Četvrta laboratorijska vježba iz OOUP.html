@@ -1,0 +1,569 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!-- saved from url=(0053)http://www.zemris.fer.hr/~ssegvic/ooup/ooup4lab.shtml -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <link rel="stylesheet" type="text/css" href="./Četvrta laboratorijska vježba iz OOUP_files/ooup.css">
+  <meta name="language" content="croatian">
+  <meta name="author" content="Marko Cupic">
+  <title> Četvrta laboratorijska vježba iz OOUP</title>
+</head>
+
+<body>
+
+<h3>Četvrta laboratorijska vježba iz Oblikovnih obrazaca u programiranju:<br>
+Program za uređivanje vektorskih crteža</h3>
+
+<p>U okviru 4. laboratorijske vježbe razvijamo program za izradu vektorskih crteža. Program treba omogućiti interaktivno dodavanje geometrijskih oblika poput pravocrtnih linijskih segmenata i elipsa, njihovo grupiranje, brisanje, promjenu redosljeda iscrtavanja (što je važno kod prikaza preklapajućih objekata), naknadnu izmjenu te translatiranje. Program također treba omogućiti pohranu i učitavanje crteža u "nativnom" formatu kao i transparentno prikazivanje crteža na ekranu te eksportiranje u vektorski grafički format SVG (pogledajte <a href="http://tutorials.jenkov.com/svg/index.html">ovo</a>, <a href="http://tutorials.jenkov.com/svg/simple-svg-example.html">ovo</a>, <a href="http://tutorials.jenkov.com/svg/line-element.html">ovo</a>, <a href="http://tutorials.jenkov.com/svg/polygon-element.html">ovo</a>).</p>
+
+<p>Prilikom izrade ovog rješenja koristit ćemo sljedeće oblikovne obrasce:
+</p><ul>
+<li><i>Promatrač</i> opisuje odnose između podatkovnog modela crteža i prikaznih komponenata.</li>
+<li><i>Kompozit</i> omogućava transparentno provođenje operacija kako nad pojedinačnim, tako i nad grupiranim elementima.</li>
+<li><i>Iterator</i> za obilazak elemenata crteža.</li>
+<li><i>Prototip</i> omogućava izradu alatne trake za unos novih elemenata crteža (oblika) koja ne bi ovisila o podržanim konkretnim geometrijskim oblicima.</li>
+<li><i>Tvornica</i> za stvaranje konkretnih oblika na temelju simboličkog naziva pri učitavanju crteža.</li>
+<li><i>Stanje</i> omogućava dodavanje novih alata bez izmjena u komponenti koja obrađuje korisnički unos (pomaci miša, unos preko tipkovnice i slično).</li>
+<li><i>Most</i> za transparentno iscrtavanje crteža i eksportiranje u različite slikovne formate poput formata SVG.</li>
+</ul>
+<p></p>
+
+<p>
+Ilustracija koja prikazuje izgled prozora programa s učitanom slikom <code>ooup-lab4-slika1.txt</code> prikazana je u nastavku.
+</p>
+
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/izgled-programa.png">
+
+<p>Glavni prozor programa sastoji se od dvije komponente: alatne trake te platna koje prikazuje sliku i omogućava njezino uređivanje. Za alatnu traku koristite gotovu komponentu koja se nudi u standardnim bibliotekama programskog jezika koji ćete koristiti za rješavanje ove vježbe. Platno za crtanje izvedite iz najjednostavnije komponente iste biblioteke koja Vam nudi mogućnost crtanja površine (kao i u prethodnoj vježbi: ako ste u Javi, to će biti <code>javax.swing.JComponent</code>, ako ste u C#-u, to će biti <code>System.Windows.Forms.Control</code>).</p>
+
+<p>U okviru programa koji razvijamo, grafički objekti bit će korišteni u nekoliko različitih scenarija:
+</p><ol>
+<li>Grafičke objekte htjet ćemo nacrtati u grafičkoj komponenti koja sliku prikazuje korisniku.</li>
+<li>Grafičke objekte htjet ćemo modificirati.</li>
+<li>Grafičke objekte htjet ćemo grupirati te im mijenjati redoslijed iscrtavanja kako bismo kod preklapajućih objekata mogli definirati što će korisnik vidjeti.</li>
+<li>Grafičke objekte htjet ćemo pohraniti u nativni format iz kojeg ćemo ih kasnije znati učitati.</li>
+<li>Grafičke objekte htjet ćemo exportati u SVG format tako da sliku mogu koristiti drugi programi.</li>
+</ol>
+<p></p>
+
+<p>Konceptualno, svaki grafički objekt bit će definiran preko "hot-point"-a. Jedan "hot-point" predstavlja jednu karakterističnu točku objekta. Tako će linijski segment biti definiran s dva "hot-point"-a koji ujedno predstavljaju početnu i završnu točku linijskog segmenta. Slika u nastavku prikazuje (a) jedan linijski segment, (b) isti linijski segment kada je selektiran pa su prikazani i njegovi "hot-point"-i te bounding-box, te (c) modificirani linijski segment koji je dobiven tako što je korisnik mišem "uhvatio" desni "hot-point" i odvukao ga vertikalno prema dolje.
+</p><center><img src="./Četvrta laboratorijska vježba iz OOUP_files/linija.png"></center>
+Svaki oval također je definiran preko dva "hot-point"-a (program treba podržati samo nerotirane ovale): desni "hot-point" određuje jednu polu-os, dok donji "hot-point" određuje drugu polu-os. Centar ovala je točka koja je presjecište okomitog pravca koji prolazi kroz donji "hot-point" te vodoravnog pravca koji prolazi kroz desni "hot-point".
+<center><img src="./Četvrta laboratorijska vježba iz OOUP_files/oval.png"></center>
+<p></p>
+
+<h4>1. Model grafičkog objekta</h4>
+
+<p>Model vektorskog crteža treba sadržavati listu referenci na grafičke objekte koje trebaju koristiti različiti drugi objekti. Predloženi model prikazan je u nastavku i nudi jedinstveno sučelje prema svim svojim korisnicima (što može i ne mora biti dobro -- razmislite je li ovakav unificirani pristup u skladu s postojećim načelima oblikovanja?).</p>
+
+<pre><code>public interface GraphicalObject {
+
+	// Podrška za uređivanje objekta
+	boolean isSelected();
+	void setSelected(boolean selected);
+	int getNumberOfHotPoints();
+	Point getHotPoint(int index);
+	void setHotPoint(int index, Point point);
+	boolean isHotPointSelected(int index);
+	void setHotPointSelected(int index, boolean selected);
+	double getHotPointDistance(int index, Point mousePoint);
+
+	// Geometrijska operacija nad oblikom
+	void translate(Point delta);
+	Rectangle getBoundingBox();
+	double selectionDistance(Point mousePoint);
+
+	// Podrška za crtanje (dio mosta)
+	void render(Renderer r);
+	
+	// Observer za dojavu promjena modelu
+	public void addGraphicalObjectListener(GraphicalObjectListener l);
+	public void removeGraphicalObjectListener(GraphicalObjectListener l);
+
+	// Podrška za prototip (alatna traka, stvaranje objekata u crtežu, ...)
+	String getShapeName();
+	GraphicalObject duplicate();
+	
+	// Podrška za snimanje i učitavanje
+	public String getShapeID();
+	public void load(Stack&lt;GraphicalObject&gt; stack, String data);
+	public void save(List&lt;String&gt; rows);
+}</code></pre>
+
+<p>Navedeni model oslanja se na pretpostavku da imate definirane i sljedeće razrede, koje dajemo u nastavku.
+</p>
+
+<code><pre>public class Point {
+
+	private int x;
+	private int y;
+	
+	public Point(int x, int y) {
+		// ...
+	}
+	
+	public int getX() {
+		// ...
+	}
+	
+	public int getY() {
+		// ...
+	}
+
+	public Point translate(Point dp) {
+		// vraća NOVU točku translatiranu za argument tj. THIS+DP...
+	}
+	
+	public Point difference(Point p) {
+		// vraća NOVU točku koja predstavlja razliku THIS-P...
+	}
+}</pre></code>
+
+<code><pre>public class Rectangle {
+	private int x;
+	private int y;
+	private int width;
+	private int height;
+	
+	public Rectangle(int x, int y, int width, int height) {
+		// ...
+	};
+	
+	public int getX() {
+		// ...
+	}
+	
+	public int getY() {
+		// ...
+	}
+	
+	public int getWidth() {
+		// ...
+	}
+	
+	public int getHeight() {
+		// ...
+	}
+}</pre></code>
+
+<p>
+Kako bi si olakšali pisanje ostatka koda, preporučamo da napravite i pomoćni razred <code>GeometryUtil</code> koji sadrži često korištene metode vezane u geometrijske proračune koje ćete trebati na različitim mjestima u kodu.
+</p>
+
+<code><pre>public class GeometryUtil {
+
+	public static double distanceFromPoint(Point point1, Point point2) {
+		// izračunaj euklidsku udaljenost između dvije točke ...
+	}
+	
+	public static double distanceFromLineSegment(Point s, Point e, Point p) {
+		// Izračunaj koliko je točka P udaljena od linijskog segmenta određenog
+		// početnom točkom S i završnom točkom E. Uočite: ako je točka P iznad/ispod
+		// tog segmenta, ova udaljenost je udaljenost okomice spuštene iz P na S-E.
+		// Ako je točka P "prije" točke S ili "iza" točke E, udaljenost odgovara
+		// udaljenosti od P do početne/konačne točke segmenta.
+	}
+}</pre></code>
+
+<p>Sučelje <code>GraphicalObject</code> predstavlja apstraktni model jednog grafičkog objekta. Sučelje predviđa da svaki grafički objekt bude subjekt čije stanje čine njegovi "hot-point"-i (pozicije te status selektiranosti) te njegov status selektiranosti. Zainteresirani promatrači moraju implementirati sučelje <code>GraphicalObjectListener</code> kako bi se mogli registrirati nad grafičkim objektom i dobivati obavijesti o njegovim promjenama. Ovo sučelje prikazano je u nastavku.
+</p>
+
+<code><pre>public interface GraphicalObjectListener {
+
+	// Poziva se kad se nad objektom promjeni bio što...
+	void graphicalObjectChanged(GraphicalObject go);
+	// Poziva se isključivo ako je nad objektom promjenjen status selektiranosti
+	// (baš objekta, ne njegovih hot-point-a).
+	void graphicalObjectSelectionChanged(GraphicalObject go);
+	
+}</pre></code>
+
+<p>Konačno, za iscrtavanje grafičkog objekta predviđeno je sučelje <code>Renderer</code> koje je prikazano u nastavku.</p>
+<code><pre>public interface Renderer {
+	void drawLine(Point s, Point e);
+	void fillPolygon(Point[] points);
+}</pre></code>
+
+<p><u><b>Zadatak</b></u></p>
+
+<p>U okviru ove vježbe podržat ćemo dva grafička objekta: linijski segment te oval. Napravite sljedeće.
+
+</p><ol>
+<li>Prepišite sva prethodno opisana sučelja: <code>GraphicalObject</code>, <code>GraphicalObjectListener</code>, <code>Renderer</code>.Iz sučelja <code>GraphicalObject</code> za sada izostavite metode <code>render</code>, <code>getShapeID</code>, <code>load</code> te <code>save</code>.</li>
+<li>Napišite i dovršite implementaciju razreda <code>Point</code>, <code>Rectangle</code> i <code>GeometryUtil</code>.</li>
+<li>Napišite apstraktni razred <code>AbstractGraphicalObject</code> koji predstavlja djelomičnu implementaciju sučelja <code>GraphicalObject</code>.<br>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/AbstractGraphicalObject.png"><br>
+Razred implementira pohranu informacija o "hot-point"-ima (pozicija, status selektiranosti) te informaciju je li grafički objekt selektiran. Razred kroz konstruktor prima informaciju o broju i početnim položajima "hot-point"-a. U razredu je također implementirana funkcionalnost prijave i odjave promatrača i njihovog obavještavanja, kao i metode koje modificiraju "hot-point"-e te status selektiranosti i automatski obavještavaju promatrače.
+</li>
+<li>Implementirajte razred <code>LineSegment</code> (izvedite ga iz razreda <code>AbstractGraphicalObject</code>). Opremite ga s dva konstruktora (jedan bez argumenata koji stvara linijski segment (0,0)-(10,0), te jedan koji prima početnu i konačnu točku). U njemu napišite metode koje niste mogli u apstraktnom nadrazredu: <code>selectionDistance</code>, <code>getBoundingBoxy</code>, <code>duplicate</code> (pazite: ne kopira se popis prijavljenih promatrača) i <code>getShapeName</code> (tako da vraća "Linija").</li>
+<li>Implementirajte razred <code>Oval</code> (izvedite ga iz razreda <code>AbstractGraphicalObject</code>). Opremite ga s dva konstruktora (jedan bez argumenata koji stvara oval s desnim hot-pointom (10,0) i donjim hot-pointom (0,10), te jedan koji prima pozicije hot-pointa). U njemu napišite metode koje niste mogli u apstraktnom nadrazredu: <code>selectionDistance</code>, <code>getBoundingBoxy</code>, <code>duplicate</code> (pazite: ne kopira se popis prijavljenih promatrača) i <code>getShapeName</code> (tako da vraća "Oval").</li>
+</ol>
+U ovom trenutku dijagram razreda grafičkih objekata (bez prikazanim članskih varijabli i metoda) izgledat će kao na slici u nastavku.<br>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/StabloGO.png"><br>
+<p></p>
+
+<h4>2. Model crteža</h4>
+
+<p>Čitav crtež modelirat ćemo razredom <code>DocumentModel</code> čije je okvirno sučelje prikazano u nastavku (slobodno doradite po potrebi).</p>
+
+<code><pre>public class DocumentModel {
+
+	public final static double SELECTION_PROXIMITY = 10;
+
+	// Kolekcija svih grafičkih objekata:
+	private List<graphicalobject> objects = new ArrayList&lt;&gt;();
+	// Read-Only proxy oko kolekcije grafičkih objekata:
+	private List<graphicalobject> roObjects = Collections.unmodifiableList(objects);
+	// Kolekcija prijavljenih promatrača:
+	private List<documentmodellistener> listeners = new ArrayList&lt;&gt;();
+	// Kolekcija selektiranih objekata:
+	private List<graphicalobject> selectedObjects = new ArrayList&lt;&gt;();
+	// Read-Only proxy oko kolekcije selektiranih objekata:
+	private List<graphicalobject> roSelectedObjects = Collections.unmodifiableList(selectedObjects);
+
+	// Promatrač koji će biti registriran nad svim objektima crteža...
+	private final GraphicalObjectListener goListener = new GraphicalObjectListener() {...};
+	
+	// Konstruktor...
+	public DocumentModel() {...}
+
+	// Brisanje svih objekata iz modela (pazite da se sve potrebno odregistrira)
+	// i potom obavijeste svi promatrači modela
+	public void clear() {...}
+
+	// Dodavanje objekta u dokument (pazite je li već selektiran; registrirajte model kao promatrača)
+	public void addGraphicalObject(GraphicalObject obj) {...}
+	
+	// Uklanjanje objekta iz dokumenta (pazite je li već selektiran; odregistrirajte model kao promatrača)
+	public void removeGraphicalObject(GraphicalObject obj) {...}
+
+	// Vrati nepromjenjivu listu postojećih objekata (izmjene smiju ići samo kroz metode modela)
+	public List<graphicalobject> list() {...}
+
+	// Prijava...
+	public void addDocumentModelListener(DocumentModelListener l) {...}
+	
+	// Odjava...
+	public void removeDocumentModelListener(DocumentModelListener l) {...}
+
+	// Obavještavanje...
+	public void notifyListeners() {...}
+	
+	// Vrati nepromjenjivu listu selektiranih objekata
+	public List<graphicalobject> getSelectedObjects() {...}
+
+	// Pomakni predani objekt u listi objekata na jedno mjesto kasnije...
+	// Time će se on iscrtati kasnije (pa će time možda veći dio biti vidljiv)
+	public void increaseZ(GraphicalObject go) {...}
+	
+	// Pomakni predani objekt u listi objekata na jedno mjesto ranije...
+	public void decreaseZ(GraphicalObject go) {...}
+	
+	// Pronađi postoji li u modelu neki objekt koji klik na točku koja je
+	// predana kao argument selektira i vrati ga ili vrati null. Točka selektira
+	// objekt kojemu je najbliža uz uvjet da ta udaljenost nije veća od
+	// SELECTION_PROXIMITY. Status selektiranosti objekta ova metoda NE dira.
+	public GraphicalObject findSelectedGraphicalObject(Point mousePoint) {...}
+
+	// Pronađi da li u predanom objektu predana točka miša selektira neki hot-point.
+	// Točka miša selektira onaj hot-point objekta kojemu je najbliža uz uvjet da ta
+	// udaljenost nije veća od SELECTION_PROXIMITY. Vraća se indeks hot-pointa 
+	// kojeg bi predana točka selektirala ili -1 ako takve nema. Status selekcije 
+	// se pri tome NE dira.
+	public int findSelectedHotPoint(GraphicalObject object, Point mousePoint) {...}
+
+}</graphicalobject></graphicalobject></graphicalobject></graphicalobject></documentmodellistener></graphicalobject></graphicalobject></pre></code>
+
+<p>Prokomentirajmo malo predloženi opis. Model dokumenta, tj. crteža, omogućava zainteresiranim
+klijentima da doznaju sve informacije o crtežu (koliko ima objekata, koji su, koji su od njih selektirani i slično). Također, model mora omogućiti svim zainteresiranim klijentima da budu 
+obaviješteni i kada se u model dodaju novi odnosno uklone postojeći grafički objekti. Stoga je
+u okviru ove vježbe predložena uporaba ulančanih promatrača:
+</p><ul>
+<li>Svaki grafički objekt je subjekt koji klijentima omogućava dojavu promjena nad njime.</li>
+<li><code>DocumentModel</code> je subjekt koji svojim klijentima omogućava dojavu informacija o dodavanju i uklanjanju grafičkih objekata te informacija o promjenama u samim grafičkim objektima. Kako bi to bilo moguće, sam <code>DocumentModel</code> prijavit će se kao promatrač nad svakim grafičkim objektom koji mu pripada, i u situacijama kada ga grafički objekt obavijesti da je došlo do promjene u grafičkom objektu, <code>DocumentModel</code> će o tome obavijestiti svoje promatrače. Na ovaj način osigurano je da je dovoljno da se platno za crtanje prijavi samo na <code>DocumentModel</code>.</li>
+<li>Jedna od usluga koje <code>DocumentModel</code> treba ponuditi svojim klijentima je dostava kolekcije postojećih grafičkih objekata koji pripadaju crtežu. Pri tome treba osigurati da pri manipuliranju tom kolekcijom klijent ne može modificirati stanje crteža. To se može osigurati tako da se klijentu svaki puta vrati nova kopija liste što će vrlo skupo i neefikasno rješenje. Stoga je u predloženom rješenju stvoren proxy objekt koji omata originalnu listu i onemogućava bilo koju operaciju koja bi mijenjala sadržaj liste.</li>
+<li>Još jedna od usluga koju bi <code>DocumentModel</code> treba ponuditi jest dohvat popisa selektiranih objekata. I opet, jedna moguća implementacija bila bi da se pri svakom pozivu te metode pretražuje cjelokupna kolekcija objekata i provjerava status selektiranosti. U okviru ove vježbe predloženo je rješenje u kojem sam <code>DocumentModel</code> čitavo vrijeme održava kolekciju selektiranih objekata (<code>DocumentModel</code> je promatrač svih objekata pa kad se god promjeni status selektiranosti nekog od objekata <code>DocumentModel</code> ažurira svoju kolekciju) a pozivateljima vraća read-only proxy na tu listu.</li>
+</ul>
+
+<p>Sučelje promatrača dokumenta prikazano je u nastavku.</p>
+
+<code><pre>public interface DocumentModelListener {
+
+	void documentChange();
+	
+}</pre></code>
+
+<p><u><b>Zadatak</b></u></p>
+
+<p>Prepišite definiciju sučelja <code>DocumentModelListener</code>. Napišite cjelovitu implementaciju razreda <code>DocumentModel</code>.</p>
+
+<h4>3. Metoda <code>main</code>, glavni program i crtanje objekata</h4>
+
+<p>Program za crtanje želimo napisati na način koji će osigurati da jednom napisani program može transparentno raditi s proizvoljnim grafičkim objektima, a bez da se u tom dijelu koda mora mijenjati ijedan redak koda. Stoga želimo da metoda <code>main</code> konceptualno izgleda kako je navedeno u nastavku:</p>
+
+<code><pre>void main(...) {
+
+	List<graphicalobject> objects = new ArrayList&lt;&gt;();
+
+	objects.add(new LineSegment());
+	objects.add(new Oval());
+
+	GUI gui = new GUI(objects);
+	gui.setVisible(true);
+}</graphicalobject></pre></code>
+
+<p>Glavni prozor programa modeliran je razredom <code>GUI</code> koji u konstruktoru dobiva listu koja se sastoji od po jednog primjerka grafičkih objekata s kojima će se moći graditi crtež. Potom se u konstruktoru prozora ta lista pamti, i za svaki objekt liste stvara jedan gumb u alatnoj traci (tekst koji se ispisuje u gumbu odgovara onome što vrati metoda <code>getName()</code> grafičkog objekta. Prozor također definira jedan primjerak modela dokumenta te primjerak platna za crtanje. Platno za crtanje u konstruktoru treba dobiti referencu na model dokumenta koji je stvorio prozor.</p>
+
+<p>U platnu za crtanje potrebno je nadjačati metodu koja se poziva kada je potrebno nacrtati površinu te komponente. Primjerice, u Javi bi to bila metoda <code>paintComponent(Graphics g)</code>. Zadaća te metode jest crtanje crteža. Da bismo to omogućili, dodajte sada u <code>GraphicalObject</code> metodu <code>void render(Renderer r);</code> (bila je prikazana u sučelju na početku ove upute). U svakom konkretnom grafičkom objektu (<code>LineSegment</code>, <code>Oval</code>) napišite njezinu implementaciju. Pazite: jedino što Vam stoji na raspolaganju su dva primitiva koja smo deklarirali u sučelju <code>Renderer</code>.</p>
+
+<p>Napišite implementaciju sučelja <code>Renderer</code> koja crtanje obavlja na površini grafičke komponente. Primjerice, u Javi bi takvu implementacija okvirno bila sljedećeg oblika.</p>
+
+<code><pre>public class G2DRendererImpl implements Renderer {
+
+	private Graphics2D g2d;
+	
+	public G2DRendererImpl(Graphics2D g2d) {
+		// ...
+	}
+
+	@Override
+	public void drawLine(Point s, Point e) {
+		// Postavi boju na plavu
+		// Nacrtaj linijski segment od S do E
+		// (sve to uporabom g2d dobivenog u konstruktoru)
+	}
+
+	@Override
+	public void fillPolygon(Point[] points) {
+		// Postavi boju na plavu
+		// Popuni poligon definiran danim točkama
+		// Postavi boju na crvenu
+		// Nacrtaj rub poligona definiranog danim točkama
+		// (sve to uporabom g2d dobivenog u konstruktoru)
+	}
+
+}</pre></code>
+
+<p>Sada bismo u platnu za crtanje metodu koja crta površinu komponente mogli
+napisati na sljedeći način.</p>
+
+<code><pre>void paintComponent(Graphics g) {
+	Graphics2D g2d = (Graphics2D)g;
+	Renderer r = new G2DRendererImpl(g2d);
+	za svaki objekt o modela:
+	  o.render(r);
+}</pre></code>
+
+<p>Da biste isprobali radi li napisani kod, dodajte (privremeno) u konstruktoru prozora kod koji u stvoreni model ručno doda nekoliko objekata: ti bi se objekti morali ispravno prikazati u platnu za crtanje. Kad se uvjerite da to radi, uklonite taj dio koda tako da model po stvaranju bude prazan.</p>
+
+<h4>4. Modeliranje stanja u programu za crtanje</h4>
+
+<p>Sada kada imamo izgrađen elementarni dio funkcionalnosti prikaza objekata, vrijeme je da program
+obogatimo različitim alatima. Primjerice, htjeli bismo alat koji dodaje linije, alat koji dodaje ovale, alat koji omogućava selekciju i pomicanje objekata, njihovo grupiranje i promjenu Z-poretka te alat za brisanje. Što će se točno u programu dogoditi kada korisnik klikne mišem ili pritisne tipku na tipkovnici ovisit će o odabranom alatu. Stoga ćemo ovaj dio koda oblikovati uporabom oblikovnog obrasca Stanje.</p>
+
+<p>Neka je apstraktno stanje definirano sučeljem <code>State</code>, koje je dano u nastavku.</p>
+
+<code><pre>public interface State {
+	// poziva se kad progam registrira da je pritisnuta lijeva tipka miša
+	void mouseDown(Point mousePoint, boolean shiftDown, boolean ctrlDown);
+	// poziva se kad progam registrira da je otpuštena lijeva tipka miša
+	void mouseUp(Point mousePoint, boolean shiftDown, boolean ctrlDown);
+	// poziva se kad progam registrira da korisnik pomiče miš dok je tipka pritisnuta
+	void mouseDragged(Point mousePoint);
+	// poziva se kad progam registrira da je korisnik pritisnuo tipku na tipkovnici
+	void keyPressed(int keyCode);
+
+	// Poziva se nakon što je platno nacrtalo grafički objekt predan kao argument
+	void afterDraw(Renderer r, GraphicalObject go);
+	// Poziva se nakon što je platno nacrtalo čitav crtež
+	void afterDraw(Renderer r);
+
+	// Poziva se kada program napušta ovo stanje kako bi prešlo u neko drugo
+	void onLeaving();
+}</pre></code>
+
+<p>Napišite razred <code>IdleState</code> koji je implementacija ovog sučelja i u kojem su
+sve metode prazne.</p>
+
+<p>Potom promijenite glavni prozor: dodajte mu člansku varijablu <code>private State currentState;</code> koja inicijalno pokazuje na primjerak razreda <code>IdleState</code>; u to isto stanje aplikacija se treba vratiti svaki puta kada korisnik pritisne tipku ESC.</p>
+
+<p>Dodajte u platno za crtanje potreban kod kojim će platno tražiti dojavu informacija o pritiscima tipaka i pomacima miša. Na svaku takvu dojavu platno će samo pozvati odgovarajuću metodu trenutnog stanja (osigurajte da platno za crtanje vidi koje je trenutno stanje).</p>
+
+<p>Vratite se u metodu platna koja crta grafičke objekte i nakon crtanja svakog objekta pozovite još i odgovarajuću metodu stanja te isto napravite i nakon što je nacrtan čitav crtež.</p>
+
+<h4>5. Dodavanje grafičkih objekata u crtež</h4>
+
+<p>Dodavanje grafičkih objekata u crtež riješit ćemo implementacijom stanja <code>AddShapeState</code>. Skica razreda ovog stanja dana je u nastavku.</p>
+
+<code><pre>public class AddShapeState implements State {
+	
+	private GraphicalObject prototype;
+	private DocumentModel model;
+	
+	public AddShapeState(DocumentModel model, GraphicalObject prototype) {
+		// ...
+	}
+
+	@Override
+	public void mouseDown(Point mousePoint, boolean shiftDown, boolean ctrlDown) {
+		// dupliciraj zapamćeni prototip, pomakni ga na poziciju miša i dodaj u model
+	}
+	
+	// ...
+}</pre></code>
+
+<p>Dodavanje objekata u programu zamiljeno je po analogiji sa štambiljanjem: korisnik odabere s kojim grafičkim objektom želi raditi i onda na svaki klik miša na platnu na tom mjestu nastane jedan takav lik pretpostavljenih dimenzija.</p>
+ 
+<p>Sada se vratite u konstruktor prozora na mjesto gdje ste za svaki primljeni grafički objekt dodavali u alatnu traku po jedan gumb: modificirajte kod tako da se pritiskom na taj gumb promjeni trenutno stanje programa u primjerak stanja <code>AddShapeState</code> koje u konstruktoru dobije referencu na objekt koji gumb predstavlja.</p>
+
+<h4>6. Selektiranje objekata</h4>
+
+<p>Definirajte novo stanje: <code>SelectShapeState</code>. U tom stanju korisnik može mišem selektirati objekte. Ako drži pritisnutu tipku CTRL, objekti se dodaju u selekciju dok se bez pritisnute tipke CTRL uvijek selektira samo jedan objekt (ako je neki drugi bio selektiran, on se automatski treba odselektirati). Primjer koji prikazuje tri selektirana objekta prikazan je u nastavku.<br>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/selekcije-1.png"><br>
+Oko svakog selektiranog objekta prikazuje se njegov bounding-box. Kako platno za crtanje o ovome ništa ne zna, ovaj dio crtanja obavlja samo stanje u metodi <code>afterDraw</code> za svaki selektirani objekt. Dodatno, ako je selektiran samo jedan objekt, onda se za njega malim kvadratićima prikazuju i njegovi "hot-point"-i -- evo ponovno primjera s linijskim segmentom.</p>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/linija.png">
+<p>Samo u tom slučaju (selektiran jedan objekt) klik i povlačenje miša ne rade novu selekciju već pomiču koordinate selektiranog "hot-point"-a čime se modificira trenutni objekt.</p>
+<p>U ovom stanju potrebno je implementirati i sljedeća djelovanja pritisaka tipki na tipkovnici.
+</p><ul>
+<li>Kursorske tipke gore, dolje, lijevo, desno pomiču sve selektirane objekte za jedan piksel u odabranom smjeru.</li>
+<li>Tipka <code>+</code> pomiče objekt bliže prema promatraču (mijenja mu Z-poredak).</li>
+<li>Tipka <code>-</code> pomiče objekt dalje od promatraču (mijenja mu Z-poredak).</li>
+</ul>
+Utjecaj Z-poretka prikazan je na sljedeće dvije slike. Na prvoj slici selektirani objekt se crta prije drugog ovala pa ga on prekrije; na drugoj slici selektirani se objekt crta kasnije (povećan mu je Z-poredak) na se on crta preko ovala koji ga je na prethodnoj slici prekrio.<br>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/ispod.png"><br>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/iznad.png"><br>
+Napuštanjem ovog stanja automatski treba desektirati sve selektirane objekte.
+<p></p>
+
+<p>Dodajte u alatnu traku gumb "Selektiraj" koji program prebacuje u stanje za selekciju.</p>
+
+<h4>7. Grupiranje objekata</h4>
+
+<p>Napišite još jednu implementaciju grafičkog objekta: <code>CompositeShape</code>. To je objekt koji nema "hot-point"-a: on je kompozit čija su djeca drugi grafički objekti (potencijalno i drugi kompoziti). Pazite kako ćete u njemu implementirati metode poput one za izračun bounding-box-a (hint: unija) te pomicanja i crtanja (hint: delegiranje).</p>
+
+<p>Omogućite sada u stanju za selekciju još dvije tipke.
+</p><ul>
+<li>Pritisak na tipku G iz modela briše sve selektirane objekte, stvara novi kompozit čija to postaju djeca i samo taj kompozit ubacuje u model.</li>
+<li>Pritisak na tipku U (samo u slučaju da postoji jedan selektirani objekt i da je on kompozit) iz modela briše taj kompozit i ponovno dodaje u model njegovu djecu (i odmah ih ostavlja selektiranima tako da bi pritisak na G ponovno sve natrag zapakirao).</li>
+</ul>
+Sljedeće dvije slike prikazuju situaciju prije grupiranja i poslije grupiranja.<br>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/selekcije-1.png"><br>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/selekcije-2.png"><br>
+<p></p>
+
+<h4>8. Brisanje objekata</h4>
+
+<p>Dodajte implementaciju novog stanja <code>EraserState</code> (i odgovarajući gumb u alatnu traku) koje će korisniku omogućiti provođenje brisanja objekata. Ideja je omogućiti korisniku da na klik miša opiše (i vizualizira) krivulju koju će na otpuštanje miša presjeći sa svim postoječim objektima. Svaki objekt koji nacrtana krivulja siječe bit će obrisan. Slika u nastavku ovo ilustrira.<br>
+<img src="./Četvrta laboratorijska vježba iz OOUP_files/demonstracija-alata-za-brisanje.png">
+</p>
+
+<h4>9. Export u SVG</h4>
+
+<p>Dodajte u alatnu traku gumb "SVG Export". Pritiskom na taj gumb korisnika će se pitati da odabere direktorij i ime datoteke koju želi stvoriti (<i>Save dialog</i>), i potom treba generirati SVG opis slike. Da biste to napravili, stvorite novu implementaciju renderera (pseudokod prikazan u nastavku).
+
+<code></code></p><pre><code>public class SVGRendererImpl implements Renderer {
+
+	private List<string> lines = new ArrayList&lt;&gt;();
+	private String fileName;
+	
+	public SVGRendererImpl(String fileName) {
+		// zapamti fileName; u lines dodaj zaglavlje SVG dokumenta:
+		// &lt;svg xmlns=... &gt;
+		// ...
+	}
+
+	public void close() throws IOException {
+		// u lines još dodaj završni tag SVG dokumenta: &lt;/svg&gt;
+		// sve retke u listi lines zapiši na disk u datoteku
+		// ...
+	}
+	
+	@Override
+	public void drawLine(Point s, Point e) {
+		// Dodaj u lines redak koji definira linijski segment:
+		// &lt;line ... /&gt;
+	}
+
+	@Override
+	public void fillPolygon(Point[] points) {
+		// Dodaj u lines redak koji definira popunjeni poligon:
+		// &lt;polygon points="..." style="stroke: ...; fill: ...;" /&gt;
+	}
+
+}</string></code></pre>
+
+<p>Na pritisak gumba "SVG export" događa se sljedeće:</p>
+<code><pre>  fileName = pitajIme();
+  SVGRendererImpl r = new SVGRendererImpl(fileName);
+  za svaki objekt o modela:
+    o.render(r);
+  r.close();
+</pre></code>
+
+<h4>10. Dodavanje podrške za učitavanje i snimanje crteža</h4>
+
+<h5>10.1. Dodavanje podrške za snimanje crteža</h5>
+
+<p>Nativni format datoteke za snimanje crteža u našem je slučaju niz redaka teksta. Pri tome svaki objekt zauzima jedan redak (uključivo i kompozite, koji se međutim mogu pozvati na prethodne retke).
+Da bismo pojasnili, zamislimo crtež koji se sastoji od objekta A, kompozita koji sadrži objekte B i C te još jednog objekta D. Retci u datoteci bili bi sljedeći:</p>
+<pre>A
+B
+C
+kompozit - 2 prethodna
+D</pre>
+Svaki redak datoteke započinje identifikatorom objekta: @LINE ili @OVAL ili @COMP (za kompozit). Ovaj string odgovara identifikatoru vrste grafičkog objekta. Vratite se sada u sučelje <code>GraphicalObject</code> i dodajte metodu <code>public String getShapeID();</code>; implementirajte je u svakom od triju likova s kojima radimo da vraća prikladan identifikator. U retku dalje slijedi razmak pa niz argumenata koje "razumije" sam geometrijski oblik.
+<ol>
+<li>Ako je lik linijski segment, slijede x pa y početne točke i x pa y konačne točke.</li>
+<li>Ako je lik oval, slijede x pa y desnog "hot-point"-a te x pa y donjeg "hot-point"-a.</li>
+<li>Ako je lik kompozit, slijedi broj neposredno prethodno dostupnih objekata koji čine njegovu djecu.</li>
+</ol>
+<p></p>
+
+<p>Vratite se sada u sučelje <code>GraphicalObject</code> i dodajte metodu <code>public void save(List&lt;String&gt; rows);</code>; implementirajte je u svakom od triju likova s kojima radimo tako da jedan redak (linijski segment, oval) odnosno više redaka (kompozit) dodaju na kraj primljene liste <code>rows</code>.</p>
+
+<p>Dodajte sada u alatnu trak gumb "Pohrani". Klikom na taj gumb treba pitati korisnika u koju datoteku da pohrani crtež, treba stvoriti praznu listu redaka, tražiti svaki objekt u modelu da se pohrani u tu listu i potom listu treba pohraniti u datoteku. Primjeri dviju datoteka kao i njihov grafički prikaz dostupni su na kraju ove upute.</p>
+
+<h5>10.2. Dodavanje podrške za učitavanje crteža</h5>
+
+<p>Dodajte u alatnu trak gumb "Učitaj". Klikom na taj gumb treba pitati korisnika iz koje datoteke se radi učitavanje. Retke odabrane datoteke treba učitajte u pomoćnu listu redaka. Stvorite prazan stog grafičkih objekata. Pripremite pomoćnu mapu koja identifikatore grafičkih objekata mapira na njihove prototipe.</p>
+
+<p>Vratite se sada u sučelje <code>GraphicalObject</code> i dodajte metodu <code>public void load(Stack&lt;GraphicalObject&gt; stack, String data);</code>. Vratite se u linijski segment i oval i implementirajte ovu metodu tako da stvori <b>NOVI</b> grafički objekt s parametrima koje pročita iz drugog argumenta (<code>String data</code> - to će biti ostatak retka iz datoteke nakon uklanjanja početnog identifikatora). Taj novostvoreni objekt metoda na kraju izvođenja mora gurnuti na vrh primljenog stoga.</p>
+
+<p>Implementirajte isto i u kompozitu: metoda mora iz stringa <code>data</code> pogledati koliko prethodno-stvorenih objekata na stogu čini djecu kompozita, mora stvoriti NOVI kompozit, sa stoga skinuti utvrđeni broj objekata i postaviti ih kao djecu novostvorenog kompozita, i potom taj kompozit treba gurnuti na stog.</p>
+
+<p>Sada možemo definirati kako se obavlja nastavak učitavanja. Nakon što smo u pomoćnu listu pročitali sve retke datoteke, iteriramo redak po redak. Za svaki redak izvučemo prvi dio (identifikator) i u mapi pronađemo prototip koji mu odgovara; nad tim prototipom pozovemo <code>load(...)</code> koji će rezultirati time da se odgovarajući objekt stavi na stog (uz moguće prethodno uklanjanje nekih drugih objekata ako smo učitali kompozit). Stanje koje na kraju ostane na stogu predstavlja popis objekata koje dodajemo u model. I time je učitavanje gotovo.</p><p>
+
+</p><h4>11. Primjeri datoteka</h4>
+
+<ol>
+<li>Snimljen crtež: <a href="http://www.zemris.fer.hr/~ssegvic/ooup/ooup4lab/ooup-lab4-slika1.txt">ooup-lab4-slika1.txt</a>.</li>
+<li>Učitan crtež (<code>ooup-lab4-slika1.txt</code>):<br><img src="./Četvrta laboratorijska vježba iz OOUP_files/ooup-lab4-slika1.png">.</li>
+<li>Snimljen crtež: <a href="http://www.zemris.fer.hr/~ssegvic/ooup/ooup4lab/ooup-lab4-slika2.txt">ooup-lab4-slika2.txt</a>.</li>
+<li>Učitan crtež (<code>ooup-lab4-slika2.txt</code>):<br><img src="./Četvrta laboratorijska vježba iz OOUP_files/ooup-lab4-slika2.png">.</li>
+<li>SVG renderiranje drugog crteža: <a href="http://www.zemris.fer.hr/~ssegvic/ooup/ooup4lab/ooup-lab4-slika2.svg">ooup-lab4-slika2.svg</a>.</li>
+</ol>
+
+<div id="footer">
+<hr style="height:5px">
+  <table width="100%" style="margin-left:auto; margin-right:auto;">
+  <tbody><tr> <td style="width:100%; text-align:left" valign="top">
+    Izrađeno 
+    <a href="http://www.vim.org/">vi</a>-jem i
+    <a href="http://www.gedit.org/">gedit</a>om. 
+
+    <!--flastmod file="${DOCUMENT_NAME}"-->
+    Posljednja promjena: Tuesday, 10-May-2016 18:58:33 CEST
+  </td></tr><tr> <td style="width:50%; text-align:left" valign="top">
+    Svi komentari su dobrodošli: 
+    <img src="./Četvrta laboratorijska vježba iz OOUP_files/email.png" alt="sinisa segvic at fer hr" width="150" style="vertical-align:text-bottom">
+    </td><td style="width:50%; text-align:right" valign="bottom">
+    <a href="http://www.zemris.fer.hr/~ssegvic/ooup">Povratak</a>
+  </td></tr></tbody></table>
+
+  <p>
+</p></div>
+
+
+
+
+
+</body></html>

@@ -1,0 +1,491 @@
+---
+title: "14_Palic_Kristo_WB"
+author: "Kristo Palic"
+date: "2023-01-10"
+output: html_document
+---
+
+```{r setup, include = F}
+r = getOption("repos")
+r["CRAN"] = "https://cloud.r-project.org/"
+options(repos = r)
+
+library(MASS)
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+library(GGally)
+library(sn)
+library(gridExtra)
+library(broom)
+library(car)
+library(corrplot)
+
+knitr::opts_chunk$set(results = 'hold')
+```
+
+
+
+
+## Jednostavna linearna regresija
+
+```{r, echo = F}
+set.seed(1234)
+x <- 1:100
+df <- data.frame(x = x + rnorm(100),
+                 y1 = 4 * x + 20 + rnorm(100, 25, 25),
+                 y2 = 4 * x + 20 + rnorm(100, 25, 120),
+                 y3 = -(x-50)^2/6 + 400 + rnorm(100, 25, 75), 
+                 y4 = 0.1 * x + 20 + rnorm(100, 25, 100))
+df <- sample_n(df, 100)
+write.csv(df, file = "podaci1.csv", row.names = F)
+
+```
+
+
+
+## Kolinearnost varijabli podatkovnog okvira
+
+
+## ZADATAK 14.1 - uočavanje linearne povezanosti varijabli
+
+
+```{r}
+# u varijablu `df` učitajte podatke iz datoteke `podaci1.csv`
+# proučite učitani podatkovni okvir
+
+# nacrtajte točkaste grafove odnosa varijable 
+# x sa svakom pojedinom varijablom y iz gornjeg podatkovnog okvira
+# svakom grafu dodajte i geometriju zaglađivanja, metoda `lm`
+
+# odgovorite na pitanja:
+# na kojim grafovima uočavate moguću linearnu povezanost varijabli?
+# koji graf predočava nelinearnu povezanost?
+# za koji graf biste mogli reći da su varijable nezavisne?
+
+```
+
+
+## Pearsonov koeficijent korelacije
+
+
+## ZADATAK 14.2 - izračun koeficijenta korelacije
+
+
+```{r}
+# za svaki graf iz prethodnog zadatka izračunajte i ispišite
+# koeficijent korelacije između prikazanih varijabli (funkcija `cor`)
+```
+
+
+## Mjera "R-kvadrat"
+
+
+## Funkcija `lm`
+
+
+```{r, eval = F}
+lm(formula, data)
+```
+
+
+```{r,eval = F}
+linMod <- lm(y ~ x, data = df)
+```
+
+
+
+
+## ZADATAK 14.3 - stvaranje jednostavnog linearnog modela
+
+```{r}
+# uz pomoć funkcije `lm` stvorite linearni model podataka iz tablice `df`
+# gdje je `x` ulazna a `y1` izlazna varijabla
+# rezultat spremite u varijablu `linMod`
+
+
+# ispišite varijablu `linMod`
+
+```
+
+
+
+## Objekt klase `lm`
+
+Ovaj objekt sadržava ne samo koeficijente, već i bogati skup informacija vezanih uz stvoreni linearni model, što uključuje čak i sam podatkovni skup pomoću kojeg je model stvoren. 
+
+Nad ovim objektom možemo izvesti sljedeće funkcije:
+
+- `coef` - vraća koeficijente u obliku vektora
+- `fitted.values` - vraća vektor predikcijavdobiven primjenom modela na skup za treniranje
+- `residuals` - vraća vektor grešaka dobiven primjenom modela na skup za treniranje
+- `summary` - daje sažetak najvažnijih informacija o modelu
+
+Isprobajmo funkciju sažetka - `summary` - nad našim linearnim modelom.
+
+
+
+## ZADATAK 14.4 -  sažetak linearnog modela
+
+```{r}
+# izvršite funkciju `summary` nad linearnim modelom `linMod`
+```
+
+
+## Interpretacija sažetka linearnog modela
+
+Postoji nekoliko različitih "nesigurnosti" u dobiveni rezultat:
+
+1) Da li linearni trend uopće postoji, ili se uočena kolinearnost mogla pojaviti slučajno? 
+
+2) Ako trend postoji, koliko smo sigurni da izračunati koeficijent smjera odgovara "stvarnom"?
+
+3) Konačno, ako trend postoji a mi smo uspjeli dovoljno dobro pogoditi "pravi" koeficijent, koliko nam dodatni "šum" utječe na točnost predikcija? 
+
+Prikazani sažetak nam pruža odgovore na ova pitanja. 
+
+## Stvaranje (novih) predikcija
+
+R nam nudi generičku metodu `predict` kojoj u općenitom slučaju kao parametre šaljemo stvoreni prediktivni model i **podatkovni okvir** sa novim podacima, pri čemu moramo voditi računa da podatkovni okvir ima stupce koji odgovaraju očekivanim ulazima modela. 
+
+Budući da prediktivni modeli često u sebi sadrže i skup korišten za stvaranje modela, ovoj funkciji možemo proslijediti i model bez dodatnih podataka - u tom slučaju ona će nam jednostavno vratiti skup predikacija dobivenih nad originalnim skupom (tj. isti rezultat koji bi nam dala funkcija `fitted.values`).
+
+
+
+## ZADATAK 14.5 - stvaranje novih predikcija
+
+```{r}
+# sljedeći vektor prikazuje "nove" vrijednosti ulazne varijable `x`
+novi_x <- c(-5, 10, 50, 102)
+
+# stvorite i ispišite predikcije za gornji vektor pomoću 
+# funkcije `predict` i linearnog modela `linMod`inearnog modela `linMod`
+# pripazite da nove podatke šaljete u obliku podatkovnog okvira
+
+
+# izračunajte predikcije "ručno", korištenjem jednadžbe pravca
+# i dobivenih koeficijenata linearnog modela
+
+
+
+```
+
+
+
+## Vizualizacija reziduala
+
+dva pitanja koje analitičar potencijalno može postaviti vezano uz reziduale su:
+
+- da li postoje očiti uzorci u ponašanju reziduala obzirom na slijed originalnih obzervacija? 
+- da li reziduali imaju normalnu razdiobu?
+
+## Paket `broom`
+
+Paket `broom` nudi niz funkcija za uređivanje dobivenih prediktivnih modela i lako izvlačenje informacija iz istih - npr. funkcija `tidy` nam daje rezultate modela (tj. koeficijente) složene u lako čitljiv podatkovni okvir, dok nam funkcija `glance` radi isto ali nad parametrima koji opisuju kvalitetu modela. 
+
+Mi ćemo se u nastavku poslužiti metodom `augment` koja na osnovu prosljeđenog prediktivnog modela vraća originalni podatkovni okvir korišten za stvaranje modela, ali proširen sa nizom korisnih stupaca
+
+
+## ZADATAK 14.6 - paket `broom`
+
+```{r}
+# primjenite funkciju `augment` nad linearnim modelom `linMod`
+# rezultantni podatkovni okvir pohranite u varijablu `predikcije`
+
+# proučite prvih nekoliko redaka okvira `predikcije`
+
+```
+
+
+
+## Funkcija `augment`
+
+Uočite da nam metoda `augment` zapravo proširuje originalni podatkovni okvir nizom stupaca relevantnih za dobiveni linearni model. Ovdje nećemo objašnjavati sve dobivene stupce, no neki od njih su:
+
+- `.fitted` - predikcije dobivene iz modela
+- `.se.fit` - standardna greška pojedine predikcije
+- `.resid` - iznos reziduala, tj. greške
+- `.std.resid` - reziduali standardizirani na interval [0,1]
+- `.hat` - mjera "ekstremnosti" ulazne varijable ove obzervacije (engl. *leverage*)
+- `.cooksd` - mjera "utjecajnosti" obzervacije (engl. *influential point*); radi se o obzervacijama koju imaju visoku "*leverage*" mjeru i visoki rezidual
+
+Metodu `augment` možemo koristiti i kao alternativu generičkoj metodi `predict` - samo joj moramo proslijediti nove podatke uz pomoć parametra `newdata`.
+
+## Analiza reziduala
+
+Sada kada imamo podatkovni okvir koji sadrži podatke o rezidualima, možemo stvoriti spomenute vizualizacije. Konkretno, stvoriti ćemo
+
+- točkasti grafa sa predikcijama na osi `x` i (standardiziranim) rezidualima na osi `y`
+- graf funkcije gustoće razdiobe standardiziranih reziduala
+- kvantil-kvantil graf standardiziranih reziduala
+
+Razlog zašto radimo sa standardiziranim umesto "pravim" rezidualima jest samo lakša interpretacija, tj. jednostavnija usporedba rezultata sa "standardnom" normalnom razdiobom koja ima sredinu 0 i standardnu devijaciju 1.
+
+
+
+## ZADATAK 14.7 - provjera "normalnosti" reziduala
+
+```{r}
+# uz pomoć podatkovnog okvira `predikcije`
+# stvorite točkasti graf predikcija i std. reziduala
+# na grafu nacrtajte i horizontalnu liniju koja prolazi kroz nulu
+
+# stvorite graf gustoće razdiobe standardnih reziduala
+# koristite geometriju `geom_density`
+
+# stvorite kvantil-kvantil graf std. reziduala
+# koristite geometriju `geom_qq`
+# reziduale postavite na estetiku `sample` (ne `x`!)
+
+```
+
+
+
+## Dijagnostika problema uz pomoć vizualizacije reziduala
+
+Neki od mogućih zaključaka nakon stvaranja vizualizacija reziduala mogu biti sljedeći:
+
+- ako točkasti graf sa predikcijama i rezidualima pokazuje očite uzorke, moguće da linearni model nije dobar za opis odnosa prediktora i cilja te treba posegnuti za modelom koji može opisati složeniju prirodu odnosa
+- ako graf reziduala ima oblik "lijevka", tj. ako reziduali rastu sa povećanjem vrijednosti predikcija, možda je potrebno transformirati ulazne i/ili izlazne varijable, npr. uz pomoć funkcije korijena ili logaritma
+- ako uočavamo neke vrijednosti koje izrazito "iskaču" u grafu reziduala trebamo ih pažljivije pogledati i potencijalno ukloniti iz skupa za stvaranje modela
+
+
+## Linearna regresija i kategorijske varijable
+
+
+```{r, echo = F}
+set.seed(1234)
+x <- c(rep('A', 48), rep('B', 52))
+df <- data.frame(x = x,
+                 y = 50*(x=='B') + rnorm(100, 25, 10))
+df <- sample_n(df, 100)
+write.csv(df, file = "podaci2.csv", row.names = F)
+```
+
+Može li kategorijska varijabla biti ulaz u prediktivni model?
+
+Može, uz određenu prilagodbu. Moramo **pretvoriti kategorijsku varijablu u binarnu (indikatorsku) varijablu** koja opisuje pripada li određena obzervacija odabranoj kategoriji (ako ne pripada, onda logično pripada onoj drugoj, referentnoj ili *baseline* kategoriji). 
+
+Linearna regresija će potom odrediti koeficijent koji će definirati pravac na način da se koeficijent pribraja ako je indikatorska varijabla `1`, ili se ne uzima u obzir ako je indikatorska varijabla `0`.
+
+## Dvorazinske i višerazinske kategorijske varijable
+
+Koliko nam treba indikatorskih varijabli za kategorijsku varijablu sa dvije kategorije? 
+
+- **jedna** (druga bi bila inverz prve)
+
+Koliko nam treba indikatorskih varijabli za kategorijsku varijablu sa više od dvije kategorije? 
+
+- **jedna manje od broja kategorija**, budući da "nepripadanje" svim kategorijama osim jedne nužno označava pripadanje toj jednoj, preostaloj kategoriji.
+
+
+## ZADATAK 14.8  - podatkovni okvir sa kategorijskim prediktorom
+
+
+```{r}
+# u varijablu `df` učitajte podatke iz datoteke `podaci2.csv`
+# proučite učitani podatkovni okvir
+
+# nacrtajte točkasti graf ovisnosti varijable `y` o varijabli `x`
+
+```
+
+
+
+## Automatsko stvaranje indikatorske varijable
+
+Jezik R, tj. funkcija `lm` će **automatski stvoriti** indikatorske varijable ako kategorijske varijable postavimo u regresijsku formulu.
+
+OPREZ! Kod stvaranja predikcija za nove podatke moramo biti sigurni da kategorijska varijabla ne sadrži kategorije koje nisu bile zastupljene u podacima korištenim za stvaranje modela.
+
+
+
+## ZADATAK 14.9 - stvaranje linearnog modela sa kategorijskim ulazom
+
+
+```{r}
+# uz pomoć funkcije `lm` stvorite linearni model podataka iz tablice `df`
+# gdje je `x` ulazna a `y` izlazna varijabla
+# rezultat spremite u varijablu `linMod`
+```
+
+
+
+## Interpretacija linearnog modela sa kategorijskim ulazom
+
+Vidimo da je sažetak linearnog modela vrlo sličan već prikazanom sažetku gdje je ulazna varijabla bila numeričkog tipa. Razlika u interpretaciji je sljedeća - koeficijent smjera veže se uz konkretnu kategoriju (navedenu uz ime varijable), a tiče se **očekivane razlike u iznosu ciljne varijable kad obzervacija ima navedenu kategoriju, u odnosu na referentnu kategoriju**. 
+
+Za kraj ovog dijela naglasimo samo da je kod korištenja kategorijskih varijabli kao ulaze u linearni model bitno voditi računa o zastupljenosti kategorija, tj. da nemamo **kategorije koje su vrlo slabo zastupljene** u podatkovnom skupu za treniranje. Razlog je taj što ovakve obzervacije vrlo često **imaju veliki utjecaj na regresijski pravac**, a što može imati nepovoljne posljedice na kvalitetu linearnog modela.
+
+
+
+## Višestruka (multipla) linearna regresija 
+
+
+Princip jednostavne linearne regresije lako se proširuje na scenarij kada imamo više ulaznih varijabli - jednostavno rečeno, tražimo funkciju koja će ciljnu varijablu izraziti kao linearnu kombinaciju ulaznih varijabli. Problem izgradnje modela opet se svodi na traženje "dobrih" koeficijenata smjera koji će ići uz svaku ulaznu varijablu (plus odsječak), iako formalno sada ne možemo pričati o "pravcu" regresije već se radi o nešto kompleksnijem pojmu "hiper-ravnine".
+
+## Formule za višestruku linearnu regresiju
+
+Kod višestruke linearne regresije pojavljuje se niz dodatnih izazova s kojima se moramo suočiti, no za samo treniranje modela koristimo već upoznatu funkciju `lm`, kojoj je dovoljno proslijediti željenu formulu, npr:
+
+```{r, eval = F}
+y ~ x1 + x2              # `y` kao linearna kombinacija `x1` i `x2`
+y ~ .                    # `y` kao linearna kombinacija svih ostalih varijabli
+y ~ . - x1 - x2          # `y` kao linearna kombinacija svih ostalih varijabli OSIM x1 i x2
+log(y)  ~ x1 + log(x2)   #  prirodni logaritam od `y` kao linearna kombinacija `x1` i
+                              # prirodnog logaritma od `x2`
+y ~ x1 + I(x2^2)         # `y` kao linearna kombinacija `x1` i kvadrata od `x2`
+```
+
+
+
+## Podatkovni skup `mtcars`
+
+Pokušajmo sada stvoriti prediktivni model sa više ulaznih varijabli. U zadatku ćemo koristiti otprije upoznati podatkovni skup `mtcars` (ako je potrebno podsjetite se dodatnih detalja o ovom skupu uz pomoć dokumentacije).
+
+```{r, warnings = F}
+data(mtcars)
+# faktoriziramo stupce  `vs` i `am`
+cols <- c("vs", "am")
+mtcars[, cols] <- lapply(mtcars[, cols], factor)
+
+glimpse(mtcars)
+```
+
+
+
+## ZADATAK 14.10- stvaranje linearnog modela sa više prediktora
+
+```{r}
+# uz pomoć funkcije `lm` stvorite linearni model podataka iz tablice `mtcars`
+# koristite varijable `am`,  `cyl` i `wt` kao ulaz
+# i varijablu `mpg` kao izlay
+#
+# proučite sažetak modela
+```
+
+
+
+## ZADATAK 14.11 - kolinearnost ulaznih varijabli
+
+```{r}
+# u podatkovni okvir `mtcarsNumInputs` ubacite sve numeričke
+# varijable podatkovnog okvira `mtcars` osim ciljne varijable `mpg`
+
+# uz pomoć funkcije `cor` ispišite korelacijsku matricu
+# numeričkih stupaca okvira `mtcarsNumInputs`
+
+# proslijedite taj okvir funkciji `ggpairs` paketa `GGally`
+
+
+
+```
+
+
+Još jedan zgodan način vizualizacije kolinearnosti nam pruža funkcija corrplot istoimenog paketa.
+
+## Zadatak 14.12 - funkcija `corrplot`
+
+```{r}
+# učitajte paket `corrplot` (instalirajte ako je potrebno)
+# pozovite funkciju `corrplot` kojoj ćete proslijediti korelacijski matricu
+# stupaca okvira `mtcarsNumInputs`
+```
+
+
+
+## ZADATAK 14.13 - multikolinearnost
+
+
+```{r}
+# istrenirajte linearni model `lm_sve` koja za okvir `mtcars`
+# gleda ovisnost varijable `mpg` o svim ostalim varijablama
+#
+# navedeni model proslijedite funkciji `vif` paketa `cars` i ispišite rezultat
+```
+
+
+## Rješavanje problema kolinearnosti i multikolinearnosti
+
+Sad kada znamo da je kolinearnost ulaznih varijabli potencijalni problem, možemo postaviti pitanje - što učiniti kada uočimo navedenu pojavu? Neke od mogućih rješenja su:
+
+- izbaciti jednu od para problematičnih varijabli
+- transformirati kolinearne varijable u alternativnu jedinstvenu ulaznu varijablu
+
+
+## ZADATAK 14.14 - linearni model sa kolinearnim ulazima
+
+```{r}
+# trenirajte sljedeće linearne modele:
+#  `lm1` - `mpg` u ovisnosti o `disp`
+#  `lm2` - `mpg` u ovisnosti o `wt`
+#  `lm3` - `mpg` u ovisnosti o `disp` i `wt`
+
+#
+# proučite sažetke dobivenih linearnih modela,
+# poglavito t-vrijednosti parametara i prilagođenu R-kvadrat mjeru
+
+```
+
+
+
+## Interpretacija dobivenih rezultata
+
+
+Usporedivši rezultate dobivenih linearnih modela možemo zaključiti kako linearni model `lm3` ima najmanju standardnu grešku reziduala i najveću "R-kvadrat" mjeru te je time najbolja od tri opcije. No potencijalni problem se očituje kada pogledamo p-vrijednosti, koje su obje znatno veće nego kada smo trenirali modele sa svakom varijablom zasebno. Dakle, kolinearnost varijabli ne mora nužno utjecati na prediktivnu moć modela, ali unosi potencijalno veliku nesigurnost u modelu smislu da sve kolinearne prediktore izbacimo iz modela kao irelevantne. To bi se mogao pokazati kao velik problem kada imamo više potencijalnih prediktora i pokušavamo odabrati relevantni podskup, što je tema kojom ćemo se baviti u nastavku.
+
+## Odabir varijabli
+
+**Odabir varijabli (*variable selection*) jedan od ključnih izazova s kojima se suočavamo u izradi prediktivnih modela**, ne samo kod linearne regresije već i općenito.
+
+Očito je da bi dobar model trebao sadržavati ulazne varijable koje dobro "objašnjavaju" ciljnu varijablu a koje su što više međusobno nezavisne. Mogući **kriterij za odluku** koje varijablu odabrati za ugrađivanje u model tako može biti utjecaj na povećanje zajedničke **"R-kvadrat"** mjere, smanjenje **standardne greške reziduala** ili **p-vrijednost** koeficijenta za tu ulaznu varijablu. Pored ovih "standardnih" kriterija postoje i razni drugi, kao npr. popularni **AIC** (engl. *Akaike information criterion*) koji procjenjuje informativnost modela uz penaliziranje većeg broj varijabli.
+
+## Iterativna (*stepwise*) izgradnja prediktivnog modela
+
+Varijable možemo odabirati ručno, no puno je lakše taj posao ostaviti računalu. Statistički alati, uključujući i jezik R, često imaju ugrađene algoritme koji na osnovu zadanog kriterija izgrađuju prediktivni model iterativnim odabirom varijabli. Najčešće strategije izgradnje modela su:
+
+- **"unatrag" od potpunog modela**, npr. iterativno se izbacuju varijable sa najvećom p-vrijednosti
+- **"unaprijed" od praznog modela**, npr. iterativno se dodaju varijable koje najviše smanjuju RMSE
+- razne **hibridne** metode
+
+
+## Funkcija `stepAIC`
+
+Jezik R ima funkciju `step` za iterativno (engl. *stepwise*) stvaranje prediktivnih modela, no u praksi se preporučuje puno bolja funkcija `stepAIC` koju možemo naći u paketu `MASS`. Ova funkcija između ostalog očekuje sljedeće parametre:
+
+- `object` - inicijalni (linearni) model 
+- `scope` - raspon modela koje uključujemo u strategiju; potreban je samo za izgradnju "unaprijed" a prosljeđujemo joj listu sa "najsiromašnijim" (`lower`) i  "najbogatijim" (`upper`) modelom
+- `direction` - inaprijed (`forward`), unatrag (`backward`) ili hibridno (`both`)
+- `trace` - binarna varijabla koja opisuje želimo li ispis cijelog procesa odabira varijabli
+
+
+Za kraj ćemo iterativno stvoriti prediktivni model za podatkovni okvir `mtcars` gdje će opet ciljna varijabla biti potrošnja (varijabla `mpg`) dok će kandidati za ulaznu varijablu biti sve ostale varijable.
+
+
+
+
+## Zadatak 14.15 - iterativna selekcija varijabli za linearnu regresiju
+
+```{r}
+#library(MASS) # ako je potrebno
+
+# stvaramo "potpuni" i "prazni" model 
+lm_sve <- lm(mpg ~ ., data = mtcars)   
+lm_prazan <- lm(mpg ~ 1, data = mtcars)
+
+# pogledajte sažetke gornjih modela kako bi 
+# dobili dojam kako rade "ekstremi"
+
+# uz pomoć funkcije `stepAIC` stvorite modele `lm1` i `lm2` 
+# na sljedeći način
+# `lm1` - nastaje selekcijom "unatrag" od punog modela
+#         (parametar direction = "backward")
+# `lm2` - nastaje selekcijom "unaprijed" od praznog modela
+#         (parametri direction = "forward" , 
+#         scope = list(upper = lm_sve, lower = lm_prazan))
+#
+# proučite sažetke dobivenih modela
+```
+
+
+

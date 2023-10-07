@@ -1,0 +1,80 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="hr">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1250">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Algoritam postupka po Boxu</title>
+<style>
+<!--
+p.kod
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:14.2pt;
+	margin-bottom:.0001pt;
+	text-indent:-14.2pt;
+	font-size:11.0pt;
+	font-family:"Courier New";
+	letter-spacing:-1.0pt;
+	}
+-->
+</style>
+</head>
+
+<body>
+
+<h3><font face="Courier New">Algoritam postupka<span lang="en-us"> po </span></font>
+<span lang="en-us"><font face="Courier New">Boxu</font></span></h3>
+<div style="border:solid windowtext .5pt;padding:1.0pt 4.0pt 1.0pt 12.0pt">
+  <p class="kod"><span lang="HR">// Ulazne velicine: X0 (pocetna tocka)</span></p>
+  <p class="kod"><span lang="HR">provjeri da li za X0 vrijedi (Xd &lt;= X0 &lt;= 
+  Xg) te (g(X0) &gt;= 0)</span></p>
+  <p class="kod"><span lang="HR">Xc = X0;</span></p>
+  <p class="kod"><span lang="HR">za t = 1 do 2*n // generiranje skupa 2n 
+  tocaka</span></p>
+  <p class="kod"><span lang="HR">{ za i = 1 do n</span></p>
+  <p class="kod"><span lang="HR">&nbsp; &nbsp;&nbsp;&nbsp; R = random[0,1];</span></p>
+  <p class="kod"><span lang="HR">&nbsp; &nbsp;&nbsp;&nbsp; X<sub>i</sub>[t] = Xd<sub>i</sub> + 
+  R*(Xg<sub>i</sub> - </span><span lang="DE">Xd<sub>i</sub></span><span lang="HR">); 
+  // </span><span lang="DE">nova tocka </span><span lang="HR">je </span>
+  <span lang="DE">unutar eksplicitnih ogr</span><span lang="HR">.</span></p>
+  <p class="kod"><span lang="HR">&nbsp; dok postoji g<sub>i</sub>(X) za koji g<sub>i</sub>(X[t])&lt;0 
+  // nisu zadovoljena implicitna ogr.</span></p>
+  <p class="kod"><span lang="HR">&nbsp; &nbsp;&nbsp;&nbsp; X[t] = &frac12; * (X[t] + Xc); // pomakni 
+  prema centroidu prihvacenih tocaka</span></p>
+  <p class="kod"><span lang="HR">&nbsp; izracunaj novi Xc (sa novom prihvacenom 
+  tockom);</span></p>
+  <p class="kod"><span lang="HR">}</span></p>
+  <p class="kod"><span lang="HR">ponavljaj</span></p>
+  <p class="kod"><span lang="HR">{ odredi indekse h, h2 : </span>
+  <span lang="DE">F</span><span lang="HR">(</span><span lang="DE">X</span><span lang="HR">[</span><span lang="DE">h</span><span lang="HR">]) 
+  = </span><span lang="DE">max</span><span lang="HR">, </span>
+  <span lang="DE">F</span><span lang="HR">(</span><span lang="DE">X</span><span lang="HR">[</span><span lang="DE">h</span><span lang="HR">2]) 
+  = drugi najlosiji;</span></p>
+  <p class="kod"><span lang="HR">&nbsp; izracunaj Xc (bez X[h]);</span></p>
+  <p class="kod"><span lang="HR">&nbsp; Xr = (1+</span><span lang="HR" style="font-family: Symbol">a</span><span lang="HR">)*Xc 
+  - </span><span lang="HR" style="font-family: Symbol">a</span><span lang="HR">*X[h]; 
+  // refleksija</span></p>
+  <p class="kod"><span lang="HR">&nbsp; za i = 1 do n</span></p>
+  <p class="kod"><span lang="HR">&nbsp;  </span><span lang="en-us">{</span><span lang="HR">&nbsp;&nbsp; ako Xr<sub>i</sub> &lt; Xd<sub>i</sub>&nbsp; 
+  // pomicemo na granicu ekspl. ogranicenja</span></p>
+  <p class="kod"><span lang="HR">&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Xr<sub>i</sub> = Xd<sub>i</sub>;</span></p>
+  <p class="kod"><span lang="HR">&nbsp; &nbsp;&nbsp;&nbsp; inace ako Xr<sub>i</sub> &gt; Xg<sub>i</sub></span></p>
+  <p class="kod"><span lang="HR">&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Xr<sub>i</sub> = Xg<sub>i</sub>;</span></p>
+  <p class="kod"><span lang="en-us">&nbsp; }</span></p>
+  <p class="kod"><span lang="HR">&nbsp;  dok postoji g<sub>i</sub>(X) za koji 
+  g<sub>i</sub>(Xr)&lt;0</span><span lang="en-us">&nbsp; // provjeravamo 
+  implicitna ogr.</span></p>
+  <p class="kod"><span lang="HR">&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Xr = &frac12; * (Xr + Xc);</span></p>
+  <p class="kod"><span lang="HR">&nbsp; ako F(Xr) &gt; F(X[h2])&nbsp; // ako je to i 
+  dalje najlosija tocka</span></p>
+  <p class="kod"><span lang="HR">&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Xr = &frac12; * (Xr + Xc);&nbsp; // jos 
+  jednom pomakni prema Xc</span></p>
+  <p class="kod"><span lang="HR">&nbsp; X[h] = Xr;</span></p>
+  <p class="kod">} dok nije zadovoljen uvjet zaustavljanja;</div>
+
+</body>
+
+</html>

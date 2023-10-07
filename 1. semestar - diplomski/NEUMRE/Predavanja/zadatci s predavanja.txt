@@ -1,0 +1,23 @@
+1.
+----------------------
+Zadaća
+• Problem 1.15.
+• Višeslojna mreža bez povratnih veza ima neurone koji rade u linearnom
+području (nema nelinearnosti). Treba pokazati da je takva mreža ekvivalentna
+jednoslojnoj mreži
+• Problem 1.19.
+• Mreža s povratnim vezama ima 3 ulazna neurona, 2 skrivena neurona i 4
+izlazna neurona. Nacrtati graf mreže.
+----------------------
+
+2.
+----------------------
+• Problem 2.1.
+• Delta pravilo i Hebbovo pravilo su dva različita načina učenja. Opisati razlike
+između ovih pravila
+• Problem 2.5.
+• Signal iznosa 1 doveden je na ulaz sinaptičke veze čija je početna vrijednost
+jednaka 1. Treba izračunati promjenu težine s vremenom pomoću:
+• osnovnog Hebbovog pravila s parametrom brzine učenja h=0.1
+• modificiranog Hebbovog pravila s h=0.1 i c=0.1
+---------------------
