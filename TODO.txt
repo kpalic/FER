@@ -1,6 +1,6 @@
 APR - skripta predavanje 1 i 2
-neumre - skripta predavanje 1
-opeist - skripta predavanje 1
-
+NEUMRE - skripta predavanje 1
+OPEIST - skripta predavanje 1
 NASP - implementacija algoritama u pythonu za vjezbu
 NASP - 2. labos
+SU - 4. predavanje
