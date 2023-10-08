@@ -1,4 +1,3 @@
-NASP - skripta predavanje 1
 APR - skripta predavanje 1 i 2
 neumre - skripta predavanje 1
 opeist - skripta predavanje 1
