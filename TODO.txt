@@ -1,0 +1,7 @@
+NASP - skripta predavanje 1
+APR - skripta predavanje 1 i 2
+neumre - skripta predavanje 1
+opeist - skripta predavanje 1
+
+NASP - implementacija algoritama u pythonu za vjezbu
+NASP - 2. labos
