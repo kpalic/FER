@@ -1,6 +1,21 @@
-APR - skripta predavanje 1 i 2
-NEUMRE - skripta predavanje 1
-OPEIST - skripta predavanje 1
+APR - do uključivo LU dekompozicija
+NEUMRE - skripta predavanje 2
 NASP - implementacija algoritama u pythonu za vjezbu
 NASP - 2. labos
-SU - 4. predavanje
+NASP - bstabla i crvcrna stabla
+SU - dovrsit nelinearnu regresiju skriptu predavanje
+
+OER - predavanje 2
+oer - predavanje petak 8-11
+oer - predavanje srijeda 11-14
+oer - labos
+
+apr - dz1 - rjesavanje lin jednadzbi
+
+nasp - dovrsit 2. predavanje
+
+
+ROKOVI
+NEUMRE - lab 1 - 20.10 (23:59h) moodle
+  SU   - lab 1 - 22.10 (23:59h) moodle
+ APR   -  dz 1 - 30.10 (09:00h) ferko
