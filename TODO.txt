@@ -1,12 +1,10 @@
 APR - do uključivo LU dekompozicija
 NEUMRE - skripta predavanje 2
 NASP - implementacija algoritama u pythonu za vjezbu
-NASP - 2. labos
 NASP - bstabla i crvcrna stabla
 SU - dovrsit nelinearnu regresiju skriptu predavanje
 
 OER - predavanje 2
-oer - predavanje petak 8-11
 oer - predavanje srijeda 11-14
 oer - labos
 
