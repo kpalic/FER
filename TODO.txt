@@ -9,13 +9,16 @@ oer - predavanje srijeda 11-14
 oer - labos
 
 apr - dz1 - rjesavanje lin jednadzbi
-
 nasp - dovrsit 2. predavanje
 
 
 ROKOVI
-NEUMRE - lab 1 - 20.10 (23:59h) moodle
-  SU   -  dz 1 - 20.10 (23:59h) moodle
+SU-peer review - 24.10 (23:59h) moodle
   SU   - lab 1 - 22.10 (23:59h) moodle
-SU-peer review - 22.10 (23:59h) moodle
- APR   -  dz 1 - 30.10 (09:00h) ferko
+ OER   -  dz 1 - 23.10 (08:00h) ferko
+!!! SU - flipped classroom !!!
+  SU   - lab 1 - 25.10 (12:00h) prezentacija 1. labosa
+
+  NASP - lab 3 - 27.10 (10:00h) edgar
+  APR  -  dz 1 - 30.10 (09:00h) ferko
+
