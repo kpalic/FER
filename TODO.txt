@@ -1,24 +1,13 @@
-APR - do uključivo LU dekompozicija
-NEUMRE - skripta predavanje 2
-NASP - implementacija algoritama u pythonu za vjezbu
-NASP - bstabla i crvcrna stabla
-SU - dovrsit nelinearnu regresiju skriptu predavanje
-
-OER - predavanje 2
-oer - predavanje srijeda 11-14
-oer - labos
-
-apr - dz1 - rjesavanje lin jednadzbi
-nasp - dovrsit 2. predavanje
-
-
 ROKOVI
-SU-peer review - 24.10 (23:59h) moodle
-  SU   - lab 1 - 22.10 (23:59h) moodle
- OER   -  dz 1 - 23.10 (08:00h) ferko
-!!! SU - flipped classroom !!!
-  SU   - lab 1 - 25.10 (12:00h) prezentacija 1. labosa
+  SU   - lab 2 - 05.11 (23:59h) moodle
+  SU    OBRANA - 08.11 (10:00h) A-304 
+  OER  -  dz 3 - 10.11 (08:00h) ferko
+ NASP  - lab 4 - 10.11 (10:00h) edgar
+NEUMRE - lab 2 - 10.11 (23:59h) moodle
+  APR  - lab 2 - 13.11 (-----h) ferko
+  OER  -  dz 3 - 17.11 (08:00h) ferko
 
-  NASP - lab 3 - 27.10 (10:00h) edgar
-  APR  -  dz 1 - 30.10 (09:00h) ferko
+
+
+
 
