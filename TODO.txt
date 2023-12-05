@@ -1,10 +1,4 @@
 ROKOVI
-  SU   - lab 2 - 05.11 (23:59h) moodle
-  SU    OBRANA - 08.11 (10:00h) A-304 
-  OER  -  dz 3 - 10.11 (08:00h) ferko
- NASP  - lab 4 - 10.11 (10:00h) edgar
-NEUMRE - lab 2 - 10.11 (23:59h) moodle
-  APR  - lab 2 - 13.11 (-----h) ferko
   OER  -  dz 3 - 17.11 (08:00h) ferko
 
 
