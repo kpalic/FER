@@ -1,6 +1,11 @@
 ROKOVI
+<<<<<<< Updated upstream
   OER  -  dz 3 - 17.11 (08:00h) ferko
 
+=======
+  SU   - lab 3 - 10.12 (23:59h) moodle
+  APR  - lab 3 - 11.12 (08:00h) ferko
+>>>>>>> Stashed changes
 
 
 
