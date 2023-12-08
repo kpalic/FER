@@ -20,13 +20,16 @@ class GradientDescent {
         
         if (goldenCut) {
             do {
-                double optimalLambda = getOptimalLambda(currentPoint, f, gradient, epsilon);
+                vector<double> normalizedGradient = normalizeGradient(gradient);
+                double optimalLambda = getOptimalLambda(currentPoint, f, normalizedGradient, epsilon);
                 for (int i = 0; i < f.getNumberOfParameters(); i++) {
-                    nextPoint[i] = currentPoint[i] - optimalLambda * gradient[i];
+                    nextPoint[i] = currentPoint[i] - optimalLambda * normalizedGradient[i];
                 }
+                cout << "----------------------------------------" << endl;
                 debug(f, currentPoint, gradient);
                 gradient = f.getGradient(nextPoint);
                 currentPoint = nextPoint;
+                cout << "----------------------------------------" << endl;
             } while (getNorm(gradient) > epsilon);
         }
         else {
@@ -39,7 +42,6 @@ class GradientDescent {
                 currentPoint = nextPoint;
             } while (getNorm(gradient) > epsilon);
         }
-
         return currentPoint;
     }
 
@@ -53,6 +55,7 @@ class GradientDescent {
         for (int i = 0; i < gradient.size(); i++) {
             cout << gradient[i] << " ";
         }
+        cout << endl;
         cout << "Value: " << f.getValue(currentPoint) << endl;
         cout << endl;
     }
@@ -65,7 +68,28 @@ class GradientDescent {
         return sqrt(norm);
     }
 
-    double getOptimalLambda(vector<double> currentPoint, IFunction& f, vector<double> gradient, double epsilon = 0.000001) {
+    vector<double> normalizeGradient(vector<double> gradient) {
+        vector<double> normalizedGradient(gradient.size());
+        double norm = getNorm(gradient);
+        for (int i = 0; i < gradient.size(); i++) {
+            normalizedGradient[i] = gradient[i] / norm;
+        }
+        cout << "Gradient: " << endl;
+        for (int i = 0; i < gradient.size(); i++) {
+            cout << gradient[i] << " ";
+        }
+        cout << endl;
+
+        cout << "Normalized gradient: " << endl;
+        for (int i = 0; i < normalizedGradient.size(); i++) {
+            cout << normalizedGradient[i] << " ";
+        }
+        cout << endl;
+
+        return normalizedGradient;
+    }
+
+    double getOptimalLambda(vector<double> currentPoint, IFunction& f, vector<double> gradient, double epsilon) {
 
         // find unimodal interval
         double lambdaMin = 0;
@@ -79,12 +103,6 @@ class GradientDescent {
 
         int iterations = 0;
         while (valueNext < valueCurrent) {
-            if (iterations == 1)  {
-                lambdaMin = 1;
-            }
-            else if (iterations > 1) {
-                lambdaMin *= 2;
-            }
             lambdaMax *= 2;
 
             for (int i = 0; i < f.getNumberOfParameters(); i++) {
@@ -93,6 +111,22 @@ class GradientDescent {
             valueCurrent = valueNext;
             valueNext = f.getValue(nextPoint);
             iterations++;
+
+            // cout << "Iteration: " << iterations << endl;
+            // cout << "currentPoint: ";
+            // for (int i = 0; i < currentPoint.size(); i++) {
+            //     cout << currentPoint[i] << " ";
+            // }
+            // cout << endl;
+            // cout << "currentValue: " << valueCurrent << endl;
+            // cout << "nextPoint: ";
+            // for (int i = 0; i < nextPoint.size(); i++) {
+            //     cout << nextPoint[i] << " ";
+            // }
+            // cout << endl;
+            // cout << "nextValue: " << valueNext << endl;
+            // cout << "lambdaMin: " << lambdaMin << endl;
+            // cout << "lambdaMax: " << lambdaMax << endl;
         }
 
         double a = lambdaMin;
@@ -112,7 +146,11 @@ class GradientDescent {
         double valueC = f.getValue(cPoint);
         double valueD = f.getValue(dPoint);
 
-        while ((b - a) > epsilon) {
+        while (abs(b - a) > epsilon) {
+            // cout << "a      c      d      b" << endl;
+            // cout << a << " " << c << " " << d << " " << b << endl;
+            // cout << "alueC      valueD      " << endl;
+            // cout << valueC << " " << valueD << endl;
             if (valueC < valueD) {
                 b = d;
                 d = c;
