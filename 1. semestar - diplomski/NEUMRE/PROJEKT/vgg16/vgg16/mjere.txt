@@ -1,0 +1,22 @@
+VGG16 model
+
+Za 10 klasa (pasmina)
+
+Accuracy = 0.8018
+Precision = 0.8675
+Recall = 0.7268
+F1 score = 0.7909
+
+Za 20 klasa
+
+Accuracy = 0.7516
+Precision = 0.8487
+Recall = 0.6613
+F1 score = 0.7434
+
+Za 30 klasa
+
+Accuracy = 0.6443
+Precision = 0.8046
+Recall = 0.4962
+F1 score = 0.6138

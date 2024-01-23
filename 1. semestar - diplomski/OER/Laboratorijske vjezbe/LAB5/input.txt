@@ -1,0 +1,8 @@
+FunctionNodes: +, -, *, /, sin, cos, sqrt, log, exp
+ConstantRange: -3, 3
+PopulationSize: 200
+TournamentSize: 3
+CostEvaluations: 1000000
+MutationProbability: 0.3
+MaxTreeDepth: 6
+UseLinearScaling: 0

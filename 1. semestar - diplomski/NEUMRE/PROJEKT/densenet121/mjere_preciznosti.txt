@@ -1,0 +1,6 @@
+KORISTEN MODEL DenseNet121
+
+Maximum validation accuracy = 0.8604
+Maximum validation precision = 0.9053
+Maximum validation recall = 0.8137
+Maximum validation f1 score = 0.8548

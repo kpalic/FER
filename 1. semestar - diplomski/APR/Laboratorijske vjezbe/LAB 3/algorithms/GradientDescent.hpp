@@ -7,40 +7,49 @@
 #include <iostream>
 #include "../functions/IFunction.hpp"
 #include "../functions/Functions.hpp"
+#include "../algorithms/Algorithm.hpp"
 
 using namespace std;
 
-class GradientDescent {
+class GradientDescent : public Algorithm {
     public:
+    int iterations = 0;
 
     vector<double> findMinimum(vector<double> startingPoint, IFunction& f, double epsilon, bool goldenCut) {
         vector<double> currentPoint = startingPoint;
         vector<double> gradient = f.getGradient(currentPoint);
         vector<double> nextPoint(f.getNumberOfParameters());
+
+        double currentValue;
+        double nextValue;
         
         if (goldenCut) {
             do {
                 vector<double> normalizedGradient = normalizeGradient(gradient);
-                double optimalLambda = getOptimalLambda(currentPoint, f, normalizedGradient, epsilon);
+                double optimalLambda = getOptimalLambda(currentPoint, f, normalizedGradient);
                 for (int i = 0; i < f.getNumberOfParameters(); i++) {
-                    nextPoint[i] = currentPoint[i] - optimalLambda * normalizedGradient[i];
+                    nextPoint[i] = currentPoint[i] - (optimalLambda * normalizedGradient[i]);
                 }
-                cout << "----------------------------------------" << endl;
-                debug(f, currentPoint, gradient);
+                currentValue = f.getValue(currentPoint);
+                nextValue = f.getValue(nextPoint);
+                // cout << "----------------------------------------" << endl;
+                // debug(f, currentPoint, gradient);
                 gradient = f.getGradient(nextPoint);
                 currentPoint = nextPoint;
-                cout << "----------------------------------------" << endl;
+                // cout << "----------------------------------------" << endl;
+                // cout << "Gradient norm: " << getNorm(gradient) << endl;
+                iterations++;
             } while (getNorm(gradient) > epsilon);
         }
         else {
             do {
+                gradient = f.getGradient(currentPoint);
                 for (int i = 0; i < f.getNumberOfParameters(); i++) {
                     nextPoint[i] = currentPoint[i] - gradient[i];
                 }
-                debug(f, currentPoint, gradient);
-                gradient = f.getGradient(nextPoint);
                 currentPoint = nextPoint;
-            } while (getNorm(gradient) > epsilon);
+                iterations++;
+            } while (getNorm(gradient) > epsilon && iterations < 5000);
         }
         return currentPoint;
     }
@@ -60,73 +69,35 @@ class GradientDescent {
         cout << endl;
     }
 
-    double getNorm(vector<double> gradient) {
-        double norm = 0;
-        for (int i = 0; i < gradient.size(); i++) {
-            norm += pow(gradient[i], 2);
-        }
-        return sqrt(norm);
-    }
-
-    vector<double> normalizeGradient(vector<double> gradient) {
-        vector<double> normalizedGradient(gradient.size());
-        double norm = getNorm(gradient);
-        for (int i = 0; i < gradient.size(); i++) {
-            normalizedGradient[i] = gradient[i] / norm;
-        }
-        cout << "Gradient: " << endl;
-        for (int i = 0; i < gradient.size(); i++) {
-            cout << gradient[i] << " ";
-        }
-        cout << endl;
-
-        cout << "Normalized gradient: " << endl;
-        for (int i = 0; i < normalizedGradient.size(); i++) {
-            cout << normalizedGradient[i] << " ";
-        }
-        cout << endl;
-
-        return normalizedGradient;
-    }
-
-    double getOptimalLambda(vector<double> currentPoint, IFunction& f, vector<double> gradient, double epsilon) {
+    double getOptimalLambda(vector<double> startingPoint, IFunction& f, vector<double> gradient) {
+        // gradijent u ovoj funkciji je normaliziran
+        double epsilon = 10e-7;
 
         // find unimodal interval
         double lambdaMin = 0;
         double lambdaMax = 1;
+        vector<double> currentPoint = startingPoint;
         vector<double> nextPoint(f.getNumberOfParameters());
         for (int i = 0; i < f.getNumberOfParameters(); i++) {
-            nextPoint[i] = currentPoint[i] - lambdaMax * gradient[i];
+            nextPoint[i] = currentPoint[i] - (lambdaMax * gradient[i]);
         }
+
         double valueNext = f.getValue(nextPoint);
         double valueCurrent = f.getValue(currentPoint);
 
         int iterations = 0;
         while (valueNext < valueCurrent) {
             lambdaMax *= 2;
-
             for (int i = 0; i < f.getNumberOfParameters(); i++) {
-                nextPoint[i] = currentPoint[i] - lambdaMax * gradient[i];
+                nextPoint[i] = startingPoint[i] - (lambdaMax * gradient[i]);
             }
             valueCurrent = valueNext;
             valueNext = f.getValue(nextPoint);
             iterations++;
+        }
 
-            // cout << "Iteration: " << iterations << endl;
-            // cout << "currentPoint: ";
-            // for (int i = 0; i < currentPoint.size(); i++) {
-            //     cout << currentPoint[i] << " ";
-            // }
-            // cout << endl;
-            // cout << "currentValue: " << valueCurrent << endl;
-            // cout << "nextPoint: ";
-            // for (int i = 0; i < nextPoint.size(); i++) {
-            //     cout << nextPoint[i] << " ";
-            // }
-            // cout << endl;
-            // cout << "nextValue: " << valueNext << endl;
-            // cout << "lambdaMin: " << lambdaMin << endl;
-            // cout << "lambdaMax: " << lambdaMax << endl;
+        if (lambdaMax > 2) {
+            lambdaMin = lambdaMax / 4; // 4 = 2^2 -> dvije prethodne tocke
         }
 
         double a = lambdaMin;
@@ -147,10 +118,6 @@ class GradientDescent {
         double valueD = f.getValue(dPoint);
 
         while (abs(b - a) > epsilon) {
-            // cout << "a      c      d      b" << endl;
-            // cout << a << " " << c << " " << d << " " << b << endl;
-            // cout << "alueC      valueD      " << endl;
-            // cout << valueC << " " << valueD << endl;
             if (valueC < valueD) {
                 b = d;
                 d = c;
@@ -172,7 +139,7 @@ class GradientDescent {
                 valueD = f.getValue(dPoint);
             }
         }
-        cout << "Optimal lambda: " << (a + b) / 2.0 << endl;
+        // cout << "Optimal lambda: " << (a + b) / 2.0 << endl;
         return (a + b) / 2.0;
     }
 };
