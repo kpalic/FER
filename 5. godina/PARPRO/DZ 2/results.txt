@@ -1,0 +1,4 @@
+Number of processors: 8, Duration: 0.109369 seconds
+Number of processors: 8, Duration: 0.110295 seconds
+Number of processors: 8, Duration: 0.16394 seconds
+Number of processors: 8, Duration: 0.232736 seconds
