@@ -17,6 +17,13 @@ int main(int argc, char* argv[]) {
 
     Population population(&function, &config);
     population.generatePopulation();
+    cout << "Population size: " << population.getTrees().size() << endl;
+    cout << "MaxDepth: " << population.getConfig()->getMaxTreeDepth() << endl;
+    vector<double> Errors = population.evaluate();
+
+    for (int i = 0; i < Errors.size(); i++) {
+        cout << "i: " << Errors[i] << endl;
+    }
 
     // BinaryTree tree(buildTreeMethod::GROW);
 
@@ -40,6 +47,4 @@ int main(int argc, char* argv[]) {
     // tree.setRoot(root);
 
     // tree.printTree();
-
-    population.generatePopulation();
 }

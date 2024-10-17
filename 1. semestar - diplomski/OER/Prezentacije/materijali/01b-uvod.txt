@@ -1,0 +1,145 @@
+=============================================
+Algoritam: Variable neighborhood search (VNS)
+=============================================
+
+ - Iskorištava činjenicu da definicija susjedstva može unijeti lokalne optimume u optimizacijski algoritam
+ - sjetimo se: pi(x) predstavlja sve susjede rješenja x
+ - moguće je da su tamo sva rješenja gora od x, i zapeli smo u lokalnom optimumu
+ - promjenom definicije susjedstva to više ne mora biti slučaj
+ 
+Najprije ćemo definirati dvije lokalne pretrage. U pseudokodu N(x) predstavlja susjedstvo od x.
+
+U prvoj lokalnoj pretrazi ispituje se kompletno susjedstvo od trenutnog rješenja x, i uzima rješenje koje je najbolje 
+(ili neko slučajno među njima, ako ih je više). Ako je novo rješenje gore od trenutnog, vraća se trenutno. 
+Inače novo rješenje postaje trenutno i postupak se iterira.
+
+Function BestImprovement(x)
+  1: ponavljaj
+  2:     x' ← x
+  3:     x ← argmin_{ f(y) }, y ∈ N(x)
+  4: tako dugo dok je x bolji od x'
+  5: return x'
+  
+U drugoj pretrazi uvažava se činjenica da susjedstvo može biti ogromno, pa ga se ne isplati generirati u
+cijelosti. Umjesto toga, lijeno se generira jedan po jedan susjed, i prvi koji je bolji od trenutnog se
+prihvaća kao novo trenutno rješenje, te se postupak iterativno ponavlja (gledaju se njegovi susjedi ...).
+
+Function FirstImprovement(x)
+  1: repeat
+  2:    x' ← x; i ← 0
+  3:    ponavljaj
+  4:       i ← i + 1
+  5:       x ← argmin{ f(x), f(x^i)}, x^i ∈ N(x)
+  6:    tako dugo dok je  x^i lošiji od x te i != |N(x)|
+  7: tako dugo dok je x bolji od x'
+  8: return x'
+
+
+VNS algoritam radi više definicija susjedstva. U pseudokodovima k označava redni broj definicije susjedstva
+koja se trenutno koristi. k=1 predstavlja prvu definiciju susjedstva. VNS koristi pomoćnu metodu NeighborhoodChange
+koja, ako je novonađeno rješenje x' bolje od trenutnog rješenja x resetira k natrag na 1, a ako nije, prelazi
+na sljedeće susjedstvo.
+
+Function NeighborhoodChange (x, x', k)
+ 1: if x' je bolji od x then
+ 2:    x ← x'     // prihvati x' kao novo trenutno rješenje
+ 3:    k ← 1      // vrati se natrag na prvu definiciju susjedstva
+ 4: else
+ 5:    k ← k+1    // ne diraj trenutno rješenje, idemo na sljedeće susjedstvo
+
+Ideja iza ovog pristupa leži u pretpostavci da smo susjedstva definirali tako da je svako sljedeće sve brojnije, generirat će više kandidata i više vremena ćemo potrošiti na njegovo generiranje i istraživanje.
+U tom smislu, ima smisla raditi pretraživanje uz što manja susjedstva (jer ćemo brže raditi iteracije); tek ako
+zapnemo, idemo na sljedeće (šire) susjedstvo, pa ako tamo uspijemo napraviti pomak, od tog novog rješenja ponovno gledamo usko susjedstvo, itd.
+
+VNS koristi pomoćnu metodu Shake, koja za dano trenutno rješenje x bira i vraća slučajnog susjeda iz k-te definicije susjedstva.
+
+Function Shake (x, k)
+  1:       return randomly selected x^i where x^i ∈ N_k(x)
+
+Osnovna inačica algoritma VNS tada je dana sljedećim pseudokodom. kmax je broj definicija susjedstva s kojim radimo;
+tmax je maksimalno vrijeme koliko smo spremni pustiti algoritmu da radi.
+
+Function VNS (x, kmax, tmax)
+ 1: repeat
+ 2:    k ← 1
+ 3:    ponavljaj
+ 4:       x' ← Shake(x, k)                   // Odaberi nekog susjeda
+ 5:       x'' ← BestImprovement(x' )         // Iz njega pokreni lokalnu pretragu; može i FirstImprovement(x')
+ 6:       NeighbourhoodChange(x, x'', k)     // Ažuriraj susjedstvo (ili reset na prvi, ili idemo na sljedeći)
+ 7:    sve dok je k <= kmax
+ 8:    t ← CpuTime()
+ 9: until t > tmax
+10: return x
+
+Postoji niz varijanti algoritma. Primjerice:
+ - shake može razmotriti b slučajno odabranih rješenja iz k-tog susjedstva (b je parametar), i potom:
+   i) vratiti najbolje od njih b
+   ii) iz svakog od b odabranih pokrenuti lokalnu pretragu, pa uzeti najbolje konačno rješenje (spoj koraka 4+5)
+ - susjedstva se ne moraju resetirati, već se mogu istraživati jedno po jedno, bez ponavljanja
+
+VND (Variable Neighborhood Descent) je inačica VNS-a koja deterministički obavlja pretraživanje. 
+
+====================================================
+Algoritam: Adaptive Large Neighborhood Search (ALNS)
+====================================================
+
+Izveden iz osnovnog algoritma: Large Neighborhood Search (LNS) koji je dan u nastavku. 
+U pseudokodu c(x) predstavlja cijenu rješenja x (želimo manju cijenu).
+
+Function LNS (x)
+ 1:
+ 2: xb = x
+ 3: repeat
+ 4:   xt = r(d(x));
+ 5:   if accept(xt, x) then
+ 6:     x = xt;
+ 7:   end if
+ 8:   if c(xt) < c(xb) then
+ 9:     xb = xt;
+10:   end if
+11: until stop criterion is met
+12: return xb
+
+Operator d(x) uništava određen dio rješenja x; operator r(.) potom heuristički na neki način popravlja to rješenje.
+Funkcija accept(xt,x) bira hoće li prihvatiti novo rješenje. Ovime se može postići da se ponekad prihvaćaju i
+lošija rješenja čime se potencijalno može pobjeći iz lokalnog optimuma.
+
+Ideja je da se uništavanjem većeg dijela rješenja pa njegovim naknadnim popravljanjem omogućava pretraživanje
+puno šireg susjedstva.
+
+Postupak Adaptive Large Neighborhood Search proširenje je prethodnog postupka; pseudokod je prikazan u nastavku.
+
+Function ALNS (x)
+ 1:
+ 2: xb = x; ρ −= (1, . . . , 1); ρ + = (1, . . ., 1);
+ 3: repeat
+ 4:   select destroy and repair methods d∈Ω− and r∈Ω+ using ρ− and ρ+;
+ 5:   xt = r(d(x));
+ 6:   if accept(xt , x) then
+ 7:     x = xt ;
+ 8:   end if
+ 9:   if c(xt) < c(xb) then
+10:     xb = xt ;
+11:   end if
+12:   update ρ− and ρ+;
+13: until stop criterion is met
+14: return x
+
+Na raspolaganju imamo više operatora uništavanja (d) i popravljanja (r). 
+
+ρ− i ρ+ su skupovi težina tih operatora (ρ− su težine operatora uništavanja, ρ+ su težine operatora popravljanja). Ideja je da se u svakom koraku konkretni operatori biraju vjerojatnosno, proporcionalno težinama. Ovisno o njihovoj uspješnosti, ažuriraju im se težine. 
+
+ψ = max od  ω1 ako je novo rješenje novo globalno najbolje rješenje,
+            ω2 ako je novo rješenje bolje od trenutnog,
+            ω3 ako je novo rješenje prihvaćeno,
+            ω4 ako je novo rješenje odbačeno.
+
+gdje su parametri: ω1 ≥ ω2 ≥ ω3 ≥ ω4 ≥ 0.
+
+Velika vrijednost od ψ predstavlja uspješan operator. Ažuriranje ide prema izrazu:
+ρ−(a) = λ ρ−(a) + (1−λ)ψ
+ρ+(b) = λ ρ+(b) + (1−λ)ψ
+gdje su a i b indeksi odabranih operatora uništavanja i popravljanja, a λ∈[0,1] je parametar
+koji određuje u kolikoj se mjeri ažuriraju trenutne težine (ako je λ=0, staro stanje nije bitno;
+ako je λ=1, novo stanje nije bitno; za λ između 0 i 1 obavlja se linearna interpolacija).
+

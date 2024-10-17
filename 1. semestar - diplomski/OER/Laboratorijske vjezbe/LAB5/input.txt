@@ -4,5 +4,5 @@ PopulationSize: 200
 TournamentSize: 3
 CostEvaluations: 1000000
 MutationProbability: 0.3
-MaxTreeDepth: 6
+MaxTreeDepth: 3
 UseLinearScaling: 0

@@ -33,17 +33,18 @@ class Node {
         Node* left;
         Node* right;
         Node* parent;
-        bool isRoot;
+        bool isLeaf;
         int depth;
     
     public:
         Node(){};
 
-        Node(string value, Node* left, Node* right, Node* parent, int depth) {
+        Node(string value, Node* left, Node* right, Node* parent, bool isLeaf, int depth) {
             this->value = value;
             this->left = left;
             this->right = right;
             this->parent = parent;
+            this->isLeaf = isLeaf;
             this->depth = depth;
         }
 
@@ -88,6 +89,77 @@ class Node {
         }
         void setDepth(int depth) {
             this->depth = depth;
+        }
+
+        bool getIsLeaf() {
+            return this->isLeaf;
+        }
+        void setIsLeaf(bool isLeaf) {
+            this->isLeaf = isLeaf;
+        }
+
+        double evaluate(vector<string> variableNames, vector<double> input) {
+            if (this->isLeaf) {
+                int varIndex = -1;
+                for (int i = 0; i < variableNames.size(); i++) {
+                    if (variableNames[i] == this->value) {
+                        varIndex = i;
+                        break;
+                    }
+                }
+                if (varIndex == -1) {
+                    return stod(this->value);
+                }
+                else {
+                    return input[varIndex];
+                }
+            }
+            else {
+                double leftValue = this->left->evaluate(variableNames, input);
+                double rightValue = 0;
+                if (this->getRight() != nullptr) {
+                    rightValue = this->right->evaluate(variableNames, input);
+                }
+                if (this->value == "+") {
+                    return leftValue + rightValue;
+                }
+                else if (this->value == "-") {
+                    return leftValue - rightValue;
+                }
+                else if (this->value == "*") {
+                    return leftValue * rightValue;
+                }
+                else if (this->value == "/") {
+                    if (abs(rightValue) < 10e-6) {
+                        return 0;
+                    }
+                    return leftValue / rightValue;
+                }
+                else if (this->value == "sin") {
+                    return sin(leftValue);
+                }
+                else if (this->value == "cos") {
+                    return cos(leftValue);
+                }
+                else if (this->value == "exp") {
+                    return exp(leftValue);
+                }
+                else if (this->value == "log") {
+                    if (leftValue <= 10e-9) {
+                        return 0;
+                    }
+                    return log(leftValue);
+                }
+                else if (this->value == "sqrt") {
+                    if (leftValue < 0) {
+                        return 0;
+                    }
+                    return sqrt(leftValue);
+                }
+                else {
+                    return 0;
+                }
+            }
         }
 
         void printValue() {
@@ -185,6 +257,14 @@ class BinaryTree {
             this->method = method;
         }
 
+        double evaluate(vector<string> variableNames, vector<double> input, double output) {
+            double computedOutput = this->getRoot()->evaluate(variableNames, input);
+            // cout << "exit evaluate bt" << endl;
+            return pow(output - computedOutput, 2);
+        }
+
+
+
         void printTree(const string& prefix, Node* node, bool isLeft) {
             if(node != nullptr) {
                 cout << prefix;
@@ -220,7 +300,13 @@ class BinaryTree {
             root->setValue(rootValue);
             root->setDepth(1);
             tree->setRoot(root);
+            cout << "Generating tree" << endl;
+            for (int i = 0; i < variableNames.size(); i++) {
+                cout << "var: " << variableNames[i] << endl;
+            }
+
             generateSubtrees(method, maxDepth, constantRange, operators, variableNames, 2, root);
+            cout << "Generated tree" << endl;
             return tree;
         }
 
@@ -229,23 +315,23 @@ class BinaryTree {
             if (method == buildTreeMethod::FULL) {
                 if (currentDepth > maxDepth) {
                     string leftValue = Node::generateNode(buildNodeMethod::TERMINAL, maxDepth, constantRange, operators, variableNames);
-                    Node* left = new Node(leftValue, nullptr, nullptr, parent, currentDepth);
+                    Node* left = new Node(leftValue, nullptr, nullptr, parent, true, currentDepth);
                     parent->setLeft(left);
                     if(!isParentUnary) {
                         string rightValue = Node::generateNode(buildNodeMethod::TERMINAL, maxDepth, constantRange, operators, variableNames);
-                        Node* right = new Node(rightValue, nullptr, nullptr, parent, currentDepth);
+                        Node* right = new Node(rightValue, nullptr, nullptr, parent, true, currentDepth);
                         parent->setRight(right);
                     }
                 }
                 else {
                     string leftValue = Node::generateNode(buildNodeMethod::OPERATOR, maxDepth, constantRange, operators, variableNames);
-                    Node* left = new Node(leftValue, nullptr, nullptr, parent, currentDepth);
+                    Node* left = new Node(leftValue, nullptr, nullptr, parent, false, currentDepth);
                     parent->setLeft(left);
                     generateSubtrees(method, maxDepth, constantRange, operators, variableNames, currentDepth + 1, left);
                     
                     if(!isParentUnary) {
                         string rightValue = Node::generateNode(buildNodeMethod::OPERATOR, maxDepth, constantRange, operators, variableNames);
-                        Node* right = new Node(rightValue, nullptr, nullptr, parent, currentDepth);
+                        Node* right = new Node(rightValue, nullptr, nullptr, parent, false, currentDepth);
                         parent->setRight(right);
                         generateSubtrees(method, maxDepth, constantRange, operators, variableNames, currentDepth + 1, right);
                     }
@@ -258,28 +344,34 @@ class BinaryTree {
                 int randomRight = rand() % 2;
                 buildNodeMethod leftMethod;
                 buildNodeMethod rightMethod;
+                bool isLeftLeaf;
+                bool isRightLeaf;
 
                 if (randomLeft == 0) {
                     leftMethod = buildNodeMethod::OPERATOR;
+                    isLeftLeaf = false;
                 }
                 else {
                     leftMethod = buildNodeMethod::TERMINAL;
+                    isLeftLeaf = true;
                 }
 
                 if (randomRight == 0) {
                     rightMethod = buildNodeMethod::OPERATOR;
+                    isRightLeaf = false;
                 }
                 else {
                     rightMethod = buildNodeMethod::TERMINAL;
+                    isRightLeaf = true;
                 }
 
                 string leftValue = Node::generateNode(leftMethod, maxDepth, constantRange, operators, variableNames);
-                Node* left = new Node(leftValue, nullptr, nullptr, parent, currentDepth);
+                Node* left = new Node(leftValue, nullptr, nullptr, parent, isLeftLeaf, currentDepth);
                 parent->setLeft(left);
 
                 if (!isParentUnary) {
                     string rightValue = Node::generateNode(rightMethod, maxDepth, constantRange, operators, variableNames);
-                    Node* right = new Node(rightValue, nullptr, nullptr, parent, currentDepth);
+                    Node* right = new Node(rightValue, nullptr, nullptr, parent, isRightLeaf, currentDepth);
                     parent->setRight(right);
                 }
 

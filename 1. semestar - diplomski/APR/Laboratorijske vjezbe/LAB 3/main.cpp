@@ -189,11 +189,6 @@ int main (void) {
     cout << "Iterations: " << gn_5_1.iterations << endl;
 
     cout << "----------------------------------------" << endl;
-
-
-
-
-
     
     return 0;
 

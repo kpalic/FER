@@ -87,10 +87,27 @@ class Population {
             //     cout << "Generating " << numGrowTrees << " grow trees" << endl;
             // }
 
-            BinaryTree* tree = BinaryTree::generateTree(buildTreeMethod::FULL, 5, this->config->getConstantRange(), this->config->getOperators(), this->function->getVariableNames());
+            for (int i = 0; i < this->getFunction()->getVariableNames().size(); i++) {
+                cout << this->getFunction()->getVariableNames()[i] << " ";
+            }
+            cout << endl;
+
+            BinaryTree* tree = BinaryTree::generateTree(buildTreeMethod::FULL, this->config->getMaxTreeDepth(), this->config->getConstantRange(), this->config->getOperators(), this->function->getVariableNames());
             tree->printTree();
 
+            this->trees.push_back(*tree);
+        }
 
+        vector<double> evaluate() {
+            vector<double> meanSquaredErrors(this->trees.size());
+            for(int i = 0; i < this->trees.size(); i++) {
+                for (int j = 0; j < this->function->getInput().size(); j++) {
+                    double meanSquaredError = this->trees[i].evaluate(this->function->getVariableNames(), this->function->getInput()[j], this->function->getOutput()[j]);
+                    meanSquaredErrors[i] += meanSquaredError;
+                }
+                meanSquaredErrors[i] /= this->function->getInput().size();
+            }
+            return meanSquaredErrors;
         }
         
 };
